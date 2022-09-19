@@ -1,5 +1,5 @@
 import { Route, Routes, useLocation } from 'react-router-dom';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 import ResponsiveAppBar from './components/ui/Navbar';
 
 // import pages
@@ -15,6 +15,7 @@ import Plants from './pages/Plants';
 import Categories from './pages/Categories';
 import Footer from './components/Footer';
 import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 
 // Note replaced exitBeforeEnter with mode="wait' in AnimatePresence
 
@@ -36,7 +37,7 @@ function App() {
           <Route path='plants' element={<Plants />} />
           <Route path='categories' element={<Categories />} />
           <Route path='forgot-password' element={<ForgotPassword />} />
-          {/* <Route path='categories' element={<Categories />} /> */}
+          <Route path='reset-password' element={<ResetPassword />} />
         </Routes>
       </AnimatePresence>
       <Footer />

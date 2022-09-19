@@ -1,10 +1,7 @@
 import AnimatedPage from '../components/AnimatedPage';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
-import CssBaseline from '@mui/material/CssBaseline';
 import TextField from '@mui/material/TextField';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
 import Link from '@mui/material/Link';
 import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
@@ -13,25 +10,14 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { Link as RouterLink } from 'react-router-dom';
 
-// function Copyright(props) {
-//   return (
-//     <Typography variant="body2" color="text.secondary" align="center" {...props}>
-//       {'Copyright © '}
-//       <Link color="inherit" href="https://mui.com/">
-//         Your Website
-//       </Link>{' '}
-//       {new Date().getFullYear()}
-//       {'.'}
-//     </Typography>
-//   );
-// }
-
 const Register = () => {
 
   const handleSubmit = (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     console.log({
+      firstname: data.get('firstName'),
+      lastname: data.get('lastName'),
       email: data.get('email'),
       password: data.get('password'),
     });
@@ -40,7 +26,6 @@ const Register = () => {
   return (
     <AnimatedPage>
       <Container component="main" maxWidth="xs">
-        {/* <CssBaseline /> */}
         <Box
           sx={{
             marginTop: 8,
@@ -118,7 +103,6 @@ const Register = () => {
             </Grid>
           </Box>
         </Box>
-        {/* <Copyright sx={{ mt: 8, mb: 4 }} /> */}
       </Container>
     </AnimatedPage>
   )

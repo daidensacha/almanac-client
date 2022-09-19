@@ -10,7 +10,6 @@ const FooterSection = () => {
   return (
     <Box
       sx={{ bgcolor: 'grey.900', color: 'grey.500' }}
-      // bgcolor='grey.900'
       px={{ xs: 3, sm: 10 }}
       py={{ xs: 5, sm: 5 }}>
       <Container>
