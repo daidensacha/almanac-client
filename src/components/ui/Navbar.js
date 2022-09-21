@@ -31,7 +31,7 @@ function ElevationScroll(props) {
 }
 
 // Set user for testing
-const user = true;
+const user = false;
 
 // Define menu items
 const pages = user

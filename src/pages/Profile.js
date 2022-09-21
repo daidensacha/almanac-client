@@ -19,6 +19,7 @@ import AnimatedPage from '../components/AnimatedPage';
 import climateZoneData from '../data/climate-zone';
 
 const Profile = () => {
+
   // Set state for form data
   const [loading, setLoading] = useState(false);
   const [checked, setChecked] = useState(false);
@@ -30,6 +31,7 @@ const Profile = () => {
     email: '',
     password: '',
   });
+
   // Set the state of the user climate zone
   const [location, setLocation] = useState({
     error: false,
@@ -37,16 +39,30 @@ const Profile = () => {
     message: '',
     latitude: '',
     longitude: '',
-    climateZone: '',
-    zoneDescription: '',
+    koppen_geiger_zone: '',
+    zone_description: '',
   });
 
+  // Set the state of the user climate zone
   const [climateZone, setClimateZone] = useState({
     loading: false,
     koppen_geiger_zone: '',
     zone_description: '',
   });
 
+  // Set the state of the user climate zone data
+  const [userZone, setUserZone] = useState({
+    subzone: '',
+    group: '',
+    color: '',
+    backgroundColor: '',
+    precipitationType: '',
+    heatLevel: '',
+    shortDescription: '',
+    longDesription: '',
+  });
+
+  // Fetch climage zone data for users location
   const getClimateZone = async (latitude, longitude) => {
     setLoading(true);
     const url = `http://climateapi.scottpinkelman.com/api/v1/location/${latitude}/${longitude}`;
@@ -54,15 +70,16 @@ const Profile = () => {
       const res = await fetch(url);
       const data = await res.json();
       const { koppen_geiger_zone, zone_description } = data.return_values[0];
-      setClimateZone({
+      setClimateZone((prevState) => ({
+        ...prevState,
         loading: false,
         koppen_geiger_zone: koppen_geiger_zone,
         zone_description: zone_description,
-      });
+      }));
       setLocation(prevState => ({
         ...prevState,
-        climateZone: `${koppen_geiger_zone}`,
-        zoneDescription: `${zone_description}`,
+        koppen_geiger_zone: `${koppen_geiger_zone}`,
+        zone_description: `${zone_description}`,
       }));
       setLoading(false);
     } catch (error) {
@@ -75,6 +92,7 @@ const Profile = () => {
     setLocation(prevState => ({
       ...prevState,
       error: false,
+      code: 0,
       message: '',
       latitude: position.coords.latitude,
       longitude: position.coords.longitude,
@@ -84,17 +102,6 @@ const Profile = () => {
     getClimateZone(latitude, longitude);
     setLoading(false);
   };
-
-  const [userZone, setUserZone] = useState({
-    subzone: '',
-    group: '',
-    color: '',
-    backgroundColor: '',
-    precipitationType: '',
-    heatLevel: '',
-    shortDescription: '',
-    longDesription: '',
-  });
 
   // Geolocation errorCallback
   const errorPosition = error => {
@@ -127,11 +134,12 @@ const Profile = () => {
         console.error('An unknown error occurred');
         errorMessage = 'An unknown error occurred';
     }
-    setLocation({
+    setLocation((prevState) => ({
+      ...prevState,
       error: true,
       code: error.code,
       message: errorMessage || 'Error getting location',
-    });
+    }));
     setLoading(false);
   };
 
@@ -160,8 +168,8 @@ const Profile = () => {
       password: data.get('password'),
       latitude: data.get('latitude'),
       longitude: data.get('longitude'),
-      climateZone: data.get('climateZone'),
-      zoneDescription: data.get('zoneDescription'),
+      koppen_geiger_zone: data.get('koppen_geiger_zone'),
+      zone_description: data.get('zone_description'),
     });
   };
 
@@ -179,7 +187,7 @@ const Profile = () => {
 
   // Handle the form zone input change to load to the climateZone state
   const handleZoneChange = event => {
-    setLocation({ ...user, [event.target.name]: event.target.value });
+    setLocation({ ...location, [event.target.name]: event.target.value });
   };
 
   useEffect(() => {
@@ -340,10 +348,10 @@ const Profile = () => {
                 <TextField
                   disabled
                   fullWidth
-                  value={location.climateZone || ''}
-                  id='climateZone'
+                  value={location.koppen_geiger_zone || ''}
+                  id='koppen_geiger_zone'
                   label='Climate Zone'
-                  name='climateZone'
+                  name='koppen_geiger_zone'
                   size='small'
                   onChange={handleZoneChange}
                 />
@@ -352,11 +360,10 @@ const Profile = () => {
                 <TextField
                   disabled
                   fullWidth
-                  value={location.zoneDescription || ''}
-                  name='zoneDescription'
+                  value={location.zone_description || ''}
+                  name='zone_description'
                   label='Zone Description'
-                  type='zoneDescription'
-                  id='zoneDescription'
+                  id='zone_description'
                   size='small'
                   onChange={handleZoneChange}
                 />
@@ -374,6 +381,7 @@ const Profile = () => {
             </Grid>
           </Box>
         </Box>
+        {/* Display the users climate zone information */}
         <Box sx={{ mt: 4, mb: 3, maxWidth: 'sm', width: '100%' }}>
           <Grid
             container
