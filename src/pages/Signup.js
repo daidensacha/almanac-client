@@ -10,7 +10,7 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { Link as RouterLink } from 'react-router-dom';
 
-const Register = () => {
+const Signup = () => {
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -51,6 +51,7 @@ const Register = () => {
                   fullWidth
                   id="firstName"
                   label="First Name"
+                  size="small"
                   autoFocus
                 />
               </Grid>
@@ -62,6 +63,7 @@ const Register = () => {
                   label="Last Name"
                   name="lastName"
                   autoComplete="family-name"
+                  size="small"
                 />
               </Grid>
               <Grid item xs={12}>
@@ -72,6 +74,7 @@ const Register = () => {
                   label="Email Address"
                   name="email"
                   autoComplete="email"
+                  size="small"
                 />
               </Grid>
               <Grid item xs={12}>
@@ -83,6 +86,7 @@ const Register = () => {
                   type="password"
                   id="password"
                   autoComplete="new-password"
+                  size="small"
                 />
               </Grid>
             </Grid>
@@ -96,7 +100,7 @@ const Register = () => {
             </Button>
             <Grid container justifyContent="flex-end">
               <Grid item>
-                <Link component={RouterLink} to="/login" variant="body2">
+                <Link component={RouterLink} to="/signin" variant="body2">
                   Already have an account? Sign in
                 </Link>
               </Grid>
@@ -108,4 +112,4 @@ const Register = () => {
   )
 }
 
-export default Register;
+export default Signup;

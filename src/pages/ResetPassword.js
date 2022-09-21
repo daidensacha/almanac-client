@@ -54,6 +54,7 @@ const ResetPassword = () => {
               type='password'
               id='password'
               autoComplete='current-password'
+              size="small"
             />
             <Button
               type='submit'

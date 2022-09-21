@@ -54,6 +54,7 @@ const Contact = () => {
                   fullWidth
                   id='firstName'
                   label='First Name'
+                  size="small"
                   autoFocus
                 />
               </Grid>
@@ -65,6 +66,7 @@ const Contact = () => {
                   label='Last Name'
                   name='lastName'
                   autoComplete='family-name'
+                  size="small"
                 />
               </Grid>
               <Grid item xs={12}>
@@ -75,6 +77,7 @@ const Contact = () => {
                   label='Email Address'
                   name='email'
                   autoComplete='email'
+                  size="small"
                 />
               </Grid>
               <Grid item xs={12}>
@@ -86,6 +89,7 @@ const Contact = () => {
                   name='message'
                   label='Message'
                   id='message'
+                  size="small"
                 />
               </Grid>
             </Grid>

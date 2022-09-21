@@ -10,7 +10,7 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { Link as RouterLink } from 'react-router-dom';
 
-const Login = () => {
+const Signin = () => {
   const handleSubmit = event => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
@@ -51,6 +51,7 @@ const Login = () => {
               label='Email Address'
               name='email'
               autoComplete='email'
+              size="small"
               autoFocus
             />
             <TextField
@@ -62,6 +63,7 @@ const Login = () => {
               type='password'
               id='password'
               autoComplete='current-password'
+              size="small"
             />
             <Button
               type='submit'
@@ -77,7 +79,7 @@ const Login = () => {
                 </Link>
               </Grid>
               <Grid item>
-                <Link component={RouterLink} to='/register' variant='body2'>
+                <Link component={RouterLink} to='/signup' variant='body2'>
                   {"Don't have an account? Sign Up"}
                 </Link>
               </Grid>
@@ -89,4 +91,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default Signin;

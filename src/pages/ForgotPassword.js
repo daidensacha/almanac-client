@@ -55,6 +55,7 @@ const ForgotPassword = () => {
               label='Email Address'
               name='email'
               autoComplete='email'
+              size="small"
               autoFocus
             />
             <Button

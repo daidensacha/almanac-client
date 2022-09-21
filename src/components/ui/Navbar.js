@@ -31,20 +31,20 @@ function ElevationScroll(props) {
 }
 
 // Set user for testing
-const user = false;
+const user = true;
 
 // Define menu items
 const pages = user
   ? [
       { menuTitle: 'Home', pageUrl: '/' },
       { menuTitle: 'Almanac', pageUrl: 'almanac' },
-      { menuTitle: 'Logout', pageUrl: 'logout' },
+      { menuTitle: 'Sign out', pageUrl: 'signout' },
       { menuTitle: 'Contact', pageUrl: 'contact' },
     ]
   : [
       { menuTitle: 'Home', pageUrl: '/' },
-      { menuTitle: 'Sign in', pageUrl: 'login' },
-      { menuTitle: 'Register', pageUrl: 'register' },
+      { menuTitle: 'Sign in', pageUrl: 'signin' },
+      { menuTitle: 'Sign up', pageUrl: 'signup' },
       { menuTitle: 'Contact', pageUrl: 'contact' },
     ];
 
