@@ -33,15 +33,13 @@ function ElevationScroll(props) {
 
 // Set user for testing
 const user = isAuth();
-console.log('USER', user);
-console.log('isAuth', isAuth());
 
 // Define menu items
 const pages = user
   ? [
       { menuTitle: 'Home', pageUrl: '/' },
       { menuTitle: 'Almanac', pageUrl: 'almanac' },
-      { menuTitle: 'Sign out', pageUrl: 'signout' },
+      { menuTitle: 'Sign out', pageUrl: 'logout' },
       { menuTitle: 'Contact', pageUrl: 'contact' },
     ]
   : [
@@ -61,13 +59,17 @@ const settings = user
     ]
   : [
       { menuTitle: 'Sign in', pageUrl: 'login' },
-      { menuTitle: 'Sign up', pageUrl: 'signup' },
+      { menuTitle: 'Register', pageUrl: 'register' },
     ];
 
-console.log('pages', pages);
-console.log('settings', settings);
 const ResponsiveAppBar = () => {
   const navigate = useNavigate();
+
+  // const signoutUser = () => {
+  //   signout(() => {
+  //     navigate('/');
+  //   });
+  // };
 
   const [anchorElNav, setAnchorElNav] = React.useState(null);
   const [anchorElUser, setAnchorElUser] = React.useState(null);
@@ -147,21 +149,77 @@ const ResponsiveAppBar = () => {
                   mt: '15px',
                   display: { xs: 'block', md: 'none' },
                 }}>
-                {/* Offcanvas menu Start */}
-                {pages.map(({ menuTitle, pageUrl }) => (
-                  <MenuItem key={menuTitle} onClick={handleCloseNavMenu}>
-                    <Typography textAlign='center'>
-                      <NavLink
-                        to={pageUrl}
-                        end
-                        className={({ isActive }) => (isActive ? 'active' : '')}
-                        style={{ textDecoration: 'none', color: 'inherit' }}>
-                        {menuTitle}
-                      </NavLink>
-                    </Typography>
-                  </MenuItem>
-                ))}
-                {/* Offcanvas menu End */}
+                <Button
+                  // {...(logOut && { onClick: () => signout(() => navigate('/')) })}
+                  // {...(!logOut && { to: pageUrl})}
+                  // to={pageUrl}
+                  // onClick={logOut && (() => signout(() => navigate('/')))}
+                  // {...(menuTitle === 'Sign out' && { onClick: signoutUser })}
+                  onClick={() => {
+                    console.log('clicked signout');
+                    signout();
+                    navigate('/', { replace: true });
+                  }}
+                  // onClick={()=> console.log(this.props)}
+                  className={({ isActive }) => (isActive ? 'active' : '')}
+                  style={{ textDecoration: 'none', color: 'inherit' }}>
+                  test
+                </Button>
+               {pages.map(({ menuTitle, pageUrl, logOut }) => {
+                  return menuTitle !== 'Sign Out' ? (
+                    <MenuItem key={menuTitle} onClick={handleCloseNavMenu}>
+                      <Typography textAlign='center'>
+                        <NavLink
+                          // {...(logOut && { onClick: () => signout(() => navigate('/')) })}
+                          // {...(!logOut && { to: pageUrl})}
+                          // to={pageUrl}
+                          // onClick={logOut && (() => signout(() => navigate('/')))}
+                          // {...(menuTitle === 'Sign out' && { onClick: signoutUser })}
+                          // onClick={() => signout()}
+                          // onClick={()=> console.log(this.props)}
+                          className={({ isActive }) =>
+                            isActive ? 'active' : ''
+                          }
+                          style={{ textDecoration: 'none', color: 'inherit' }}>
+                          {menuTitle}
+                        </NavLink>
+                      </Typography>
+                    </MenuItem>
+                  ) : (
+                    <MenuItem key={menuTitle} onClick={handleCloseNavMenu}>
+                      <Typography textAlign='center'>
+                        <Button
+                          // {...(logOut && { onClick: () => signout(() => navigate('/')) })}
+                          // {...(!logOut && { to: pageUrl})}
+                          // to={pageUrl}
+                          // onClick={logOut && (() => signout(() => navigate('/')))}
+                          // {...(menuTitle === 'Sign out' && { onClick: signoutUser })}
+                          onClick={() => {
+                            console.log('clicked signout');
+                            signout();
+                            navigate('/', { replace: true });
+                          }}
+                          // onClick={()=> console.log(this.props)}
+                          className={({ isActive }) =>
+                            isActive ? 'active' : ''
+                          }
+                          style={{ textDecoration: 'none', color: 'inherit' }}>
+                          {menuTitle}
+                        </Button>
+                      </Typography>
+                    </MenuItem>
+                  );
+                })}
+                {/* <MenuItem onClick={handleCloseNavMenu}>
+                  <Typography textAlign='center'>
+                    <NavLink
+                      to='/signout'
+                      style={{ textDecoration: 'none', color: 'inherit' }}
+                      onClick={() => signout()}>
+                      Sign out
+                    </NavLink>
+                  </Typography>
+                </MenuItem> */}
               </Menu>
             </Box>
             <Typography
@@ -187,44 +245,32 @@ const ResponsiveAppBar = () => {
                 justifyContent: 'flex-end',
                 display: { xs: 'none', md: 'flex' },
               }}>
-              {/* Desktop menu Start */}
-              {pages.map(({ menuTitle, pageUrl }) => {
-                return menuTitle !== 'Sign out' ? (
-                  // return (
-                  <Button
-                    key={menuTitle}
-                    onClick={handleCloseNavMenu}
-                    sx={{ my: 2, color: 'inherit', display: 'block' }}>
+              {pages.map(({ menuTitle, pageUrl }) => (
+                <Button
+                  key={menuTitle}
+                  onClick={handleCloseNavMenu}
+                  sx={{ my: 2, color: 'inherit', display: 'block' }}>
+                  <NavLink
+                    to={`${pageUrl}`}
+                    end
+                    className={({ isActive }) => (isActive ? 'active' : '')}
+                    style={{ textDecoration: 'none' }}>
+                    {menuTitle}
+                  </NavLink>
+                </Button>
+              ))}
+                 {/* <Button onClick={handleCloseNavMenu}>
+                  <Typography textAlign='center'>
                     <NavLink
-                      to={`${pageUrl}`}
-                      end
-                      className={({ isActive }) => (isActive ? 'active' : '')}
-                      style={{ textDecoration: 'none' }}>
-                      {menuTitle}
+
+                      style={{ textDecoration: 'none', color: 'inherit' }}
+                      onClick={() => signout()}>
+                      Sign out
                     </NavLink>
-                  </Button>
-                ) : (
-                  <Button
-                    key={menuTitle}
-                    onClick={handleCloseNavMenu}
-                    sx={{ my: 2, color: 'inherit', display: 'block' }}>
-                    <NavLink
-                      // to={`${pageUrl}`}
-                      end
-                      className={({ isActive }) => (isActive ? 'active' : '')}
-                      style={{ textDecoration: 'none' }}
-                      onClick={() => {
-                        console.log('clicked signout');
-                        signout();
-                        navigate('/', { replace: true });
-                      }}>
-                      {menuTitle}
-                    </NavLink>
-                  </Button>
-                );
-              })}
+                  </Typography>
+                </Button> */}
             </Box>
-            {isAuth() && (
+            {user && (
               <Box sx={{ flexGrow: 0 }}>
                 <IconButton onClick={handleOpenUserMenu} sx={{ p: 0, ml: 4 }}>
                   <AccountCircle />
@@ -244,7 +290,6 @@ const ResponsiveAppBar = () => {
                   }}
                   open={Boolean(anchorElUser)}
                   onClose={handleCloseUserMenu}>
-                  {/* Profile menu Start */}
                   {settings.map(({ menuTitle, pageUrl }) => (
                     <MenuItem key={menuTitle} onClick={handleCloseUserMenu}>
                       <Typography textAlign='center'>
@@ -256,7 +301,6 @@ const ResponsiveAppBar = () => {
                       </Typography>
                     </MenuItem>
                   ))}
-                  {/* Profile menu End */}
                 </Menu>
               </Box>
             )}

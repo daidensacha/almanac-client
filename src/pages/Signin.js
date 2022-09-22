@@ -8,9 +8,10 @@ import Box from '@mui/material/Box';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, Navigate } from 'react-router-dom';
 import { useState } from 'react';
 import axios from 'axios';
+import { authenticate, isAuth } from '../utils/helpers';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.min.css';
 
@@ -39,14 +40,19 @@ const Signin = () => {
     })
       .then(response => {
         console.log('SIGNIN SUCCESS', response);
+
         // Save the response (user, token) to local storage/cookie
-        setValues({
-          ...values,
-          email: '',
-          password: '',
-          buttonText: 'Signed In',
+        authenticate(response, () => {
+          setValues({
+            ...values,
+            email: '',
+            password: '',
+            buttonText: 'Signed In',
+          });
+          toast.success(`Hey ${response.data.user.firstname}, Welcome back!`);
+
         });
-        toast.success(`Hey ${response.data.user.firstname}, Welcome back!`);
+
       })
       .catch(error => {
         console.log('SIGNIN ERROR', error.response.data);
@@ -59,6 +65,7 @@ const Signin = () => {
     <AnimatedPage>
       <Container component='main' maxWidth='xs'>
         <ToastContainer />
+        {isAuth() && <Navigate replace to='/' />}
         <Box
           sx={{
             marginTop: 8,

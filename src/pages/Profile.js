@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import Link from '@mui/material/Link';
 import Container from '@mui/material/Container';
 import Grid from '@mui/material/Grid';
@@ -15,10 +15,14 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
 import LinearProgress from '@mui/material/LinearProgress';
 import AnimatedPage from '../components/AnimatedPage';
-
+import axios from 'axios';
 import climateZoneData from '../data/climate-zone';
+import { getCookie, isAuth, signout, updateUser } from '../utils/helpers';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.min.css';
 
 const Profile = () => {
+  const navigate = useNavigate();
 
   // Set state for form data
   const [loading, setLoading] = useState(false);
@@ -26,6 +30,7 @@ const Profile = () => {
 
   // set the default values for the form
   const [user, setUser] = useState({
+    role: '',
     firstname: '',
     lastname: '',
     email: '',
@@ -70,7 +75,7 @@ const Profile = () => {
       const res = await fetch(url);
       const data = await res.json();
       const { koppen_geiger_zone, zone_description } = data.return_values[0];
-      setClimateZone((prevState) => ({
+      setClimateZone(prevState => ({
         ...prevState,
         loading: false,
         koppen_geiger_zone: koppen_geiger_zone,
@@ -134,7 +139,7 @@ const Profile = () => {
         console.error('An unknown error occurred');
         errorMessage = 'An unknown error occurred';
     }
-    setLocation((prevState) => ({
+    setLocation(prevState => ({
       ...prevState,
       error: true,
       code: error.code,
@@ -158,27 +163,34 @@ const Profile = () => {
   };
 
   // Handle the form submit event
-  const handleSubmit = event => {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    console.log({
-      firstname: data.get('firstName'),
-      lastname: data.get('lastName'),
-      email: data.get('email'),
-      password: data.get('password'),
-      latitude: data.get('latitude'),
-      longitude: data.get('longitude'),
-      koppen_geiger_zone: data.get('koppen_geiger_zone'),
-      zone_description: data.get('zone_description'),
-    });
-  };
+  // const handleSubmit = event => {
+  //   event.preventDefault();
+  //   const data = new FormData(event.currentTarget);
+  //   console.log({
+  //     firstname: data.get('firstName'),
+  //     lastname: data.get('lastName'),
+  //     email: data.get('email'),
+  //     password: data.get('password'),
+  //     latitude: data.get('latitude'),
+  //     longitude: data.get('longitude'),
+  //     koppen_geiger_zone: data.get('koppen_geiger_zone'),
+  //     zone_description: data.get('zone_description'),
+  //   });
+  // };
 
   // Handle the switch change to load the user's location
   const handleChecked = event => {
     setChecked(event.target.checked);
     event.target.checked ? setLoading(true) : setLoading(false);
     event.target.checked ? getCurrentLocation() : setLoading(false);
-  };
+    !event.target.checked && setLocation(prevState => ({
+      ...prevState,
+      latitude: '',
+      longitude: '',
+      koppen_geiger_zone: '',
+      zone_description: ''
+    }));
+  }
 
   // Handle the form user input change to load to the users state
   const handleUserChange = event => {
@@ -201,6 +213,98 @@ const Profile = () => {
   }, [userZone, climateZone]);
   console.log('userZone', userZone);
 
+  useEffect(() => {
+    loadProfile();
+  }, []);
+
+  const token = getCookie('token');
+
+  const loadProfile = () => {
+    // let token = isAuth().token;
+    axios({
+      method: 'GET',
+      url: `${process.env.REACT_APP_API}/user/${isAuth()._id}`,
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then(response => {
+        console.log('PRIVATE PROFILE UPDATE', response);
+        const {
+          role,
+          firstname,
+          lastname,
+          email,
+          show_location,
+          latitude,
+          longitude,
+          koppen_geiger_zone,
+          zone_description,
+        } = response.data;
+        setUser({ ...user, role, firstname, lastname, email });
+        setLocation({
+          ...location,
+          latitude,
+          longitude,
+          koppen_geiger_zone,
+          zone_description,
+        });
+        setChecked(show_location);
+      })
+      .catch(error => {
+        console.log('PRIVATE PROFILE UPDATE ERROR', error.response.data.error);
+        if (error.response.status === 401) {
+          signout(() => {
+            navigate('/signin');
+          });
+          toast.error(error.response.data.error);
+        }
+      });
+  };
+
+  const { role, firstname, lastname, email, password } = user;
+  const show_location = checked;
+  const { latitude, longitude, koppen_geiger_zone, zone_description } =
+    location;
+
+  const handleSubmit = event => {
+    event.preventDefault();
+    setUser({ ...user, buttonText: 'Submitting' });
+    axios({
+      method: 'PUT',
+      url: `${process.env.REACT_APP_API}/user/update`,
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      data: {
+        firstname,
+        lastname,
+        password,
+        show_location,
+        latitude,
+        longitude,
+        koppen_geiger_zone,
+        zone_description,
+      },
+    })
+      .then(response => {
+        console.log('PRIVATE PROFILE UPDATE SUCCESS', response);
+        // save response (user, token) to local storage/cookie
+        updateUser(response, () => {
+          setUser({
+            ...user,
+            // buttonText: 'Submitted',
+          });
+          toast.success('Profile updated successfully');
+        });
+      })
+      .catch(error => {
+        console.log('PRIVATE PROFILE UPDATE ERROR', error.response.data.error);
+        setUser({ ...user, buttonText: 'Submit' });
+        toast.error(error.response.data.error);
+      });
+  };
+
   return (
     <AnimatedPage>
       <Container
@@ -212,6 +316,7 @@ const Profile = () => {
           display: 'flex',
           flexDirection: 'column',
         }}>
+        <ToastContainer />
         <Box
           sx={{
             marginTop: 8,
@@ -236,10 +341,10 @@ const Profile = () => {
                 <TextField
                   autoComplete='given-name'
                   value={user.firstname || ''}
-                  name='firstName'
+                  name='firstname'
                   required
                   fullWidth
-                  id='firstName'
+                  id='firstname'
                   label='First Name'
                   size='small'
                   autoFocus
@@ -251,9 +356,9 @@ const Profile = () => {
                   required
                   fullWidth
                   value={user.lastname || ''}
-                  id='lastName'
+                  id='lastname'
                   label='Last Name'
-                  name='lastName'
+                  name='lastname'
                   autoComplete='family-name'
                   size='small'
                   onChange={handleUserChange}
@@ -305,7 +410,7 @@ const Profile = () => {
               <Box component='div' sx={{ mt: 3 }}>
                 <FormControlLabel
                   control={
-                    <Switch checked={checked} onChange={handleChecked} />
+                    <Switch name='show_location' id='show_location' defaultValue={checked} checked={checked} onChange={handleChecked} />
                   }
                   label='Show Location'
                 />
@@ -390,37 +495,60 @@ const Profile = () => {
             <Typography component='h1' variant='h5' align='center'>
               Climate Zone Info
             </Typography>
-            <Typography component='h6' variant='body1' sx={{ color: 'secondary.light' }}>
+            <Typography
+              component='h6'
+              variant='body1'
+              sx={{ color: 'secondary.light' }}>
               <Box sx={{ display: 'inline', color: 'secondary.dark' }}>
                 Zone:
               </Box>{' '}
               {userZone.group}
             </Typography>
-            <Typography component='h6' variant='body1' sx={{ color: 'secondary.light' }} align='left'>
+            <Typography
+              component='h6'
+              variant='body1'
+              sx={{ color: 'secondary.light' }}
+              align='left'>
               <Box sx={{ display: 'inline', color: 'secondary.dark' }}>
                 Subzone:
               </Box>{' '}
               {userZone.subZone}
             </Typography>
-            <Typography component='h6' variant='body1' sx={{ color: 'secondary.light' }} align='left'>
+            <Typography
+              component='h6'
+              variant='body1'
+              sx={{ color: 'secondary.light' }}
+              align='left'>
               <Box sx={{ display: 'inline', color: 'secondary.dark' }}>
                 Heat Level:
               </Box>{' '}
               {userZone.heatLevel}
             </Typography>
-            <Typography component='h6' variant='body1' sx={{ color: 'secondary.light' }} align='left'>
+            <Typography
+              component='h6'
+              variant='body1'
+              sx={{ color: 'secondary.light' }}
+              align='left'>
               <Box sx={{ display: 'inline', color: 'secondary.dark' }}>
                 Precipitation:
               </Box>{' '}
               {userZone.precipitationType}
             </Typography>
-            <Typography component='h6' variant='body1' sx={{ color: 'secondary.light' }} align='dark'>
+            <Typography
+              component='h6'
+              variant='body1'
+              sx={{ color: 'secondary.light' }}
+              align='dark'>
               <Box sx={{ display: 'inline', color: 'secondary.dark' }}>
                 Short Description:
               </Box>{' '}
               {userZone.shortDescription}
             </Typography>
-            <Typography component='h6' variant='body1' sx={{ color: 'secondary.light' }} align='left'>
+            <Typography
+              component='h6'
+              variant='body1'
+              sx={{ color: 'secondary.light' }}
+              align='left'>
               <Box sx={{ display: 'inline', color: 'secondary.dark' }}>
                 Long Description:
               </Box>{' '}
