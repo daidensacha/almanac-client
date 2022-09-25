@@ -25,6 +25,7 @@ import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import Activate from './pages/Activate';
 import PrivateRoutes from './pages/PrivateRoutes';
+import AuthContextProvider from './contexts/AuthContext';
 
 // Note replaced exitBeforeEnter with mode="wait' in AnimatePresence
 
@@ -32,10 +33,11 @@ function App() {
   const location = useLocation();
   return (
     <div>
+      <AuthContextProvider>
       <ResponsiveAppBar sx={{ bgcolor: 'primary.light' }} />
        <AnimatePresence mode='wait'>
         <Routes key={location.pathname} location={location}>
-          <Route path='/' exact element={<Home />} />
+          <Route path='/' end element={<Home />} />
           <Route path='signin' element={<Signin />} />
           <Route path='signup' element={<Signup />} />
           <Route path='contact' element={<Contact />} />
@@ -61,6 +63,7 @@ function App() {
         </Routes>
       </AnimatePresence>
       <Footer />
+      </AuthContextProvider>
     </div>
   );
 }

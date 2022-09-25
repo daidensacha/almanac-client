@@ -17,12 +17,14 @@ import LinearProgress from '@mui/material/LinearProgress';
 import AnimatedPage from '../components/AnimatedPage';
 import axios from 'axios';
 import climateZoneData from '../data/climate-zone';
-import { getCookie, isAuth, signout, updateUser } from '../utils/helpers';
+import { getCookie, isAuth, signout, updateUser, setLocalStorage, removeLocalStorage } from '../utils/helpers';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.min.css';
 
 const Profile = () => {
   const navigate = useNavigate();
+  let userZoneInititial = JSON.parse(localStorage.getItem('userZone')) || { };
+
 
   // Set state for form data
   const [loading, setLoading] = useState(false);
@@ -39,6 +41,7 @@ const Profile = () => {
 
   // Set the state of the user climate zone
   const [location, setLocation] = useState({
+    loading: false,
     error: false,
     code: 0,
     message: '',
@@ -48,25 +51,20 @@ const Profile = () => {
     zone_description: '',
   });
 
-  // Set the state of the user climate zone
-  const [climateZone, setClimateZone] = useState({
-    loading: false,
-    koppen_geiger_zone: '',
-    zone_description: '',
-  });
-
   // Set the state of the user climate zone data
-  const [userZone, setUserZone] = useState({
-    subzone: '',
-    group: '',
-    color: '',
-    backgroundColor: '',
-    precipitationType: '',
-    heatLevel: '',
-    shortDescription: '',
-    longDesription: '',
-  });
+  // const [userZone, setUserZone] = useState({
+  //   subzone: '',
+  //   group: '',
+  //   color: '',
+  //   backgroundColor: '',
+  //   precipitationType: '',
+  //   heatLevel: '',
+  //   shortDescription: '',
+  //   longDesription: '',
+  // });
+   const [userZone, setUserZone] = useState(userZoneInititial);
 
+  // const {latitude, longitude} = location;
   // Fetch climage zone data for users location
   const getClimateZone = async (latitude, longitude) => {
     setLoading(true);
@@ -75,14 +73,9 @@ const Profile = () => {
       const res = await fetch(url);
       const data = await res.json();
       const { koppen_geiger_zone, zone_description } = data.return_values[0];
-      setClimateZone(prevState => ({
-        ...prevState,
-        loading: false,
-        koppen_geiger_zone: koppen_geiger_zone,
-        zone_description: zone_description,
-      }));
       setLocation(prevState => ({
         ...prevState,
+        loading: false,
         koppen_geiger_zone: `${koppen_geiger_zone}`,
         zone_description: `${zone_description}`,
       }));
@@ -162,22 +155,7 @@ const Profile = () => {
     }
   };
 
-  // Handle the form submit event
-  // const handleSubmit = event => {
-  //   event.preventDefault();
-  //   const data = new FormData(event.currentTarget);
-  //   console.log({
-  //     firstname: data.get('firstName'),
-  //     lastname: data.get('lastName'),
-  //     email: data.get('email'),
-  //     password: data.get('password'),
-  //     latitude: data.get('latitude'),
-  //     longitude: data.get('longitude'),
-  //     koppen_geiger_zone: data.get('koppen_geiger_zone'),
-  //     zone_description: data.get('zone_description'),
-  //   });
-  // };
-
+  // removeLocalStorage('userZone')
   // Handle the switch change to load the user's location
   const handleChecked = event => {
     setChecked(event.target.checked);
@@ -202,22 +180,30 @@ const Profile = () => {
     setLocation({ ...location, [event.target.name]: event.target.value });
   };
 
+
   useEffect(() => {
+
+    const userSubzone = location.koppen_geiger_zone;
     // Get the user's climate zone
-    if (climateZone.koppen_geiger_zone) {
+    if (userSubzone && checked) {
       const userClimateZone = climateZoneData.find(
-        zone => zone.subZone === climateZone.koppen_geiger_zone,
+        zone => zone.subZone === userSubzone,
       );
       setUserZone(userClimateZone);
+      setLocalStorage('userZone', userClimateZone);
+    } else {
+      removeLocalStorage('userZone');
+      setUserZone({});
     }
-  }, [userZone, climateZone]);
-  console.log('userZone', userZone);
+  }, [location, checked]);
+  // console.log('userZone', userZone);
 
-  useEffect(() => {
-    loadProfile();
-  }, []);
+
 
   const token = getCookie('token');
+
+  useEffect(() => {
+
 
   const loadProfile = () => {
     // let token = isAuth().token;
@@ -235,7 +221,7 @@ const Profile = () => {
           firstname,
           lastname,
           email,
-          show_location,
+          show_location, // to checked state true or false
           latitude,
           longitude,
           koppen_geiger_zone,
@@ -261,6 +247,9 @@ const Profile = () => {
         }
       });
   };
+
+  loadProfile();
+}, [ ]);
 
   const { role, firstname, lastname, email, password } = user;
   const show_location = checked;
@@ -538,7 +527,7 @@ const Profile = () => {
               component='h6'
               variant='body1'
               sx={{ color: 'secondary.light' }}
-              align='dark'>
+              align='left'>
               <Box sx={{ display: 'inline', color: 'secondary.dark' }}>
                 Short Description:
               </Box>{' '}

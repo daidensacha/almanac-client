@@ -8,14 +8,18 @@ import Box from '@mui/material/Box';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
-import { Link as RouterLink, Navigate } from 'react-router-dom';
+import { Link as RouterLink, Navigate, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import axios from 'axios';
 import { authenticate, isAuth } from '../utils/helpers';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.min.css';
+import { useAuthContext } from '../contexts/AuthContext';
 
 const Signin = () => {
+  const navigate = useNavigate();
+  const {user, setUser} = useAuthContext()
+
   const [values, setValues] = useState({
     email: 'daidensacha@gmail.com',
     password: 'Dsacha123',
@@ -42,6 +46,9 @@ const Signin = () => {
         console.log('SIGNIN SUCCESS', response);
 
         // Save the response (user, token) to local storage/cookie
+        // authenticate() from helpers.js
+        // setCookie('token', response.data.token);
+        // setLocalStorage('user', response.data.user);
         authenticate(response, () => {
           setValues({
             ...values,
@@ -50,7 +57,8 @@ const Signin = () => {
             buttonText: 'Signed In',
           });
           toast.success(`Hey ${response.data.user.firstname}, Welcome back!`);
-
+          setUser(true)
+          navigate('/', { replace: true });
         });
 
       })

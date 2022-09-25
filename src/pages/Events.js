@@ -13,7 +13,9 @@ const Events = () => {
   const navigate = useNavigate();
   return (
     <AnimatedPage>
-      <Container component='main' maxWidth='xs'>
+      {/* <Container component='main' maxWidth='xs'>
+       */}
+       <Container component='div' maxWidth='lg'>
         <Box
           sx={{
             marginTop: 8,

@@ -11,7 +11,7 @@ const gaLight = '#E8EEEE';
 const theme = createTheme({
   palette: {
     type: 'dark',
-    mode: 'light',
+    // mode: 'light',
     common: {
       green: `${gaGreen}`,
       purple: `${gaPurple}`,

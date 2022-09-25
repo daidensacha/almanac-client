@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { useContext } from 'react';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
@@ -13,6 +14,10 @@ import MenuItem from '@mui/material/MenuItem';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import useScrollTrigger from '@mui/material/useScrollTrigger';
 import { isAuth, signout } from '../../utils/helpers';
+import { useAuthContext } from '../../contexts/AuthContext';
+
+
+
 
 import './Navbar.css';
 import logo from '../../images/flower.png';
@@ -32,12 +37,56 @@ function ElevationScroll(props) {
 }
 
 // Set user for testing
-const user = isAuth();
-console.log('USER', user);
-console.log('isAuth', isAuth());
+// const user = isAuth();
+// console.log('USER', user);
+// console.log('isAuth', isAuth());
 
-// Define menu items
-const pages = user
+// const updateNavLinks = (user) => {
+
+
+// // Define menu items
+// const pages = user
+//   ? [
+//       { menuTitle: 'Home', pageUrl: '/' },
+//       { menuTitle: 'Almanac', pageUrl: 'almanac' },
+//       { menuTitle: 'Sign out', pageUrl: 'signout' },
+//       { menuTitle: 'Contact', pageUrl: 'contact' },
+//     ]
+//   : [
+//       { menuTitle: 'Home', pageUrl: '/' },
+//       { menuTitle: 'Sign in', pageUrl: 'signin' },
+//       { menuTitle: 'Sign up', pageUrl: 'signup' },
+//       { menuTitle: 'Contact', pageUrl: 'contact' },
+//     ];
+
+// const settings = user
+//   ? [
+//       { menuTitle: 'Profile', pageUrl: 'profile' },
+//       { menuTitle: 'Calendar', pageUrl: 'calendar' },
+//       { menuTitle: 'Events', pageUrl: 'events' },
+//       { menuTitle: 'Plants', pageUrl: 'plants' },
+//       { menuTitle: 'Categories', pageUrl: 'categories' },
+//     ]
+//   : [
+//       { menuTitle: 'Sign in', pageUrl: 'login' },
+//       { menuTitle: 'Sign up', pageUrl: 'signup' },
+//     ];
+//     console.log('pages', pages);
+//     console.log('settings', settings);
+//     return {user, pages, settings }
+
+//   };
+
+
+
+const ResponsiveAppBar = () => {
+
+
+
+  const {user, setUser} = useAuthContext()
+  // console.log('user', user)
+
+  const pages = user
   ? [
       { menuTitle: 'Home', pageUrl: '/' },
       { menuTitle: 'Almanac', pageUrl: 'almanac' },
@@ -64,9 +113,6 @@ const settings = user
       { menuTitle: 'Sign up', pageUrl: 'signup' },
     ];
 
-console.log('pages', pages);
-console.log('settings', settings);
-const ResponsiveAppBar = () => {
   const navigate = useNavigate();
 
   const [anchorElNav, setAnchorElNav] = React.useState(null);
@@ -208,18 +254,15 @@ const ResponsiveAppBar = () => {
                     key={menuTitle}
                     onClick={handleCloseNavMenu}
                     sx={{ my: 2, color: 'inherit', display: 'block' }}>
-                    <NavLink
-                      // to={`${pageUrl}`}
-                      end
-                      className={({ isActive }) => (isActive ? 'active' : '')}
+                    <Link
+                      to={'/'}
                       style={{ textDecoration: 'none' }}
                       onClick={() => {
-                        console.log('clicked signout');
                         signout();
-                        navigate('/', { replace: true });
+                        setUser(false);
                       }}>
                       {menuTitle}
-                    </NavLink>
+                    </Link>
                   </Button>
                 );
               })}

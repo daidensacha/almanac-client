@@ -30,12 +30,12 @@ const FooterSection = () => {
           <Grid item xs={12} sm={4}>
             <Box borderBottom={1}>Account</Box>
             <Box>
-              <Link color='primary.dark' component={RouterLink} to='/login'>
+              <Link color='primary.dark' component={RouterLink} to='/signin'>
                 Sign in
               </Link>
             </Box>
             <Box>
-              <Link color='primary.dark' component={RouterLink} to='/register'>
+              <Link color='primary.dark' component={RouterLink} to='/signup'>
                 Register
               </Link>
             </Box>

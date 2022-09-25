@@ -90,7 +90,7 @@ const Activate = () => {
             <Typography
               variant='caption1'
               align='center'
-              color='secondary.dark'
+              color='secondary.main'
               gutterBottom>
               Hey {firstname}, {expired ? '...oops, the activation token has expired' : 'ready to activate your account?' }
             </Typography>
