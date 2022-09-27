@@ -5,6 +5,7 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
 import Events from './Events';
+import Categories from './Categories';
 
 // import TabPanel from '@mui/lab/TabPanel';
 
@@ -96,7 +97,7 @@ const Almanac = () => {
               Item Three
             </TabPanel>
             <TabPanel value={value} index={3}>
-              Item Four
+              <Categories />
             </TabPanel>
             <TabPanel value={value} index={4}>
               Item Five

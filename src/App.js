@@ -20,12 +20,16 @@ import EditPlant from './pages/crud/EditPlant';
 import Categories from './pages/Categories';
 import AddCategory from './pages/crud/AddCategory';
 import EditCategory from './pages/crud/EditCategory';
+import ViewCategory from './pages/crud/ViewCategory';
 import Footer from './components/Footer';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import Activate from './pages/Activate';
 import PrivateRoutes from './pages/PrivateRoutes';
 import AuthContextProvider from './contexts/AuthContext';
+
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.min.css';
 
 // Note replaced exitBeforeEnter with mode="wait' in AnimatePresence
 
@@ -35,6 +39,7 @@ function App() {
     <div>
       <AuthContextProvider>
       <ResponsiveAppBar sx={{ bgcolor: 'primary.light' }} />
+      <ToastContainer />
        <AnimatePresence mode='wait'>
         <Routes key={location.pathname} location={location}>
           <Route path='/' end element={<Home />} />
@@ -48,14 +53,15 @@ function App() {
             <Route path='profile/edit' element={<EditProfile />} />
             <Route path='calendar' element={<Calendar />} />
             <Route path='events' element={<Events />} />
-            <Route path='events/add' element={<AddEvent />} />
-            <Route path='events/edit' element={<EditEvent />} />
+            <Route path='event/add' element={<AddEvent />} />
+            <Route path='event/:id' element={<EditEvent />} />
             <Route path='plants' element={<Plants />} />
-            <Route path='plants/add' element={<AddPlant />} />
-            <Route path='plants/edit' element={<EditPlant />} />
+            <Route path='plant/add' element={<AddPlant />} />
+            <Route path='plant/edit/:id' element={<EditPlant />} />
             <Route path='categories' element={<Categories />} />
-            <Route path='categories/add' element={<AddCategory />} />
-            <Route path='categories/edit' element={<EditCategory />} />
+            <Route path='category/:id' element={<ViewCategory />} />
+            <Route path='category/add' element={<AddCategory />} />
+            <Route path='category/edit/:id' element={<EditCategory />} />
           </Route>
           <Route path='reset-password' element={<ResetPassword />} />
           <Route path='forgot-password' element={<ForgotPassword />} />
