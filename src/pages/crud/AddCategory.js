@@ -38,52 +38,52 @@ const AddCategory = () => {
     console.table(values);
     setValues({ ...values, buttonText: '...Adding Category' });
 
-    const addCategory = async () => {
-      const { category, description } = values;
-      try {
-        const {
-          data : { category, description } ,
-          } = await instance.post('/category/create');
-        console.log('CATEGORY ADDED', category);
-        setValues({
-          ...values,
-          category: '',
-          description: '',
-          buttonText: 'Added Category',
-        });
-        toast.success(category.data.message);
-        navigate('/admin/categories');
-      } catch (error) {
-        console.log('CATEGORY ADD ERROR', error.response.data);
-        setValues({ ...values, buttonText: 'Add Category' });
-        toast.error(error.response.data.error);
-      }
-    }
-    addCategory();
-
-
-  //   axios({
-  //     method: 'POST',
-  //     url: `${process.env.REACT_APP_API}/category/create`,
-  //     data: {
-  //       category: values.category,
-  //       description: values.description,
-  //     },
-  //     headers: {
-  //       Authorization: `Bearer ${token}`,
-  //     },
-  //   })
-  //     .then(response => {
-  //       console.log('CATEGORY CREATED', response);
-  //       setValues({ ...values, buttonText: 'Added Category' });
-  //       toast.success(`Successfully added ${values.category}`);
-  //       navigate('/categories');
-  //     })
-  //     .catch(error => {
-  //       console.log('CATEGORY CREATE ERROR', error.response.data);
+  //   const addCategory = async () => {
+  //     const { category, description } = values;
+  //     try {
+  //       const {
+  //         data : { category, description } ,
+  //         } = await instance.post('/category/create');
+  //       console.log('CATEGORY ADDED', category);
+  //       setValues({
+  //         ...values,
+  //         category: '',
+  //         description: '',
+  //         buttonText: 'Added Category',
+  //       });
+  //       toast.success(category.data.message);
+  //       navigate('/admin/categories');
+  //     } catch (error) {
+  //       console.log('CATEGORY ADD ERROR', error.response.data);
   //       setValues({ ...values, buttonText: 'Add Category' });
   //       toast.error(error.response.data.error);
-  //     });
+  //     }
+  //   }
+  //   addCategory();
+  // };
+
+    axios({
+      method: 'POST',
+      url: `${process.env.REACT_APP_API}/category/create`,
+      data: {
+        category: values.category,
+        description: values.description,
+      },
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then(response => {
+        console.log('CATEGORY CREATED', response);
+        setValues({ ...values, buttonText: 'Added Category' });
+        toast.success(`Successfully added ${values.category}`);
+        navigate('/categories');
+      })
+      .catch(error => {
+        console.log('CATEGORY CREATE ERROR', error.response.data);
+        setValues({ ...values, buttonText: 'Add Category' });
+        toast.error(error.response.data.error);
+      });
   };
 
   return (

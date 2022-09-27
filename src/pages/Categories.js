@@ -87,7 +87,7 @@ const Categories = () => {
         setCategories(allCategories)
       }catch (err) {
         console.log(err.response.data);
-        toast.error(err.response.data);
+        toast.error(err.response.data.error);
         navigate('/categories')
       }
   };
@@ -169,14 +169,14 @@ const Categories = () => {
           <Grid item xs={12}>
 
 
-            <TableContainer component={Paper}>
-              <Table sx={{ }} size='small' aria-label='simple table'>
+            <TableContainer sx={{ maxWidth: 650 }} >
+              <Table sx={{ width: 'max-content' }} size='small' aria-label='simple table'>
                 <TableHead>
                   <TableRow>
                     <TableCell>#</TableCell>
                     <TableCell align='left'>Category</TableCell>
-                    <TableCell align='left'>Description</TableCell>
-                    <TableCell align='right'>Actions</TableCell>
+                    {/* <TableCell align='left'>Description</TableCell> */}
+                    <TableCell align='center'>Actions</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -190,8 +190,8 @@ const Categories = () => {
                         {index +1}
                       </TableCell>
                       <TableCell align='left'>{row.category}</TableCell>
-                      <TableCell align='left'>{row.description}</TableCell>
-                      <TableCell align='left'>
+                      {/* <TableCell align='left'>{row.description}</TableCell> */}
+                      <TableCell align='center'>
                         <Stack direction='row' align='end' spacing={2} sx={{display: 'flex', justifyContent: 'flex-end'}}>
                           <IconButton
                             size='small'

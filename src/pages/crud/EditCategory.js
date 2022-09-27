@@ -9,7 +9,6 @@ import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import Modal from '@mui/material/Modal';
 import Typography from '@mui/material/Typography';
-import ArrowBackIos from '@mui/icons-material/ArrowBackIos';
 import AnimatedPage from '../../components/AnimatedPage';
 import { toast } from 'react-toastify';
 
