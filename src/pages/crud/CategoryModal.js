@@ -17,57 +17,54 @@ const modalStyle = {
   p: 4,
 };
 
-
 const CategoryModal = () => {
-
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
+  const handleClose = () => setTimeout(() => setOpen(false), 2000);
 
   return (
     <div>
-        <Modal
-          open={open}
-          onClose={handleClose}
-          aria-labelledby='modal-modal-title'
-          aria-describedby='modal-modal-description'>
-          <Box sx={modalStyle}>
-            <Typography id='modal-modal-title' variant='h6' component='h2'>
-              {/* Delete category {values.category} */}
-              Are you sure?
-            </Typography>
-            <Grid container spacing={2}>
+      <Modal
+        open={open}
+        // onClose={handleClose}
+        aria-labelledby='modal-modal-title'
+        aria-describedby='modal-modal-description'
+      >
+        <Box sx={modalStyle}>
+          <Typography id='modal-modal-title' variant='h6' component='h2'>
+            {/* Delete category {values.category} */}
+            Are you sure?
+          </Typography>
+          <Grid container spacing={2}>
             <Grid item xs={12} sm={6}>
               <Button
-
                 type='button'
                 fullWidth
                 variant='contained'
                 color='secondary'
                 sx={{ mt: 3, mb: 2 }}
-                onClick={handleClose}>
+                onClick={handleClose}
+              >
                 Cancel
               </Button>
             </Grid>
             <Grid item xs={12} sm={6}>
               <Button
-
                 type='button'
                 fullWidth
                 variant='contained'
                 color='error'
                 sx={{ mt: 3, mb: 2 }}
                 onClick={() => deleteCategory(row._id)}
-                >
+              >
                 Delete
               </Button>
             </Grid>
-            </Grid>
-
-          </Box>
-        </Modal>
+          </Grid>
+        </Box>
+      </Modal>
     </div>
   );
-}
+};
 
 export default CategoryModal;

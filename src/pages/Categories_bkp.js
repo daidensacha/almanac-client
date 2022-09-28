@@ -39,13 +39,13 @@ const Categories = () => {
           Authorization: `Bearer ${token}`,
         },
       })
-        .then(response => {
+        .then((response) => {
           console.log('GET CATEGORIES SUCCESS', response.data);
           const categories = response.data;
           setCategories(categories);
           console.log('CATEGORIES', categories);
         })
-        .catch(error => {
+        .catch((error) => {
           console.log('GET CATEGORIES ERROR', error.response.data.error);
           if (error.response.status === 401) {
             navigate('/login');
@@ -77,13 +77,13 @@ const Categories = () => {
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-          }}>
+          }}
+        >
           <Grid item xs={12}>
-            <h1>Categories Page</h1>
             <p>Construction in progress...</p>
             <Box style={{ height: 400, minWidth: '100vh' }}>
               <DataGrid
-                getRowId={row => row.id}
+                getRowId={(row) => row.id}
                 rows={rows}
                 // minWidth={'800px'}
                 columns={columns}

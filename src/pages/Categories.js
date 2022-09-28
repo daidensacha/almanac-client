@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 // import axios from 'axios';
 import instance from '../utils/axiosClient';
-import Modal from '@mui/material/Modal';
+
 import Container from '@mui/material/Container';
 import Grid from '@mui/material/Grid';
 import Table from '@mui/material/Table';
@@ -20,11 +20,13 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
-import Typography from '@mui/material/Typography';
+
 import AnimatedPage from '../components/AnimatedPage';
-import Button from '@mui/material/Button';
+
 import { toast } from 'react-toastify';
 import { getCookie } from '../utils/helpers';
+
+import CategoryModal from './CategoryModal';
 // import { Preview } from '@mui/icons-material';
 
 // const rows = [];
@@ -33,114 +35,50 @@ const Categories = () => {
   const navigate = useNavigate();
 
   const [open, setOpen] = useState(false);
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
-
-  const modalStyle = {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    width: 400,
-    bgcolor: 'background.paper',
-    border: '2px solid #000',
-    boxShadow: 24,
-    p: 4,
-  };
+  const [actionType, setActionType] = useState(null);
+  const [currentCategoryId, setCurrentCategoryId] = useState(null);
+  // const handleOpen = () => setOpen(true);
+  // const handleClose = () => setOpen(false);
 
   const token = getCookie('token');
 
   const [categories, setCategories] = useState([]);
 
-  // useEffect(() => {
-  //   const getCategories = async () => {
-  //     await axios({
-  //       method: 'GET',
-  //       url: `${process.env.REACT_APP_API}/categories`,
-  //       headers: {
-  //         Authorization: `Bearer ${token}`,
-  //       },
-  //     })
-  //       .then(response => {
-  //         console.log('GET CATEGORIES SUCCESS', response.data);
-  //         const categories = response.data;
-  //         setCategories(categories);
-  //         console.log('CATEGORIES', categories);
-  //       })
-  //       .catch(error => {
-  //         console.log('GET CATEGORIES ERROR', error.response.data.error);
-  //         if (error.response.status === 401) {
-  //           navigate('/login');
-  //         }
-  //       });
-  //   };
-  //   getCategories();
-  // }, [token, navigate]);
-
   useEffect(() => {
     const getCategories = async () => {
       try {
-        const {
-          data: { allCategories },
-        } = await instance.get(`/categories`);
-        console.log('SUCCESS CATEGORIES', allCategories);
-        setCategories(allCategories)
-      }catch (err) {
+        const { data } = await instance.get(`/categories`);
+        console.log('SUCCESS CATEGORIES', data);
+        setCategories(data);
+      } catch (err) {
         console.log(err.response.data);
-        toast.error(err.response.data);
-        navigate('/categories')
+        toast.error(err.response.data.error);
+        // navigate('/categories');
       }
-  };
+    };
     getCategories();
-  }, [navigate]);
+  }, []);
 
-  const deleteCategory = async (id) => {
-    // console.log('DELETE', id);
-    try {
-      const {
-        data: { deleteCategory },
-      } = await instance.delete(`/category/delete/${id}`);
-      console.log('DELETE CATEGORY SUCCESS', `${deleteCategory._id}`);
-      toast.success(`${deleteCategory.category} successfully deleted`)
-      setOpen(false);
-      // navigate('/categories')
-      setCategories(prev=>prev.filter(category=>category._id !== id));
+  const handleStartAction = (e, id) => {
+    //use this value to determine what action to take
+    const action = e.currentTarget.getAttribute('aria-label');
 
-    } catch (err) {
-      console.log(err.response.data);
-      toast.error(err.response.data.error)
-      // load categories fresh somehow
-    }
-  }
+    //determine which category are we opening the Modal for
+    setCurrentCategoryId(id);
 
-  // <Navigate to <AddCategory /> />
-  // <Component id={row._id} />
+    setOpen(true);
+    setActionType(action);
+  };
 
+  //compare function that keeps the order of the items in the array
+  const compare = (a, b) => {
+    const getTimeStamp = (value) => new Date(value).getTime();
 
-  // const handleDelete = async id => {
-  //   console.log('DELETE', id);
-  //   if (window.confirm('Delete?')) {
-  //     await instance
-  //       .delete(`/category/${id}`, {
-  //         headers: {
-  //           Authorization: `Bearer ${token}`,
-  //         },
-  //       })
-  //       .then(response => {
-  //         console.log('CATEGORY DELETE SUCCESS', response);
-  //         // load all categories
-  //         loadCategories();
-  //       })
-  //       .catch(error => {
-  //         console.log('CATEGORY DELETE ERROR', error);
-  //         if (error.response.status === 401) {
-  //           navigate('/login');
-  //         }
-  //       });
-  //   }
-  // };
+    const aTimeStamp = getTimeStamp(a.created_at);
+    const bTimeStamp = getTimeStamp(b.created_at);
 
-  // console.log('CATEGORIES', categories);
+    return aTimeStamp - bTimeStamp;
+  };
 
   return (
     <AnimatedPage>
@@ -153,24 +91,24 @@ const Categories = () => {
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-          }}>
-            <h1>Category List</h1>
-            <Box my={1}>
+          }}
+        >
+          <h1>Category List</h1>
+          <Box my={1}>
             <Stack direction='row' spacing={2}>
               <Fab
                 size='small'
                 color='primary'
-                aria-label='add'
-                onClick={() => navigate('/category/add')}>
+                aria-label='Add'
+                onClick={handleStartAction}
+              >
                 <AddIcon />
               </Fab>
             </Stack>
           </Box>
           <Grid item xs={12}>
-
-
             <TableContainer component={Paper}>
-              <Table sx={{ }} size='small' aria-label='simple table'>
+              <Table sx={{}} size='small' aria-label='simple table'>
                 <TableHead>
                   <TableRow>
                     <TableCell>#</TableCell>
@@ -180,91 +118,73 @@ const Categories = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {categories?.map((row, index) => (
-                    <TableRow
-                      key={row._id}
-                      sx={{
-                        '&:last-child td, &:last-child th': { border: 0 },
-                      }}>
-                      <TableCell component='th' scope='row'>
-                        {index +1}
-                      </TableCell>
-                      <TableCell align='left'>{row.category}</TableCell>
-                      <TableCell align='left'>{row.description}</TableCell>
-                      <TableCell align='left'>
-                        <Stack direction='row' align='end' spacing={2} sx={{display: 'flex', justifyContent: 'flex-end'}}>
-                          <IconButton
-                            size='small'
-                            comonent='button'
-                            aria-label='view'
-                            color='info'
-                            onClick={() => navigate(`/category/${row._id}`)}>
-                            <VisibilityIcon />
-                          </IconButton>
-
-                          <IconButton
-                            size='small'
-                            component='button'
-                            aria-label='edit'
-                            sx={{ color: 'secondary.main' }}
-                            onClick={() => navigate(`/category/edit/${row._id}`)}>
-                            <EditIcon />
-                          </IconButton>
-                          <IconButton
-                            size='small'
-                            aria-label='delete'
-                            sx={{ color: 'grey.700' }}
-                            // onClick = { () =>  navigate(`/category/edit/${row._id}`)}
-                            onClick={() => setOpen(true)}
-                            >
-                            <DeleteIcon />
-                          </IconButton>
-                        </Stack>
-                      </TableCell>
-                      {/* Start modal */}
-                      <Modal
+                  {actionType && (
+                    <CategoryModal
+                      currentCategoryId={currentCategoryId}
+                      action={actionType}
                       open={open}
-                      onClose={handleClose}
-                      aria-labelledby='modal-modal-title'
-                      aria-describedby='modal-modal-description'>
-                      <Box sx={modalStyle}>
-                        <Typography id='modal-modal-title' variant='h6' component='h2'>
-                          {/* Delete category {values.category} */}
-                          Are you sure?
-                        </Typography>
-                        <Grid container spacing={2}>
-                        <Grid item xs={12} sm={6}>
-                          <Button
-
-                            type='button'
-                            fullWidth
-                            variant='contained'
-                            color='secondary'
-                            sx={{ mt: 3, mb: 2 }}
-                            onClick={handleClose}>
-                            Cancel
-                          </Button>
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                          <Button
-
-                            type='button'
-                            fullWidth
-                            variant='contained'
-                            color='error'
-                            sx={{ mt: 3, mb: 2 }}
-                            onClick={() => deleteCategory(row._id)}
+                      setOpen={setOpen}
+                      categories={categories}
+                      setCategories={setCategories}
+                    />
+                  )}
+                  {categories?.sort(compare).map((row, index) => (
+                    <React.Fragment key={row._id}>
+                      <TableRow
+                        sx={{
+                          '&:last-child td, &:last-child th': { border: 0 },
+                        }}
+                      >
+                        <TableCell component='th' scope='row'>
+                          {index + 1}
+                        </TableCell>
+                        <TableCell align='left'>{row.category}</TableCell>
+                        <TableCell align='left'>{row.description}</TableCell>
+                        <TableCell align='left'>
+                          <Stack
+                            direction='row'
+                            align='end'
+                            spacing={2}
+                            sx={{
+                              display: 'flex',
+                              justifyContent: 'flex-end',
+                            }}
+                          >
+                            <IconButton
+                              size='small'
+                              comonent='button'
+                              aria-label='view'
+                              color='info'
+                              onClick={() => navigate(`/category/${row._id}`)}
                             >
-                            Delete
-                          </Button>
-                        </Grid>
-                        </Grid>
+                              <VisibilityIcon />
+                            </IconButton>
 
-                      </Box>
-                    </Modal>
-                    {/* End Modal */}
-                    </TableRow>
+                            <IconButton
+                              size='small'
+                              component='button'
+                              aria-label='Edit'
+                              sx={{ color: 'secondary.main' }}
+                              onClick={(e) => handleStartAction(e, row._id)}
+                            >
+                              <EditIcon />
+                            </IconButton>
+                            <IconButton
+                              size='small'
+                              aria-label='Delete'
+                              sx={{ color: 'grey.700' }}
+                              // onClick = { () =>  navigate(`/category/edit/${row._id}`)}
+                              onClick={(e) => handleStartAction(e, row._id)}
+                            >
+                              <DeleteIcon />
+                            </IconButton>
+                          </Stack>
+                        </TableCell>
+                        {/* Start modal */}
 
+                        {/* End Modal */}
+                      </TableRow>
+                    </React.Fragment>
                   ))}
                 </TableBody>
               </Table>
