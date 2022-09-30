@@ -6,6 +6,7 @@ import { ThemeProvider } from '@mui/material/';
 import theme from './components/ui/theme';
 import CssBaseline from '@mui/material/CssBaseline';
 import { BrowserRouter } from 'react-router-dom';
+import EventContextProvider from './contexts/EventsContext';
 
 console.log(theme)
 const root = ReactDOM.createRoot(document.getElementById('root'));
@@ -14,7 +15,9 @@ root.render(
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <BrowserRouter>
-        <App />
+        <EventContextProvider>
+          <App />
+        </EventContextProvider>
       </BrowserRouter>
     </ThemeProvider>
   // </React.StrictMode>

@@ -3,6 +3,7 @@ import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import instance from '../../utils/axiosClient';
 import Container from '@mui/material/Container';
 import Grid from '@mui/material/Grid';
+// import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
@@ -14,8 +15,10 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import MomentUtils from '@date-io/moment';
 
+import axios from 'axios';
 
 const AddPlant = () => {
+
   const navigate = useNavigate();
 
   const [values, setValues] = useState({
@@ -38,19 +41,20 @@ const AddPlant = () => {
   console.log('VALUES', values);
   // console.log('SELECTED DATE', selectedDate);
 
-  // const {
-  //   common_name,
-  //   botanical_name,
-  //   sow_at,
-  //   plant_at,
-  //   harvest_at,
-  //   harvest_to,
-  //   fertilise,
-  //   fertiliser_type,
-  //   spacing,
-  //   depth,
-  //   notes,
-  // } = values;
+  const {
+    common_name,
+    botanical_name,
+    sow_at,
+    plant_at,
+    harvest_at,
+    harvest_to,
+    fertilise,
+    fertiliser_type,
+    spacing,
+    depth,
+    notes,
+    // buttonText,
+  } = values;
 
   // Handle form values and set to state
   const handleValues = event => {
@@ -64,22 +68,19 @@ const AddPlant = () => {
 
     const createPlant = async () => {
       try {
-        const { newPlant } = await instance.post(
-          `${process.env.REACT_APP_API}/plant/create`,
-          {
-            common_name: values.common_name,
-            botanical_name: values.botanical_name,
-            sow_at: values.sow_at,
-            plant_at: values.plant_at,
-            harvest_at: values.harvest_at,
-            harvest_to: values.harvest_to,
-            fertilise: values.fertilise,
-            fertiliser_type: values.fertiliser_type,
-            spacing: values.spacing,
-            depth: values.depth,
-            notes: values.notes,
-          },
-        );
+        const { newPlant } = await instance.post(`/plant/create`, {
+          common_name: values.common_name,
+          botanical_name: values.botanical_name,
+          sow_at: values.sow_at,
+          plant_at: values.plant_at,
+          harvest_at: values.harvest_at,
+          harvest_to: values.harvest_to,
+          fertilise: values.fertilise,
+          fertiliser_type: values.fertiliser_type,
+          spacing: values.spacing,
+          depth: values.depth,
+          notes: values.notes,
+        });
         console.log('PLANT CREATED', newPlant);
         toast.success('Plant created');
         navigate('/plants');
@@ -202,7 +203,7 @@ const AddPlant = () => {
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                  <DatePicker
+                <DatePicker
                     fullWidth
                     label='Harvest at'
                     name='harvest_at'
@@ -219,7 +220,7 @@ const AddPlant = () => {
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <DatePicker
-                    fullWidth
+                  fullWidth
                     label='Harvest to'
                     name='harvest_to'
                     id='harvest_to'
@@ -235,7 +236,7 @@ const AddPlant = () => {
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <TextField
-                    fullWidth
+                  fullWidth
                     value={values.fertilise}
                     name='fertilise'
                     id='fertilise'
@@ -280,11 +281,7 @@ const AddPlant = () => {
             </Button>
             <Grid container justifyContent='flex-end'>
               <Grid item>
-                <Link
-                  component={RouterLink}
-                  sx={{ color: 'secondary.main' }}
-                  to='/plants'
-                  variant='body2'>
+                <Link component={RouterLink} sx={{ color: 'secondary.main'}} to='/plants' variant='body2'>
                   Back to plants
                 </Link>
               </Grid>

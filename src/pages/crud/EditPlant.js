@@ -1,8 +1,14 @@
-import { useState } from 'react';
-import { useNavigate, useParams, Link as RouterLink } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import {
+  useNavigate,
+  useParams,
+  useLocation,
+  Link as RouterLink,
+} from 'react-router-dom';
 import Container from '@mui/material/Container';
 import Grid from '@mui/material/Grid';
 // import Typography from '@mui/material/Typography';
+import ArrowBackIos from '@mui/icons-material/ArrowBackIos';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
@@ -13,11 +19,13 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import MomentUtils from '@date-io/moment';
+import instance from '../../utils/axiosClient';
 
 const EditPlant = () => {
+  const { state } = useLocation();
   const { id } = useParams();
   console.log('ID', id);
-
+  console.log('STATE', state);
   const navigate = useNavigate();
 
   const [values, setValues] = useState({
@@ -27,83 +35,55 @@ const EditPlant = () => {
     plant_at: null,
     harvest_at: null,
     harvest_to: null,
-    fertiliser: '',
+    fertilise: '',
     fertiliser_type: '',
     spacing: '',
     depth: '',
     notes: '',
+    created_at: '',
     // buttonText: 'Sign Up',
   });
 
-  console.log('VALUES', values);
-  // console.log('SELECTED DATE', selectedDate);
+  useEffect(() => {
+    setValues({ ...state });
+  }, [state]);
 
-  // const {
-  //   common_name,
-  //   botanical_name,
-  //   sow_at,
-  //   plant_at,
-  //   harvest_at,
-  //   harvest_to,
-  //   fertiliser,
-  //   fertiliser_type,
-  //   spacing,
-  //   depth,
-  //   notes,
-  //   // buttonText,
-  // } = values;
+  console.log('VALUES', values);
 
   // Handle form values and set to state
   const handleValues = event => {
     setValues({ ...values, [event.target.name]: event.target.value });
   };
 
-  const handleSubmit = event => {
+  const handleSubmit = async event => {
     event.preventDefault();
     setValues({ ...values });
     console.log('SUBMIT VALUES', values);
-    // axios({
-    //   method: 'POST',
-    //   url: `${process.env.REACT_APP_API}/signup`,
-    //   data: {
-    //     common_name,
-    //     botanical_name,
-    //     sow_at,
-    //     plant_at,
-    //     harvest_at,
-    //     harvest_to,
-    //     fertiliser,
-    //     fertiliser_type,
-    //     spacing,
-    //     depth,
-    //     notes,
-    //   },
-    // })
-    //   .then(response => {
-    //     console.log('SIGNUP SUCCESS', response);
-    //     setValues({
-    //       ...values,
-    //       common_name: '',
-    //       botanical_name: '',
-    //       sow_at: '',
-    //       plant_at: '',
-    //       harvest_at: '',
-    //       harvest_to: '',
-    //       fertiliser: '',
-    //       fertiliser_type: '',
-    //       spacing: '',
-    //       depth: '',
-    //       notes: '',
-    //     });
-    //     toast.success(response.data.message);
-    //   })
-    //   .catch(error => {
-    //     console.log('SIGNUP ERROR', error.response.data);
-    //     setValues({ ...values, buttonText: 'Sign Up' });
-    //     toast.error(error.response.data.error);
-    //   });
+    try {
+      const {
+        data: { updatedPlant },
+      } = await instance.put(`/plant/update/${id}`, {
+        common_name: values.common_name,
+        botanical_name: values.botanical_name,
+        sow_at: values.sow_at,
+        plant_at: values.plant_at,
+        harvest_at: values.harvest_at,
+        harvest_to: values.harvest_to,
+        fertilise: values.fertilise,
+        fertiliser_type: values.fertiliser_type,
+        spacing: values.spacing,
+        depth: values.depth,
+        notes: values.notes,
+      });
+      console.log('PLANT UPDATED', updatedPlant);
+      toast.success('Plant updated');
+      navigate('/plants');
+    } catch (error) {
+      console.log(error);
+      console.log('PLANT EDIT ERROR', error.response.data.error);
+      toast.error(error.response.data.error);
+    }
   };
-
 
   return (
     <AnimatedPage>
@@ -216,7 +196,7 @@ const EditPlant = () => {
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                <DatePicker
+                  <DatePicker
                     fullWidth
                     label='Harvest at'
                     name='harvest_at'
@@ -233,7 +213,7 @@ const EditPlant = () => {
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <DatePicker
-                  fullWidth
+                    fullWidth
                     label='Harvest to'
                     name='harvest_to'
                     id='harvest_to'
@@ -249,11 +229,11 @@ const EditPlant = () => {
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <TextField
-                  fullWidth
-                    value={values.fertiliser}
-                    name='fertiliser'
-                    id='fertiliser'
-                    label='Fertiliser'
+                    fullWidth
+                    value={values.fertilise}
+                    name='fertilise'
+                    id='fertilise'
+                    label='Fertilise'
                     size='small'
                     autoFocus
                     onChange={handleValues}
@@ -296,7 +276,11 @@ const EditPlant = () => {
             </Button>
             <Grid container justifyContent='flex-end'>
               <Grid item>
-                <Link component={RouterLink} sx={{ color: 'secondary.main'}} to='/plants' variant='body2'>
+                <Link
+                  component={RouterLink}
+                  sx={{ color: 'secondary.main' }}
+                  to='/plants'
+                  variant='body2'>
                   Back to plants
                 </Link>
               </Grid>
@@ -304,18 +288,18 @@ const EditPlant = () => {
           </Box>
 
           {/*  End form */}
-          {/* <Button
-            color='primary'
+          <Button
+            color='secondary'
             variant='outlined'
             size='small'
             onClick={() => navigate(-1)}>
             <ArrowBackIos fontSize='small' />
-            Back
-          </Button> */}
+            Back to plants
+          </Button>
         </Box>
       </Container>
     </AnimatedPage>
-  )
-}
+  );
+};
 
 export default EditPlant;

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useParams, Link as RouterLink } from 'react-router-dom';
+import { useNavigate, useParams, useLocation, Link as RouterLink } from 'react-router-dom';
 import Container from '@mui/material/Container';
 import Grid from '@mui/material/Grid';
 // import Typography from '@mui/material/Typography';
@@ -8,7 +8,7 @@ import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import Link from '@mui/material/Link';
 import { toast } from 'react-toastify';
-import ArrowBackIos from '@mui/icons-material/ArrowBackIos';
+// import ArrowBackIos from '@mui/icons-material/ArrowBackIos';
 import AnimatedPage from '../../components/AnimatedPage';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -17,101 +17,144 @@ import MomentUtils from '@date-io/moment';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
+import FormHelperText from '@mui/material/FormHelperText';
 import Select from '@mui/material/Select';
-import { getCookie } from '../../utils/helpers';
-import axios from 'axios';
+// import { getCookie } from '../../utils/helpers';
+// import axios from 'axios';
 import instance from '../../utils/axiosClient';
 
 const EditEvent = () => {
+  const { state } = useLocation();
   const { id } = useParams();
-  console.log('id', id);
   const navigate = useNavigate();
 
-  // const [values, setValues] = useState({});
+  const [values, setValues] = useState(state);
+  // const [values, setValues] = useState({
+  //   category_id: '',
+  //   plant_id: '',
+  //   repeat_cycle: '',
+  // });
 
-  const [values, setValues] = useState({
-    event_name: '',
-    description: '',
-    occurs_at: null,
-    month: '',
-    repeats_inc: '',
-    repeats_time: '',
-    notes: '',
-    // buttonText: 'Sign Up',
-  });
 
-  // const [selectedDate, handleDateChange] = useState(new Date());
+  // useEffect(() => {
+  //   setValues({ ...state });
+  // }, [state]);
 
-  console.log('VALUES', values);
-  // console.log('SELECTED DATE', selectedDate);
+  // setValues({ ...state });
+  // const [values, setValues] = useState({
+  //   event_name: '',
+  //   description: '',
+  //   category_id: '',
+  //   plant_id: '',
+  //   occurs_at: null,
+  //   month: '',
+  //   repeat_cycle: '',
+  //   repeat_frequency: 0,
+  //   notes: '',
+  //   // buttonText: 'Sign Up',
+  // });
 
-  // const {
-  //   event_name,
-  //   description,
-  //   occurs_at,
-  //   month,
-  //   repeats_inc,
-  //   repeats_time,
-  //   notes,
-  // } = values;
+  const [ categories, setCategories ] = useState([]);
+  const [ plants, setPlants ] = useState([]);
 
   // Handle form values and set to state
   const handleValues = event => {
     setValues({ ...values, [event.target.name]: event.target.value });
+    console.log('Select event', event.currentTarget);
   };
 
-  const token = getCookie('token');
+  useEffect(() => {
+    const getCategories = async () => {
+      try {
+        const {
+          data: { allCategories },
+        } = await instance.get(`/categories`);
+        console.log('SUCCESS CATEGORIES', allCategories);
+        setCategories(allCategories)
+      }catch (err) {
+        console.log(err.response.data);
+        toast.error(err.response.data.error);
+        navigate('/categories')
+      }
+  };
+    getCategories();
+  }, [navigate]);
 
   useEffect(() => {
-    const getEvent = async () => {
-      await axios({
-        method: 'GET',
-        url: `${process.env.REACT_APP_API}/event/${id}`,
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-        .then(response => {
-          console.log('GET EVENT SUCCESS', response.data);
-          const {event} = response.data;
-          console.log('eventValues', event);
-          setValues(event);
-          console.log('Values', event);
-          console.log('values', values);
-        })
-        .catch(error => {
-          console.log('GET EVENT ERROR', error.response.data.error);
-          // if (error.response.status === 401) {
-          //   signout(() => {
-          //     navigate('/signin');
-          //   });
-          // }
-        });
+    const getPlants = async () => {
+      try {
+        const {
+          data: { allPlants },
+        } = await instance.get(`/plants`);
+        console.log('SUCCESS PLANT', allPlants);
+        setPlants(allPlants);
+      } catch (err) {
+        console.log(err.response.data);
+        toast.error(err.response.data.error);
+        navigate('/plants');
+      }
     };
-    getEvent();
-  }, [token]);
+    getPlants();
+  }, [navigate]);
 
-  const deleteEvent = async id => {
-    try {
-      const {
-        data: { deleteEvent },
-      } = await instance.delete(`/category/${id}`);
-      console.log('DELETE CATEGORY SUCCESS', `${deleteEvent._id}`);
-      toast.success(`${deleteEvent.event} successfully deleted`)
-      navigate('/events')
+  console.log('STATE', state);
 
-    } catch (err) {
-      console.log(err.response.data);
-      toast.error(err.response.data.error)
-      // load categories fresh somehow
-    }
-  }
+  const category_id = state.category._id;
+  const category_name = state.category.category || '';
+  const plant_id = state.plant._id || '';
+  const plant_name = state.plant.common_name || '';
 
-  const handleSubmit = event => {
+  console.log('values.plant_id typeof', typeof values.plant_id);
+  // const { event_name, description, occurs_at, month, repeat_cycle, repeat_frequency, notes } = state;
+
+  // useEffect(() => {
+  //   setValues(prev => ({ ...prev,
+  //     event_name,
+  //     description,
+  //     category_id,
+  //     plant_id,
+  //     occurs_at,
+  //     month,
+  //     repeat_cycle,
+  //     repeat_frequency,
+  //     notes,
+  //      }));
+  // }, []);
+  useEffect(() => {
+    setValues(prev => ({ ...prev,
+      category_id: state.category._id,
+      plant_id: state.plant._id
+     }));
+  }, [state.category._id, state.plant._id]);
+
+console.log('saved_state_values', values);
+
+  const handleSubmit = async event => {
     event.preventDefault();
     setValues({ ...values });
-    console.log('SUBMIT VALUES', values);
-
+    // console.log('SUBMIT VALUES', values);
+      try {
+        const {
+          data: { updatedEvent },
+        } = await instance.put(`/event/update/${values.id}`, {
+          event_name: values.event_name,
+          description: values.description,
+          category: values.category_id,
+          plant: values.plant_id,
+          occurs_at: values.occurs_at,
+          month: values.month,
+          repeat_cycle: values.repeat_cycle,
+          repeat_frequency: values.repeat_frequency,
+          notes: values.notes,
+        });
+        // console.log('SUCCESS', updatedEvent);
+        setValues({ ...values });
+        toast.success(`Event "${updatedEvent.event_name}" updated successfully`);
+        navigate('/events');
+      } catch (err) {
+        console.log(err.response.data);
+        toast.error(err.response.data.error);
+      }
   };
 
   return (
@@ -138,12 +181,13 @@ const EditEvent = () => {
               utils={MomentUtils}
               dateAdapter={AdapterDateFns}>
               <Grid container spacing={2}>
-                <Grid item xs={12} >
+                <Grid item xs={12}>
                   <TextField
                     autoComplete='event_name'
                     value={values.event_name}
                     name='event_name'
                     required
+                    helperText='Required'
                     fullWidth
                     id='event_name'
                     label='Event Name'
@@ -165,6 +209,52 @@ const EditEvent = () => {
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
+                  <FormControl required fullWidth sx={{ minWidth: 120 }} size='small'>
+                    <InputLabel id='category_id'>Category</InputLabel>
+                    <Select
+                      labelId='category_id'
+                      id='category_id'
+                      name='category_id'
+                      value={ values?.category_id || '' }
+                      label='Category'
+                      onChange={handleValues}
+                      >
+                      <MenuItem value={''}>
+                        <em>None</em>
+                      </MenuItem>
+                      {categories.map((category) => (
+                        <MenuItem key={category._id} value={category._id}>
+                          {category.category}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                    <FormHelperText>Required</FormHelperText>
+                  </FormControl>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <FormControl required fullWidth sx={{ minWidth: 120 }} size='small'>
+                    <InputLabel id='plant_id'>Plant</InputLabel>
+                    <Select
+                      labelId='plant_id'
+                      id='plant_id'
+                      name='plant_id'
+                      value={values?.plant_id || ''}
+                      label='Plant'
+                      onChange={handleValues}
+                      >
+                      <MenuItem value={''}>
+                        <em>None</em>
+                      </MenuItem>
+                      {plants.map((plant) => (
+                        <MenuItem key={plant._id} value={plant._id}>
+                          {plant.common_name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                    <FormHelperText>Required</FormHelperText>
+                  </FormControl>
+                </Grid>
+                <Grid item xs={12} sm={6}>
                   <DatePicker
                     fullWidth
                     label='Occurs at'
@@ -176,75 +266,60 @@ const EditEvent = () => {
                       setValues({ ...values, occurs_at: newValue });
                     }}
                     renderInput={params => (
+                      <TextField required helperText="Required" size='small' {...params} />
+                    )}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <DatePicker
+                    fullWidth
+                    label='Occurs to'
+                    name='occurs_to'
+                    id='occurs_to'
+                    value={values.occurs_to}
+                    inputFormat='dd/MM/yyyy'
+                    onChange={newValue => {
+                      setValues({ ...values, occurs_to: newValue });
+                    }}
+                    renderInput={params => (
                       <TextField size='small' {...params} />
                     )}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                <FormControl fullWidth sx={{ minWidth: 120 }} size="small">
-                  <InputLabel id="month">Month</InputLabel>
-                  <Select
-                    labelId="month"
-                    id="month"
-                    name="month"
-                    value={values.month}
-                    label="Month"
-                    onChange={handleValues}
-                  >
-                    <MenuItem value="">
-                      <em>None</em>
-                    </MenuItem>
-                    <MenuItem value={'January'}>January</MenuItem>
-                    <MenuItem value={'Febuary'}>Febuary</MenuItem>
-                    <MenuItem value={'March'}>March</MenuItem>
-                    <MenuItem value={'April'}>April</MenuItem>
-                    <MenuItem value={'May'}>May</MenuItem>
-                    <MenuItem value={'June'}>June</MenuItem>
-                    <MenuItem value={'July'}>July</MenuItem>
-                    <MenuItem value={'August'}>August</MenuItem>
-                    <MenuItem value={'September'}>September</MenuItem>
-                    <MenuItem value={'October'}>October</MenuItem>
-                    <MenuItem value={'November'}>November</MenuItem>
-                    <MenuItem value={'December'}>December</MenuItem>
-                  </Select>
-                </FormControl>
-                </Grid>
-                <Grid item xs={12} sm={6}>
                   <TextField
-                    defaultValue={0}
-                    value={values.repeats_inc}
-                    name='repeats_inc'
+                    // defaultValue={0}
+                    value={values.repeat_frequency}
+                    name='repeat_frequency'
                     type='number'
-                    InputProps={{ inputProps: { min: 0, max: 52 } }}
+                    InputProps={{ inputProps: { min: 0, max: 26 } }}
                     fullWidth
-                    id='repeats_inc'
-                    label='Every'
+                    id='repeat_frequency'
+                    label='Repeats Every'
                     size='small'
                     autoFocus
                     onChange={handleValues}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                <FormControl fullWidth sx={{  }} size="small">
-                  <InputLabel id="repeats_time">Unit of time</InputLabel>
-                  <Select
-                    labelId="repeats_time"
-                    id="repeats_time"
-                    name="repeats_time"
-                    value={values.repeats_time}
-                    label="Unit of time"
-                    onChange={handleValues}
-                  >
-                    <MenuItem value="">
-                      <em>None</em>
-                    </MenuItem>
-                    <MenuItem value={'Hours'}>Hours</MenuItem>
-                    <MenuItem value={'Days'}>Days</MenuItem>
-                    <MenuItem value={'March'}>Weeks</MenuItem>
-                    <MenuItem value={'Months'}>Months</MenuItem>
-                    <MenuItem value={'Years'}>Years</MenuItem>
-                  </Select>
-                </FormControl>
+                  <FormControl fullWidth sx={{}} size='small'>
+                    <InputLabel id='repeat_cycle'>Repeat Cycle</InputLabel>
+                    <Select
+                      labelId='repeat_cycle'
+                      id='repeat_cycle'
+                      name='repeat_cycle'
+                      value={values.repeat_cycle}
+                      label='Unit of time'
+                      onChange={handleValues}>
+                      <MenuItem value={''}>
+                        <em>''</em>
+                      </MenuItem>
+                      <MenuItem value={'Day'}>Day</MenuItem>
+                      <MenuItem value={'Week'}>Week</MenuItem>
+                      <MenuItem value={'Month'}>Month</MenuItem>
+                      <MenuItem value={'Year'}>Year</MenuItem>
+                    </Select>
+                  </FormControl>
                 </Grid>
                 <Grid item xs={12}>
                   <TextField
@@ -267,11 +342,15 @@ const EditEvent = () => {
               fullWidth
               variant='contained'
               sx={{ mt: 3, mb: 2 }}>
-              Add Event
+              Update Event
             </Button>
             <Grid container justifyContent='flex-end'>
               <Grid item>
-                <Link component={RouterLink} sx={{ color: 'secondary.main'}} to='/events' variant='body2'>
+                <Link
+                  component={RouterLink}
+                  sx={{ color: 'secondary.main' }}
+                  to='/events'
+                  variant='body2'>
                   Back to events
                 </Link>
               </Grid>
@@ -279,7 +358,7 @@ const EditEvent = () => {
           </Box>
 
           {/* End form here */}
-          {values.name}
+          {/* {values.name}
           <Button
             color='primary'
             variant='outlined'
@@ -287,7 +366,7 @@ const EditEvent = () => {
             onClick={() => navigate(-1)}>
             <ArrowBackIos fontSize='small' />
             Back
-          </Button>
+          </Button> */}
         </Box>
       </Container>
     </AnimatedPage>
