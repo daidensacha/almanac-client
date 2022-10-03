@@ -1,63 +1,54 @@
 import { useState } from 'react';
-import PropTypes from 'prop-types';
-import Container from '@mui/material/Container';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
-import Typography from '@mui/material/Typography';
-import Events from './Events';
-import Categories from './Categories';
-
-// import TabPanel from '@mui/lab/TabPanel';
-
+import { useNavigate } from 'react-router-dom';
+import { Container, Divider, Grid } from '@mui/material';
 import Box from '@mui/material/Box';
+import Paper from '@mui/material/Paper';
+import Typography from '@mui/material/Typography';
+import { useEventsContext } from '../contexts/EventsContext';
+import { usePlantsContext } from '../contexts/PlantsContext';
+import { useCategoriesContext } from '../contexts/CategoriesContext';
 import AnimatedPage from '../components/AnimatedPage';
-
-function TabPanel(props) {
-  const { children, value, index, ...other } = props;
-
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`simple-tabpanel-${index}`}
-      aria-labelledby={`simple-tab-${index}`}
-      {...other}
-    >
-      {value === index && (
-        <Box sx={{ p: 3 }}>
-          <Typography>{children}</Typography>
-        </Box>
-      )}
-    </div>
-  );
-}
-
-TabPanel.propTypes = {
-  children: PropTypes.node,
-  index: PropTypes.number.isRequired,
-  value: PropTypes.number.isRequired,
-};
-
-function a11yProps(index) {
-  return {
-    id: `simple-tab-${index}`,
-    'aria-controls': `simple-tabpanel-${index}`,
-  };
-}
-
-
+import IconButton from '@mui/material/IconButton';
+import PageviewIcon from '@mui/icons-material/Pageview';
+// import Button from '@mui/material/Button';
+// import ButtonGroup from '@mui/material/ButtonGroup';
+import { ButtonGroup, Button } from '@mui/material';
+import moment from 'moment';
 
 const Almanac = () => {
+  const navigate = useNavigate();
+  const { events, setEvents } = useEventsContext();
+  const { plants, setPlants } = usePlantsContext();
+  const { categories, setCategories } = useCategoriesContext();
 
-    const [value, setValue] = useState(0);
+  // const Jan = events.filter(event => moment(event.occurs_at).month() === 0);
+  // const Feb = events.filter(event => moment(event.occurs_at).month() === 1);
+  // const Mar = events.filter(event => moment(event.occurs_at).month() === 2);
+  // const Apr = events.filter(event => moment(event.occurs_at).month() === 3);
 
-    const handleChange = (event, newValue) => {
-      setValue(newValue);
-    };
+  // console.log('JAN', Jan);
+  // console.log('FEB', Feb);
+  // console.log('MAR', Mar);
+  // console.log('APR', Apr);
+
+  const monthNames = [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
+  ];
 
   return (
     <AnimatedPage>
-      <Container component='main' maxWidth='lg'>
+      <Container component='main' maxWidth='xl'>
         <Box
           sx={{
             marginTop: 8,
@@ -66,47 +57,136 @@ const Almanac = () => {
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
+            // alignItems: 'flex-start',
+            // justifyContent: 'center',
           }}>
-          {/* <h1>Almanac Page</h1>
-          <p>Coming soon...</p> */}
-          <Box sx={{ maxWidth: { xs: 720, sm: 880 , md: 1100}, bgcolor: 'background.paper' }}>
-            <Tabs
-              value={value}
-              onChange={handleChange}
-              textColor="secondary"
-              indicatorColor="secondary"
-              aria-label="secondary tabs example"
-              variant="scrollable"
-              scrollButtons={false}
-            >
-              <Tab label="Almanac" />
-              <Tab label="Events" />
-              <Tab label="Plants" />
-              <Tab label="Categories" />
-              <Tab label="Calendar" />
-              {/* <Tab label="Item Six" />
-              <Tab label="Item Seven" /> */}
-            </Tabs>
-            <TabPanel value={value} index={0}>
-              Item One
-            </TabPanel>
-            <TabPanel value={value} index={1}>
-              <Events />
-            </TabPanel>
-            <TabPanel value={value} index={2}>
-              Item Three
-            </TabPanel>
-            <TabPanel value={value} index={3}>
-              <Categories />
-            </TabPanel>
-            <TabPanel value={value} index={4}>
-              Item Five
-            </TabPanel>
+          <h1>Almanac</h1>
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              '& > *': {
+                m: 1,
+              },
+            }}>
+            <ButtonGroup
+              variant='outlined'
+              color='secondary'
+              size='small'
+              aria-label='small button group'>
+              <Button onClick={() => navigate(`/plants`)}>Plants</Button>
+              <Button onClick={() => navigate(`/events`)}>Events</Button>
+              <Button onClick={() => navigate(`/categories`)}>
+                Categories
+              </Button>
+            </ButtonGroup>
           </Box>
+          <Grid container spacing={2} sx={{ mt: 4 }}>
+            <Grid item xs={12} sm={3}>
+              <Paper
+                elevation={3}
+                sx={{
+                  p: 2,
+                  backgroundColor: 'grey.800',
+                  height: '100%',
+                  color: 'grey.300',
+                }}>
+                <Typography
+                  variant='h5'
+                  sx={{ color: 'primary.light' }}
+                  gutterBottom
+                  component='div'>
+                  {moment().format('ddd, Do MMMM YYYY')}
+                </Typography>
+                <Typography variant='h6' gutterBottom component='div'>
+                  Events ({events.length} total)
+                </Typography>
+                <Typography variant='h6' gutterBottom component='div'>
+                  Plants ({plants.length} total)
+                </Typography>
+                <Typography variant='h6' gutterBottom component='div'>
+                  Categories ({categories.length} total)
+                </Typography>
+                <Divider
+                  sx={{ backgroundColor: 'secondary.contrastText', my: 2 }}
+                />
+                <Typography
+                  variant='h5'
+                  sx={{ color: 'primary.light' }}
+                  gutterBottom
+                  component='div'>
+                  Coming Events
+                </Typography>
+                {events?.map((event, index) => {
+                  const nextMonth = new Date();
+                  nextMonth.setMonth(nextMonth.getMonth() + 1);
+                  // console.log('EVENT', event);
+                  // console.log('NEXT MONTH', moment(nextMonth).month());
+                  // console.log('CHECK MONTH', moment(event.occurs_at).month());
+                  return (
+                    moment(event.occurs_at).month() ===
+                      moment(nextMonth).month() && (
+                      <Typography
+                        key={index}
+                        variant='body1'
+                        gutterBottom
+                        component='div'>
+                        {`${moment(event.occurs_at).format('MMM DD')} - ${
+                          event.event_name
+                        }`}
+                      </Typography>
+                    )
+                  );
+                })}
+              </Paper>
+            </Grid>
+            <Grid item xs={12} sm={9}>
+              <Grid container spacing={2}>
+                {monthNames.map((month, index) => (
+                  <Grid key={month} item xs={12} sm={6} md={4} sx={{}}>
+                    <Box sx={{ minHeight: '100px' }}>
+                      <Paper elevation={1} sx={{ minHeight: '100px' }}>
+                        <Typography
+                          variant='h5'
+                          sx={{ textAlign: 'center', color: 'secondary.main' }}>
+                          {month}
+                        </Typography>
+                        {events?.map(
+                          event =>
+                            moment(event.occurs_at).format('MMMM') ===
+                              month && (
+                              <Typography
+                                key={event._id}
+                                variant='body1'
+                                sx={{ textAlign: 'left' }}>
+                                <IconButton
+                                  size='small'
+                                  comonent='button'
+                                  aria-label='view'
+                                  color='info'
+                                  onClick={() =>
+                                    navigate(`/event/${event._id}`, {
+                                      state: event,
+                                    })
+                                  }>
+                                  <PageviewIcon />
+                                </IconButton>
+                                {event.event_name}
+                              </Typography>
+                            ),
+                        )}
+                      </Paper>
+                    </Box>
+                  </Grid>
+                ))}
+              </Grid>
+            </Grid>
+          </Grid>
         </Box>
       </Container>
     </AnimatedPage>
-  )
-}
+  );
+};
 
 export default Almanac;

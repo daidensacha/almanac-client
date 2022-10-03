@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { useContext } from 'react';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
@@ -36,49 +35,6 @@ function ElevationScroll(props) {
   });
 }
 
-// Set user for testing
-// const user = isAuth();
-// console.log('USER', user);
-// console.log('isAuth', isAuth());
-
-// const updateNavLinks = (user) => {
-
-
-// // Define menu items
-// const pages = user
-//   ? [
-//       { menuTitle: 'Home', pageUrl: '/' },
-//       { menuTitle: 'Almanac', pageUrl: 'almanac' },
-//       { menuTitle: 'Sign out', pageUrl: 'signout' },
-//       { menuTitle: 'Contact', pageUrl: 'contact' },
-//     ]
-//   : [
-//       { menuTitle: 'Home', pageUrl: '/' },
-//       { menuTitle: 'Sign in', pageUrl: 'signin' },
-//       { menuTitle: 'Sign up', pageUrl: 'signup' },
-//       { menuTitle: 'Contact', pageUrl: 'contact' },
-//     ];
-
-// const settings = user
-//   ? [
-//       { menuTitle: 'Profile', pageUrl: 'profile' },
-//       { menuTitle: 'Calendar', pageUrl: 'calendar' },
-//       { menuTitle: 'Events', pageUrl: 'events' },
-//       { menuTitle: 'Plants', pageUrl: 'plants' },
-//       { menuTitle: 'Categories', pageUrl: 'categories' },
-//     ]
-//   : [
-//       { menuTitle: 'Sign in', pageUrl: 'login' },
-//       { menuTitle: 'Sign up', pageUrl: 'signup' },
-//     ];
-//     console.log('pages', pages);
-//     console.log('settings', settings);
-//     return {user, pages, settings }
-
-//   };
-
-
-
 const ResponsiveAppBar = () => {
 
 
@@ -103,7 +59,6 @@ const ResponsiveAppBar = () => {
 const settings = user
   ? [
       { menuTitle: 'Profile', pageUrl: 'profile' },
-      { menuTitle: 'Calendar', pageUrl: 'calendar' },
       { menuTitle: 'Events', pageUrl: 'events' },
       { menuTitle: 'Plants', pageUrl: 'plants' },
       { menuTitle: 'Categories', pageUrl: 'categories' },
@@ -236,7 +191,6 @@ const settings = user
               {/* Desktop menu Start */}
               {pages.map(({ menuTitle, pageUrl }) => {
                 return menuTitle !== 'Sign out' ? (
-                  // return (
                   <Button
                     key={menuTitle}
                     onClick={handleCloseNavMenu}

@@ -54,7 +54,6 @@ function Item(props) {
         p: 2,
         display: 'flex',
         bgcolor: 'primary.dark',
-        // bgcolor: '#000000',
         textAlign: 'center',
         alignItems: 'center',
         justifyContent: 'center',

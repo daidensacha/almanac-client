@@ -5,10 +5,8 @@ import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import Card from '@mui/material/Card';
-import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
 import { FaLeaf, FaRegCalendarAlt, FaBookOpen } from 'react-icons/fa';
-import { ListItemSecondaryAction } from '@mui/material';
 
 export default function AlmanacCards() {
   return (
@@ -28,17 +26,11 @@ export default function AlmanacCards() {
               px: 2,
               alignItems: 'stretch',
             }}>
-            {/* <Box
-              sx={{
-                bgcolor: 'primary.dark',
-                height: '',
-                justifyItems: 'center',
-              }}> */}
             <Card
               sx={{
                 minWidth: 275,
                 minHeight: 410,
-                bgcolor: 'primary.light',
+                bgcolor: 'paper',
                 mb: 5,
                 borderRadius: 2,
               }}>
@@ -83,17 +75,11 @@ export default function AlmanacCards() {
             md={4}
             zeroMinWidth
             sx={{ bgcolor: 'primary.dark', mx: 'auto', px: 2 }}>
-            {/* <Box
-              sx={{
-                bgcolor: 'primary.dark',
-                height: '',
-                justifyItems: 'center',
-              }}> */}
             <Card
               sx={{
                 minWidth: 275,
                 minHeight: 410,
-                bgcolor: 'primary.light',
+                bgcolor: 'paper',
                 mb: 5,
                 borderRadius: 2,
               }}>
@@ -129,7 +115,6 @@ export default function AlmanacCards() {
                 </Typography>
               </CardContent>
             </Card>
-            {/* </Box> */}
           </Grid>
           <Grid
             item
@@ -138,18 +123,11 @@ export default function AlmanacCards() {
             md={4}
             zeroMinWidth
             sx={{ bgcolor: 'primary.dark', mx: 'auto', px: 2 }}>
-            {/* <Box
-              sx={{
-                bgcolor: 'primary.dark',
-                height: '',
-                justifyItems: 'center',
-              }}> */}
             <Card
-              // component='card'
               sx={{
                 minWidth: 275,
                 minHeight: 410,
-                bgcolor: 'primary.light',
+                bgcolor: 'paper',
                 mb: 5,
                 borderRadius: 2,
               }}>
@@ -185,7 +163,6 @@ export default function AlmanacCards() {
                 </Typography>
               </CardContent>
             </Card>
-            {/* </Box> */}
           </Grid>
         </Grid>
       </Box>
