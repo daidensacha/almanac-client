@@ -1,57 +1,44 @@
-import { useState, useEffect } from 'react';
-import {
-  useNavigate,
-  useParams,
-  useLocation,
-  Link as RouterLink,
-} from 'react-router-dom';
-import instance from '../../utils/axiosClient';
+import { useNavigate, useLocation } from 'react-router-dom';
+// import instance from '../../utils/axiosClient';
 import Container from '@mui/material/Container';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
-import Link from '@mui/material/Link';
+import Button from '@mui/material/Button';
 import AnimatedPage from '../../components/AnimatedPage';
 import { Fade, Zoom } from '@mui/material';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import CardMedia from '@mui/material/CardMedia';
-import Button from '@mui/material/Button';
 import { useEventsContext } from '../../contexts/EventsContext';
+import Stack from '@mui/material/Stack';
+import ButtonGroup from '@mui/material/ButtonGroup';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
-import CheckIcon from '@mui/icons-material/Check';
 import IconButton from '@mui/material/IconButton';
 import PageviewIcon from '@mui/icons-material/Pageview';
 import EventIcon from '@mui/icons-material/Event';
-import Broccoli from '../../images/mockup-graphics-q7BJL1qZ1Bw-unsplash.jpg';
-
-// import { getCookie } from '../../utils/helpers';
-import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.min.css';
+import CherryTomatoes from '../../images/cherry_tomatoes.jpg';
 import moment from 'moment';
 
-// const rows = [];
-
 const ViewPlant = () => {
-  console.log(useLocation());
+  // console.log(useLocation());
   const { state } = useLocation();
-  console.log('STATE', state);
+  // console.log('STATE', state);
 
-  const { events, setEvents } = useEventsContext();
+  const { events } = useEventsContext();
   // const { id } = useParams();
   // console.log('ID', id);
   const navigate = useNavigate();
 
-  const plant_id = state._id;
+  // const plant_id = state._id;
   const filteredEvents = events.filter(event => event.plant._id === state._id);
 
   return (
     <AnimatedPage>
       <Container component='main' maxWidth='xl'>
-        {/* <ToastContainer /> */}
         <Grid
           sx={{
             marginTop: 8,
@@ -79,9 +66,7 @@ const ViewPlant = () => {
                   component='img'
                   sx={{ maxWidth: '100%', height: 'auto' }}
                   alt='image'
-                  // marginLeft='auto'
-                  // maxWidth='50%'
-                  src={Broccoli}
+                  src={CherryTomatoes}
                 />
               </Fade>
             </Grid>
@@ -93,93 +78,120 @@ const ViewPlant = () => {
               sx={{
                 mt: 5,
                 display: 'flex',
-                justifyContent: 'center',
-                alignSelf: 'flex-start',
+                flexDirection: 'column',
+                justifyContent: 'flex-start',
+                alignContent: 'flex-start',
               }}>
-              <Card sx={{ width: 345 }}>
-                <CardMedia
-                  component='img'
-                  alt='Tomatoes'
-                  height='240px'
-                  // maxHeight='140px'
-                  minWidth='100%'
-                  position='center'
-                  overflow='hidden'
-                  // image={Tomatoes}
-                  // verticalAlign='middle'
-                  image={`https://source.unsplash.com/featured/?${state.common_name}`}
-                />
-                <CardContent>
-                  <Typography gutterBottom variant='h5' component='div'>
-                    Name: {state.common_name}
-                  </Typography>
-                  <Typography variant='body2' color='text.secondary'>
-                    <Box component='span' fontWeight='bold'>
-                      Botanical Name:
-                    </Box>{' '}
-                    {state.botanical_name}
-                  </Typography>
-                  <Typography variant='body2' color='text.secondary'>
-                    <Box component='span' fontWeight='bold'>
-                      Sow:
-                    </Box>{' '}
-                    {moment(state.sow_at).format('D MMM') || '...............'},
-                    and at{' '}
-                    <Box component='span' fontWeight='bold'>
-                      depth
-                    </Box>{' '}
-                    of {state.depth || '...............'}
-                  </Typography>
-                  <Typography variant='body2' color='text.secondary'>
-                    <Box component='span' fontWeight='bold'>
-                      Plant:
-                    </Box>{' '}
-                    {moment(state.plant_at).format('D MMM') ||
-                      '...............'}{' '}
-                    with{' '}
-                    <Box component='span' fontWeight='bold'>
-                      spacing
-                    </Box>{' '}
-                    of {state.spacing || '<...............>'}
-                  </Typography>
-                  <Typography variant='body2' color='text.secondary'>
-                    <Box component='span' fontWeight='bold'>
-                      Fertilise:
-                    </Box>{' '}
-                    {state.fertilise || '...............'} with{' '}
-                    {state.fertiliser_type || '...............'} fertiliser.
-                  </Typography>
-                  <Typography variant='body2' color='text.secondary'>
-                    <Box component='span' fontWeight='bold'>
-                      Harvest from:
-                    </Box>{' '}
-                    {moment(state.harvest_at).format('D MMM') ||
-                      '...............'}{' '}
-                    to{' '}
-                    {moment(state.harvest_to).format('D MMM') ||
-                      '..............'}
-                  </Typography>
-                  <Typography variant='body2' color='text.secondary'>
-                    <Box component='span' fontWeight='bold'>
-                      Notes:
-                    </Box>{' '}
-                    {state.notes || '...............'}
-                  </Typography>
-                </CardContent>
-                {/* <CardActions>
-              <Button size="small">Share</Button>
-              <Button size="small">Learn More</Button>
-            </CardActions> */}
-              </Card>
-
-              {/* <Typography variant='h6' gutterBottom component='div'>
-              Category: {state.category}
-            </Typography>
-            <Typography variant='h6' gutterBottom component='div'>
-              Description: {state.description}
-            </Typography> */}
+               <Box variant='container' sx={{ width: '100%' }}>
+                <Stack
+                  direction='row'
+                  sx={{ justifyContent: 'center' }}
+                  spacing={2}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      '& > *': {
+                        m: 1,
+                      },
+                    }}>
+                    <ButtonGroup
+                      variant='outlined'
+                      color='secondary'
+                      size='small'
+                      aria-label='small button group'>
+                      <Button
+                        color='secondary'
+                        onClick={() => navigate(`/plants`)}>
+                        Plants
+                      </Button>
+                      <Button
+                        color='secondary'
+                        onClick={() => navigate('/events')}>
+                        Events
+                      </Button>
+                      <Button
+                        variant='outlined'
+                        onClick={() => navigate(`/categories`)}>
+                        Categories
+                      </Button>
+                    </ButtonGroup>
+                  </Box>
+                </Stack>
+              </Box>
+              <Zoom in={true} timeout={1500}>
+                <Card sx={{ width: 345, mx: 'auto', mt: 4 }}>
+                  <CardMedia
+                    component='img'
+                    alt={state.common_name}
+                    height='240px'
+                    minwidth='100%'
+                    position='center'
+                    overflow='hidden'
+                    image={`https://source.unsplash.com/featured/?${state.common_name}`}
+                  />
+                  <CardContent>
+                    <Typography gutterBottom variant='h5' component='div'>
+                      Name: {state.common_name}
+                    </Typography>
+                    <Typography variant='body2' color='text.secondary'>
+                      <Box component='span' fontWeight='bold'>
+                        Botanical Name:
+                      </Box>{' '}
+                      {state.botanical_name}
+                    </Typography>
+                    <Typography variant='body2' color='text.secondary'>
+                      <Box component='span' fontWeight='bold'>
+                        Sow:
+                      </Box>{' '}
+                      {moment(state.sow_at).format('D MMM') ||
+                        ' ______________ '}
+                      , and at{' '}
+                      <Box component='span' fontWeight='bold'>
+                        depth
+                      </Box>{' '}
+                      of {state.depth || ' ______________ '}
+                    </Typography>
+                    <Typography variant='body2' color='text.secondary'>
+                      <Box component='span' fontWeight='bold'>
+                        Plant:
+                      </Box>{' '}
+                      {moment(state.plant_at).format('D MMM') ||
+                        ' ______________ '}{' '}
+                      with{' '}
+                      <Box component='span' fontWeight='bold'>
+                        spacing
+                      </Box>{' '}
+                      of {state.spacing || ' ______________ '}
+                    </Typography>
+                    <Typography variant='body2' color='text.secondary'>
+                      <Box component='span' fontWeight='bold'>
+                        Fertilise:
+                      </Box>{' '}
+                      {state.fertilise || ' ______________ '} with{' '}
+                      {state.fertiliser_type || ' ______________ '} fertiliser.
+                    </Typography>
+                    <Typography variant='body2' color='text.secondary'>
+                      <Box component='span' fontWeight='bold'>
+                        Harvest from:
+                      </Box>{' '}
+                      {moment(state.harvest_at).format('D MMM') ||
+                        ' ______________ '}{' '}
+                      to{' '}
+                      {moment(state.harvest_to).format('D MMM') ||
+                        ' ______________ '}
+                    </Typography>
+                    <Typography variant='body2' color='text.secondary'>
+                      <Box component='span' fontWeight='bold'>
+                        Notes:
+                      </Box>{' '}
+                      {state.notes || ' ______________ '}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Zoom>
             </Grid>
-            {/* <Grid container> */}
             <Grid item xs={12} sm={6} md={4} sx={{ mt: 5 }}>
               <Box
                 component='div'
@@ -200,18 +212,17 @@ const ViewPlant = () => {
                   sx={{ align: 'center', color: 'secondary.dark' }}>
                   Related Events
                 </Typography>
-
                 <List sx={{ dense: 'true', size: 'small' }}>
                   {filteredEvents.map(event => (
                     <ListItem disableGutters>
                       <ListItemIcon>
-                        <IconButton edge='end' aria-label='View'>
-                          <PageviewIcon
-                            color='info'
-                            onClick={() =>
-                              navigate(`/event/${event._id}`, { state: event })
-                            }
-                          />
+                        <IconButton
+                          edge='end'
+                          aria-label='View'
+                          onClick={() =>
+                            navigate(`/event/${event._id}`, { state: event })
+                          }>
+                          <PageviewIcon color='info' />
                         </IconButton>
                       </ListItemIcon>
                       <ListItemText primary={event.event_name} secondary='' />
@@ -220,8 +231,8 @@ const ViewPlant = () => {
                   {filteredEvents.length === 0 && (
                     <ListItem disableGutters>
                       <ListItemIcon>
-                        <IconButton edge='end' aria-label='View'>
-                          <PageviewIcon color='muted' />
+                        <IconButton edge='end' aria-label='View' disabled>
+                          <PageviewIcon />
                         </IconButton>
                       </ListItemIcon>
                       <ListItemText
@@ -234,15 +245,13 @@ const ViewPlant = () => {
               </Box>
             </Grid>
           </Grid>
-
-          <Grid item>
-            <Link
-              component={RouterLink}
-              color='secondary.main'
-              to='/plants'
-              variant='body2'>
-              {'Back to Plants'}
-            </Link>
+          <Grid item sx={{ my: 4 }}>
+            <Button
+              variant='outlined'
+              color='secondary'
+              onClick={() => navigate(-1)}>
+              Go back
+            </Button>
           </Grid>
         </Grid>
       </Container>

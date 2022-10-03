@@ -24,10 +24,10 @@ const InterestedSection = () => {
               Questions or suggestions?
             </Typography>
             <Typography
-              // variant='p'
+              variant='body1'
               align='left'
               color='secondary.contrastText'
-              component='p'>
+              >
               I'm open to hear from you if you have any questions or suggestions
               for the app. I'm also interested in hearing about your gardening
               or farming experiences. Please contact me through the contact form
@@ -55,10 +55,10 @@ const InterestedSection = () => {
               Want to contribute?
             </Typography>
             <Typography
-              // variant='h6'
+              variant='body1'
               align='left'
               color='secondary.contrastText'
-              component='p'>
+              >
               I'm interested developing this project to help people understand
               climate change and how to mitigate it. If you're interested in
               helping, please reach out to me. I'm looking for developers,
@@ -88,10 +88,10 @@ const InterestedSection = () => {
               Ready to get started?
             </Typography>
             <Typography
-              // variant='h6'
+              variant='body1'
               align='left'
               color='secondary.contrastText'
-              component='p'>
+              >
               Every Journey starts with a single step. If you're ready to get
               started, please sign up for an account. Your participation will
               help us all understand climate change and how to mitigate it. You

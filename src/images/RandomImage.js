@@ -1,11 +1,11 @@
-import Berries from './mockup-graphics-mw233LhCbQ8-unsplash.jpg';
-import Broccoli from './mockup-graphics-q7BJL1qZ1Bw-unsplash.jpg';
-import Gherkins from './mockup-graphics-UrLT3x0x9sA-unsplash.jpg';
-import Cherries from './quaritsch-photography--5FRm3GHdrU-unsplash.jpg';
-import Pumpkins from './tijana-drndarski-pZjTMVTGjlc-unsplash.jpg';
+import Berries from '../images/berries.jpg';
+import Broccoli from './broccoli_floret.jpg';
+import Ghurkins from '../images/ghurkins.jpg';
+import Cherries from '../images/cherries.jpg';
+import Pumpkins from './pumpkins.jpg';
 
 const RandomImage = () => {
-  const images = [Berries, Broccoli, Gherkins, Cherries, Pumpkins];
+  const images = [Berries, Broccoli, Ghurkins, Cherries, Pumpkins];
   const randomImage = images[Math.floor(Math.random() * images.length)];
   return randomImage;
 };

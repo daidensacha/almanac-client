@@ -19,8 +19,13 @@ import MenuItem from '@mui/material/MenuItem';
 import FormHelperText from '@mui/material/FormHelperText';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
+import { useEventsContext } from '../../contexts/EventsContext';
+import Events from '../Events';
 
 const AddEvent = () => {
+
+  const { events, setEvents } = useEventsContext();
+  // console.log('CONTEXT EVENTS', events);
   const navigate = useNavigate();
 
   const [values, setValues] = useState({
@@ -33,12 +38,10 @@ const AddEvent = () => {
     repeat_cycle: '',
     repeat_frequency: 0,
     notes: '',
-    // buttonText: 'Sign Up',
   });
 
   const [ categories, setCategories ] = useState([]);
   const [ plants, setPlants ] = useState([]);
-  // const [selectedDate, handleDateChange] = useState(new Date());
 
   // console.log('PLANT ITEM ID', plants[0]._id)
 
@@ -49,11 +52,12 @@ const AddEvent = () => {
   //   event_name,
   //   description,
   //   occurs_at,
-  //   month,
+  //   occurs_to
   //   repeat_cycle,
   //   repeat_frequency,
   //   notes,
-  //   // buttonText,
+  //   plant_id,
+  //   category_id,
   // } = values;
 
   // Handle form values and set to state
@@ -120,6 +124,7 @@ const AddEvent = () => {
           plant: values.plant_id, // plant_id selected from dropdown
         });
         // console.log('SUCCESS EVENT', newEvent);
+        setEvents(events => [...events, newEvent]);
         toast.success('Event created successfully');
         navigate('/events');
       } catch (err) {
@@ -144,8 +149,6 @@ const AddEvent = () => {
             alignItems: 'center',
           }}>
           <h1>Add Event</h1>
-          {/* Start form */}
-
           <Box
             component='form'
             noValidate
@@ -193,9 +196,6 @@ const AddEvent = () => {
                       label='Category'
                       onChange={handleValues}
                       >
-                      {/* <MenuItem value={''}>
-                        <em>None</em>
-                      </MenuItem> */}
                       {categories.map((category) => (
                         <MenuItem key={category._id} value={category._id}>
                           {category.category}
@@ -215,16 +215,11 @@ const AddEvent = () => {
                       value={values.plant_id}
                       label='Plant'
                       onChange={handleValues}>
-                      {/* <MenuItem value={''}>
-                        <em>None</em>
-                      </MenuItem> */}
                       {plants.map((plant) => (
                         <MenuItem key={plant._id} value={plant._id}>
                           {plant.common_name}
                         </MenuItem>
                       ))}
-                      {/* <MenuItem value={'Basil'}>Basil</MenuItem> */}
-
                     </Select>
                     <FormHelperText>Required</FormHelperText>
                   </FormControl>
@@ -263,7 +258,6 @@ const AddEvent = () => {
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <TextField
-                    // defaultValue={0}
                     value={values.repeat_frequency}
                     name='repeat_frequency'
                     type='number'
@@ -320,18 +314,15 @@ const AddEvent = () => {
             </Button>
             <Grid container justifyContent='flex-end'>
               <Grid item>
-                <Link
-                  component={RouterLink}
-                  sx={{ color: 'secondary.main' }}
-                  to='/events'
-                  variant='body2'>
-                  Back to events
-                </Link>
+              <Button
+                variant='outlined'
+                color='secondary'
+                onClick={() => navigate(-1)}>
+                Go back
+              </Button>
               </Grid>
             </Grid>
           </Box>
-
-          {/* End form */}
         </Box>
       </Container>
     </AnimatedPage>

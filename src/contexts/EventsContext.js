@@ -1,7 +1,6 @@
 import { useEffect, useState, useContext, createContext } from 'react'
 import instance from '../utils/axiosClient';
 
-
 const EventContextProvider = ({children}) => {
 
   const [events, setEvents] = useState([]);
@@ -12,19 +11,14 @@ const EventContextProvider = ({children}) => {
         const {
           data: { allEvents },
         } = await instance.get(`/events`);
-        console.log('SUCCESS CONTEXT EVENTS', allEvents);
+        // console.log('SUCCESS CONTEXT EVENTS', allEvents);
         setEvents(allEvents);
-        console.log('allEvents', allEvents);
       } catch (err) {
         console.log(err.response.data.error);
-        // toast.error(err.response.data.error);
-        // navigate('/events');
       }
     };
     getEvents();
   }, []);
-
-
 
   return (
 

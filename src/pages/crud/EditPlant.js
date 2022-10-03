@@ -7,7 +7,6 @@ import {
 } from 'react-router-dom';
 import Container from '@mui/material/Container';
 import Grid from '@mui/material/Grid';
-// import Typography from '@mui/material/Typography';
 import ArrowBackIos from '@mui/icons-material/ArrowBackIos';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -48,7 +47,7 @@ const EditPlant = () => {
     setValues({ ...state });
   }, [state]);
 
-  console.log('VALUES', values);
+  // console.log('VALUES', values);
 
   // Handle form values and set to state
   const handleValues = event => {
@@ -58,7 +57,7 @@ const EditPlant = () => {
   const handleSubmit = async event => {
     event.preventDefault();
     setValues({ ...values });
-    console.log('SUBMIT VALUES', values);
+    // console.log('SUBMIT VALUES', values);
     try {
       const {
         data: { updatedPlant },
@@ -75,7 +74,7 @@ const EditPlant = () => {
         depth: values.depth,
         notes: values.notes,
       });
-      console.log('PLANT UPDATED', updatedPlant);
+      // console.log('PLANT UPDATED', updatedPlant);
       toast.success('Plant updated');
       navigate('/plants');
     } catch (error) {
@@ -98,8 +97,6 @@ const EditPlant = () => {
             alignItems: 'center',
           }}>
           <h1>Edit Plant</h1>
-          {/* Start form  */}
-
           <Box
             component='form'
             noValidate
@@ -170,10 +167,6 @@ const EditPlant = () => {
                     name='plant_at'
                     id='plant_at'
                     value={values.plant_at}
-                    // color='secondary'
-                    // disableFuture
-                    // openTo='year'
-                    // views={['year', 'month', 'day']}
                     inputFormat='dd/MM/yyyy'
                     onChange={newValue => {
                       setValues({ ...values, plant_at: newValue });
@@ -286,8 +279,6 @@ const EditPlant = () => {
               </Grid>
             </Grid>
           </Box>
-
-          {/*  End form */}
           <Button
             color='secondary'
             variant='outlined'

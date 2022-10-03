@@ -1,33 +1,52 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useParams, useLocation, Link as RouterLink } from 'react-router-dom';
+import {
+  useNavigate,
+  useParams,
+  useLocation,
+  Link as RouterLink,
+} from 'react-router-dom';
 import instance from '../../utils/axiosClient';
-import Container from '@mui/material/Container';
-import Grid from '@mui/material/Grid';
+import { Container, Grid, Box } from '@mui/material';
+import { Fade, Zoom } from '@mui/material';
+import { List, ListItem, ListItemText } from '@mui/material';
+import { Card, CardContent, CardMedia, CardActions } from '@mui/material';
+import { Button, IconButton, ListItemIcon } from '@mui/material';
+import CategoryIcon from '@mui/icons-material/Category';
+import Stack from '@mui/material/Stack';
+import ButtonGroup from '@mui/material/ButtonGroup';
+import { FaLeaf } from 'react-icons/fa';
+import PageviewIcon from '@mui/icons-material/Pageview';
 import Typography from '@mui/material/Typography';
-import Link from '@mui/material/Link';
 import AnimatedPage from '../../components/AnimatedPage';
-// import { getCookie } from '../../utils/helpers';
-import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.min.css';
-import moment from 'moment'
+import moment from 'moment';
 import { useEventsContext } from '../../contexts/EventsContext';
-
-// const rows = [];
+import { usePlantsContext } from '../../contexts/PlantsContext';
+import { useCategoriesContext } from '../../contexts/CategoriesContext';
+import Broccoli from '../../images/broccoli.jpg';
 
 const ViewEvent = () => {
-  console.log(useLocation())
-  const { state } = useLocation()
-  console.log('STATE', state)
+  // console.log(useLocation());
+  const { state } = useLocation();
+  // console.log('STATE', state);
   // const { id } = useParams();
   // console.log('ID', id);
   const navigate = useNavigate();
 
+  const { events, setEvents } = useEventsContext();
+  const { plants, setPlants } = usePlantsContext();
+  const { categories, setCategories } = useCategoriesContext();
 
+  // const plant_name = state.plant.common_name;
+  const filteredPlants = plants.filter(plant => plant._id === state.plant._id);
+
+  // const category_id = state.category._id;
+  const filteredCategories = categories.filter(
+    category => category._id === state.category._id,
+  );
 
   return (
     <AnimatedPage>
-      <Container component='main' maxWidth='sm'>
-        {/* <ToastContainer /> */}
+      <Container component='main' maxWidth='xl'>
         <Grid
           sx={{
             marginTop: 8,
@@ -38,57 +57,261 @@ const ViewEvent = () => {
             alignItems: 'center',
           }}>
           <h1>Event</h1>
-
-          <Grid item xs={12} sx={{ mt: 5}}>
-
-            <Typography variant='h6' gutterBottom component='div'>
-              Event Name: {state.event_name}
-            </Typography>
-            <Typography variant='h6' gutterBottom component='div'>
-              Created: {moment(state.created_at).format('D MMM YYYY')}
-            </Typography>
-            <Typography variant='h6' gutterBottom component='div'>
-              Description: {state.description}
-            </Typography>
-            <Typography variant='h6' gutterBottom component='div'>
-              Occurs: {moment(state.occurs_at).format('D MMM')}
-            </Typography>
-            <Typography variant='h6' gutterBottom component='div'>
-              Month: {moment(state.occurs_at).format('MMMM')}
-            </Typography>
-            <Typography variant='h6' gutterBottom component='div'>
-              Blank: {}
-            </Typography>
-            <Typography variant='h6' gutterBottom component='div'>
-              Every: {state.repeat_frequency} {state.repeat_frequency === 1 ? state.repeat_cycle : state.repeat_cycle + 's'}
-            </Typography>
-            <Typography variant='h6' gutterBottom component='div'>
-            repeat_frequency: {state.repeat_frequency}
-            </Typography>
-            <Typography variant='h6' gutterBottom component='div'>
-              Description: {state.notes}
-            </Typography>
-            {/*  <Typography variant='h6' gutterBottom component='div'>
-              Sow: {moment(state.sow_at).format('D MMM') || '...............'} and at depth of  {state.depth || '...............'}
-            </Typography> */}
-            {/* <Typography variant='h6' gutterBottom component='div'>
-              Plant: {moment(state.plant_at).format('D MMM') || '...............'} with spacing of {state.spacing || '...............'}
-            </Typography> */}
-            {/* <Typography variant='h6' gutterBottom component='div'>
-              Fertilise: {state.fertilise || '...............'} with {state.fertiliser_type || '...............'}
-            </Typography> */}
-            {/* <Typography variant='h6' gutterBottom component='div'>
-              Harvest from: {moment(state.harvest_at).format('D MMM') || '...............'} to {moment(state.harvest_to).format('D MMM') || '..............'}
-            </Typography> */}
+          <Grid container spacing={2}>
+            <Grid
+              item
+              xs={12}
+              sm={6}
+              md={4}
+              sx={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'flex-start',
+              }}>
+              <Fade in={true} timeout={2000}>
+                <Box
+                  component='img'
+                  sx={{ maxWidth: '100%', height: 'auto' }}
+                  alt='image'
+                  src={Broccoli}
+                />
+              </Fade>
+            </Grid>
+            <Grid
+              item
+              xs={12}
+              sm={6}
+              md={4}
+              sx={{
+                mt: 5,
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'flex-start',
+                alignContent: 'flex-start',
+              }}>
+              <Box variant='container' sx={{ width: '100%' }}>
+                <Stack
+                  direction='row'
+                  sx={{ justifyContent: 'center' }}
+                  spacing={2}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      '& > *': {
+                        m: 1,
+                      },
+                    }}>
+                    <ButtonGroup
+                      variant='outlined'
+                      color='secondary'
+                      size='small'
+                      aria-label='small button group'>
+                      <Button
+                        color='secondary'
+                        onClick={() => navigate(`/plants`)}>
+                        Plants
+                      </Button>
+                      <Button
+                        color='secondary'
+                        onClick={() => navigate('/events')}>
+                        Events
+                      </Button>
+                      <Button
+                        variant='outlined'
+                        onClick={() => navigate(`/categories`)}>
+                        Categories
+                      </Button>
+                    </ButtonGroup>
+                  </Box>
+                </Stack>
+              </Box>
+              <Zoom in={true} timeout={1500}>
+                <Card sx={{ width: 345, mx: 'auto', mt: 4 }}>
+                  <CardMedia
+                    component='img'
+                    alt={state.plant.common_name}
+                    height='240px'
+                    minwidth='100%'
+                    position='center'
+                    overflow='hidden'
+                    image={`https://source.unsplash.com/featured/?${state.plant.common_name}`}
+                  />
+                  <CardContent>
+                    <Typography gutterBottom variant='h5' component='div'>
+                      Name: {state.event_name}
+                    </Typography>
+                    <Typography variant='body2' color='text.secondary'>
+                      <Box component='span' fontWeight='bold'>
+                        Description:
+                      </Box>{' '}
+                      {state.description}
+                    </Typography>
+                    <Typography variant='body2' color='text.secondary'>
+                      <Box component='span' fontWeight='bold'>
+                        Occurs:
+                      </Box>{' '}
+                      {moment(state.occurs_at).format('D MMM') ||
+                        ' ______________ '}
+                      ,{' '}
+                      {state.occurs_to && (
+                        <Box component='span' fontWeight='bold'>
+                          to
+                        </Box>
+                      )}
+                      {state.occurs_to && state.occurs_to}
+                    </Typography>
+                    <Typography variant='body2' color='text.secondary'>
+                      <Box component='span' fontWeight='bold'>
+                        Plant:
+                      </Box>{' '}
+                      {moment(state.plant_at).format('D MMM') ||
+                        ' ______________ '}{' '}
+                      with{' '}
+                      <Box component='span' fontWeight='bold'>
+                        spacing
+                      </Box>{' '}
+                      of {state.spacing || ' ______________ '} cm
+                    </Typography>
+                    <Typography variant='body2' color='text.secondary'>
+                      <Box component='span' fontWeight='bold'>
+                        Fertilise:
+                      </Box>{' '}
+                      {state.fertilise || ' ______________ '} with{' '}
+                      {state.fertiliser_type || ' ______________ '} fertiliser.
+                    </Typography>
+                    <Typography variant='body2' color='text.secondary'>
+                      <Box component='span' fontWeight='bold'>
+                        Harvest from:
+                      </Box>{' '}
+                      {moment(state.harvest_at).format('D MMM') ||
+                        ' ______________ '}{' '}
+                      to{' '}
+                      {moment(state.harvest_to).format('D MMM') ||
+                        ' ______________ '}
+                    </Typography>
+                    <Typography variant='body2' color='text.secondary'>
+                      <Box component='span' fontWeight='bold'>
+                        Notes:
+                      </Box>{' '}
+                      {state.notes || ' ______________ '}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Zoom>
+            </Grid>
+            <Grid item xs={12} sm={6} md={4} sx={{ mt: 5 }}>
+              <Box
+                component='div'
+                align='left'
+                sx={{ width: '100%', height: 'auto', mt: 4 }}>
+                <Box
+                  fontSize={36}
+                  color='secondary.dark'
+                  aria-label='Plants'
+                  align='center'>
+                  <FaLeaf sx={{ color: 'secondary.main', fontSize: 40 }} />
+                </Box>
+                <Typography
+                  variant='h4'
+                  align='center'
+                  sx={{ align: 'center', color: 'secondary.dark' }}>
+                  Related Plant
+                </Typography>
+                <List sx={{ dense: 'true', size: 'small' }}>
+                  {filteredPlants.map(plant => (
+                    <ListItem key={plant._id} disableGutters>
+                      <ListItemIcon>
+                        <IconButton
+                          edge='end'
+                          aria-label='View'
+                          onClick={() =>
+                            navigate(`/plant/${plant._id}`, { state: plant })
+                          }>
+                          <PageviewIcon color='info' />
+                        </IconButton>
+                      </ListItemIcon>
+                      <ListItemText primary={plant.common_name} secondary='' />
+                    </ListItem>
+                  ))}
+                  {filteredPlants.length === 0 && (
+                    <ListItem disableGutters>
+                      <ListItemIcon>
+                        <IconButton edge='end' aria-label='View' disabled>
+                          <PageviewIcon />
+                        </IconButton>
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={'No related events'}
+                        secondary=''
+                      />
+                    </ListItem>
+                  )}
+                </List>
+              </Box>
+              <Box
+                component='div'
+                align='left'
+                sx={{ width: '100%', height: 'auto', mt: 4 }}>
+                <Box
+                  fontSize={36}
+                  color='secondary.dark'
+                  aria-label='Plants'
+                  align='center'>
+                  <CategoryIcon
+                    sx={{ color: 'secondary.main', fontSize: 40 }}
+                  />
+                </Box>
+                <Typography
+                  variant='h4'
+                  align='center'
+                  sx={{ align: 'center', color: 'secondary.dark' }}>
+                  Related Category
+                </Typography>
+                <List sx={{ dense: 'true', size: 'small' }}>
+                  {filteredCategories.map(category => (
+                    <ListItem key={category._id} disableGutters>
+                      <ListItemIcon>
+                        <IconButton
+                          edge='end'
+                          aria-label='View'
+                          onClick={() =>
+                            navigate(`/category/${category._id}`, {
+                              state: category,
+                            })
+                          }>
+                          <PageviewIcon color='info' />
+                        </IconButton>
+                      </ListItemIcon>
+                      <ListItemText primary={category.category} secondary='' />
+                    </ListItem>
+                  ))}
+                  {filteredCategories.length === 0 && (
+                    <ListItem disableGutters>
+                      <ListItemIcon>
+                        <IconButton edge='end' aria-label='View' disabled>
+                          <PageviewIcon />
+                        </IconButton>
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={'No related events'}
+                        secondary=''
+                      />
+                    </ListItem>
+                  )}
+                </List>
+              </Box>
+            </Grid>
           </Grid>
-          {/* <Grid container> */}
-          {/* <Grid item xs></Grid> */}
-          <Grid item>
-            <Link component={RouterLink} color='secondary.main' to='/events' variant='body2'>
-              {'Back to Events'}
-            </Link>
+          <Grid item sx={{ my: 4 }}>
+            <Button
+              variant='outlined'
+              color='secondary'
+              onClick={() => navigate(-1)}>
+              Go back
+            </Button>
           </Grid>
-          {/* </Grid> */}
         </Grid>
       </Container>
     </AnimatedPage>

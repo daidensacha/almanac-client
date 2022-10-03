@@ -1,25 +1,20 @@
 import { useState, useEffect } from 'react';
 import {
   useNavigate,
-  useParams,
   useLocation,
-  Link as RouterLink,
 } from 'react-router-dom';
 import instance from '../../utils/axiosClient';
 import Container from '@mui/material/Container';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
-import Link from '@mui/material/Link';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
-import Typography from '@mui/material/Typography';
 import AnimatedPage from '../../components/AnimatedPage';
 import { toast } from 'react-toastify';
 
-
 const EditCategory = () => {
   const { state } = useLocation();
-  console.log('STATE', state);
+  // console.log('STATE', state);
   // const { id } = useParams();
   const navigate = useNavigate();
 
@@ -37,36 +32,14 @@ const EditCategory = () => {
   console.log('VALUES', values);
   const id = state._id;
   const { category, description } = state;
-  // Why do I get a infinite loop here when deleting an item?
+
   useEffect(() => {
-    // setValues({ ...values, id, category, description });
     setValues(prev => ({ ...prev, id, category, description }));
-    // const getCategory = async () => {
-    //   try {
-    //     const {
-    //       data: { category },
-    //     } = await instance.get(`/category/${id}`);
-    //     console.log('GET CATEGORY SUCCESS', category);
-    //     const category_name = category.category;
-    //     const { description } = category;
-    //     setValues(prev => ({ ...prev, category: category_name, description }));
-    //     // setValues({ ...values, category: category_name, description });
-    //     // toast.success('Category updated');
-    //   } catch (err) {
-    //     console.log(err.response.data);
-    //     toast.error(err.response.data.error); // this works in the toast
-    //     navigate('/categories'); // This redirect is better ui
-    //   }
-    //   // console.log('CATEGORY', category);
-    // };
-    // getCategory();
   }, [id, navigate, category, description]);
-  // adding values to the dependency array causes an infinite loop here
-  // What to do???
 
   const handleSubmit = async event => {
     event.preventDefault();
-    console.table(values);
+    // console.table(values);
     setValues({ ...values, buttonText: '...Updating Category' });
 
     try {
@@ -84,21 +57,6 @@ const EditCategory = () => {
       console.log('CATEGORY UPDATE ERROR', err.response.data);
       setValues({ ...values, buttonText: 'Update Category' });
       toast.error(err.response.data.error);
-    }
-  };
-
-  const deleteCategory = async () => {
-    try {
-      const {
-        data: { deleteCategory },
-      } = await instance.delete(`/category/delete/${id}`);
-      console.log('DELETE CATEGORY SUCCESS', `${deleteCategory._id}`);
-      toast.success(`${deleteCategory.category} successfully deleted`);
-      navigate('/categories');
-    } catch (err) {
-      console.log(err.response.data);
-      toast.error(err.response.data.error);
-      // load categories fresh somehow
     }
   };
 
@@ -163,21 +121,15 @@ const EditCategory = () => {
             <Grid container>
               <Grid item xs></Grid>
               <Grid item>
-                <Link component={RouterLink} color='secondary' to='/categories' variant='body2'>
-                  {'Back to Categories'}
-                </Link>
+                <Button
+                  variant='outlined'
+                  color='secondary'
+                  onClick={() => navigate(-1)}>
+                  Go back
+                </Button>
               </Grid>
             </Grid>
           </Box>
-
-          {/* <Button
-            color='primary'
-            variant='outlined'
-            size='small'
-            onClick={() => navigate(-1)}>
-            <ArrowBackIos fontSize='small' />
-            Back
-          </Button> */}
         </Box>
       </Container>
     </AnimatedPage>

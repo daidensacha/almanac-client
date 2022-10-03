@@ -1,69 +1,54 @@
-import { useState, useEffect } from 'react';
 import {
   useNavigate,
-  useParams,
   useLocation,
-  Link as RouterLink,
 } from 'react-router-dom';
 import instance from '../../utils/axiosClient';
-// import Container from '@mui/material/Container';
 import { List, ListItem, ListItemText } from '@mui/material';
 import {
   Box,
-  Button,
   Card,
   CardContent,
   CardMedia,
   Container,
   Grid,
-  Link,
   Typography,
 } from '@mui/material';
 import { Fade, Zoom } from '@mui/material';
-import CardActions from '@mui/material/CardActions';
-// import CardContent from '@mui/material/CardContent';
-// import CardMedia from '@mui/material/CardMedia';
-// import Button from '@mui/material/Button';
-// import Box from '@mui/material/Box';
-// import Grid from '@mui/material/Grid';
-// import Typography from '@mui/material/Typography';
-// import Link from '@mui/material/Link';
-import TipsAndUpdatesIcon from '@mui/icons-material/TipsAndUpdates';
+import Button from '@mui/material/Button';
 import ListItemIcon from '@mui/material/ListItemIcon';
-import CheckIcon from '@mui/icons-material/Check';
+import Stack from '@mui/material/Stack';
+import ButtonGroup from '@mui/material/ButtonGroup';
 import IconButton from '@mui/material/IconButton';
 import PageviewIcon from '@mui/icons-material/Pageview';
 import EventIcon from '@mui/icons-material/Event';
-import VisibilityIcon from '@mui/icons-material/Visibility';
 import AnimatedPage from '../../components/AnimatedPage';
-import Broccoli from '../../images/mockup-graphics-q7BJL1qZ1Bw-unsplash.jpg';
-import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.min.css';
-import Tomatoes from '../../images/lewis-wilson-hkN0yoPrpM4-unsplash.jpg';
+import Beetroot from '../../images/beetroot.jpg';
 import { useEventsContext } from '../../contexts/EventsContext';
 
 const ViewCategory = () => {
   console.log(useLocation());
+  // State category from previous page
   const { state } = useLocation();
 
-  const { events, setEvents } = useEventsContext();
+  // Get all events from context
+  const { events } = useEventsContext();
   // const { id } = useParams();
   // console.log('ID', id);
   const navigate = useNavigate();
 
-  console.log('CATEGORY PAGE EVENTS', events);
-  console.log('CATEGORY PAGE STATE', state);
+  // console.log('VIEW CATEGORY CONTEXT EVENTS', events);
+  // console.log('VIEW CATEGORY STATE', state);
 
-  const category_id = state._id;
+  // const category_id = state._id;
+
   const filteredEvents = events.filter(
     event => event.category._id === state._id,
   );
-  console.log('FILTERED EVENTS', filteredEvents);
+  // console.log('VIEW CATEGORY FILTERED EVENTS', filteredEvents);
 
   return (
     <AnimatedPage>
       <Container component='main' maxWidth='xl'>
-        {/* <ToastContainer /> */}
         <Grid
           sx={{
             marginTop: 8,
@@ -90,9 +75,7 @@ const ViewCategory = () => {
                   component='img'
                   sx={{ maxWidth: '100%', height: 'auto' }}
                   alt='image'
-                  // marginLeft='auto'
-                  // maxWidth='50%'
-                  src={Broccoli}
+                  src={Beetroot}
                 />
               </Fade>
             </Grid>
@@ -104,44 +87,70 @@ const ViewCategory = () => {
               sx={{
                 mt: 5,
                 display: 'flex',
-                justifyContent: 'center',
-                alignSelf: 'flex-start',
+                flexDirection: 'column',
+                justifyContent: 'flex-start',
+                alignContent: 'flex-start',
               }}>
-              <Card sx={{ width: 345 }}>
-                <CardMedia
-                  component='img'
-                  alt='Tomatoes'
-                  height='240px'
-                  // maxHeight='140px'
-                  minWidth='100%'
-                  position='center'
-                  overflow='hidden'
-                  // image={Tomatoes}
-                  // verticalAlign='middle'
-                  image={`https://source.unsplash.com/featured/?${state.category}`}
-                />
-                <CardContent>
-                  <Typography gutterBottom variant='h5' component='div'>
-                    Category: {state.category}
-                  </Typography>
-                  <Typography variant='body2' color='text.secondary'>
-                    Description: {state.description}
-                  </Typography>
-                </CardContent>
-                {/* <CardActions>
-              <Button size="small">Share</Button>
-              <Button size="small">Learn More</Button>
-            </CardActions> */}
-              </Card>
-
-              {/* <Typography variant='h6' gutterBottom component='div'>
-              Category: {state.category}
-            </Typography>
-            <Typography variant='h6' gutterBottom component='div'>
-              Description: {state.description}
-            </Typography> */}
+              <Box variant='container' sx={{ width: '100%' }}>
+                <Stack
+                  direction='row'
+                  sx={{ justifyContent: 'center' }}
+                  spacing={2}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      '& > *': {
+                        m: 1,
+                      },
+                    }}>
+                    <ButtonGroup
+                      variant='outlined'
+                      color='secondary'
+                      size='small'
+                      aria-label='small button group'>
+                      <Button
+                        color='secondary'
+                        onClick={() => navigate(`/plants`)}>
+                        Plants
+                      </Button>
+                      <Button
+                        color='secondary'
+                        onClick={() => navigate('/events')}>
+                        Events
+                      </Button>
+                      <Button
+                        variant='outlined'
+                        onClick={() => navigate(`/categories`)}>
+                        Categories
+                      </Button>
+                    </ButtonGroup>
+                  </Box>
+                </Stack>
+              </Box>
+              <Zoom in={true} timeout={1500}>
+                <Card sx={{ width: 345, mx: 'auto', mt: 4 }}>
+                  <CardMedia
+                    component='img'
+                    alt={state.category}
+                    height='240px'
+                    minwidth='100%'
+                    position='center'
+                    overflow='hidden'
+                    image={`https://source.unsplash.com/featured/?${state.category}`}
+                  />
+                  <CardContent>
+                    <Typography gutterBottom variant='h5' component='div'>
+                      Category: {state.category}
+                    </Typography>
+                    <Typography variant='body2' color='text.secondary'>
+                      Description: {state.description}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Zoom>
             </Grid>
-            {/* <Grid container> */}
             <Grid item xs={12} sm={6} md={4} sx={{ mt: 5 }}>
               <Box
                 component='div'
@@ -162,25 +171,17 @@ const ViewCategory = () => {
                   sx={{ align: 'center', color: 'secondary.dark' }}>
                   Related Events
                 </Typography>
-                {/* <Typography variant='body1' align="left" sx={{align: 'left',}}>
-
-                    1. <strong>Actions</strong> repesent actions.
-                  </Typography> */}
                 <List sx={{ dense: 'true', size: 'small' }}>
-                  {/* { events.filter((event) => event.category._id === state._id (
-                          console.log(event)
-                        ))} */}
-
                   {filteredEvents.map(event => (
-                    <ListItem disableGutters>
+                    <ListItem key={event._id} disableGutters>
                       <ListItemIcon>
-                        <IconButton edge='end' aria-label='View'>
-                          <PageviewIcon
-                            color='info'
-                            onClick={() =>
-                              navigate(`/event/${event._id}`, { state: event })
-                            }
-                          />
+                        <IconButton
+                          edge='end'
+                          aria-label='View'
+                          onClick={() =>
+                            navigate(`/event/${event._id}`, { state: event })
+                          }>
+                          <PageviewIcon color='info' />
                         </IconButton>
                       </ListItemIcon>
                       <ListItemText primary={event.event_name} secondary='' />
@@ -189,8 +190,8 @@ const ViewCategory = () => {
                   {filteredEvents.length === 0 && (
                     <ListItem disableGutters>
                       <ListItemIcon>
-                        <IconButton edge='end' aria-label='View'>
-                          <PageviewIcon color='muted' />
+                        <IconButton edge='end' aria-label='View' disabled>
+                          <PageviewIcon />
                         </IconButton>
                       </ListItemIcon>
                       <ListItemText
@@ -203,16 +204,14 @@ const ViewCategory = () => {
               </Box>
             </Grid>
           </Grid>
-          <Grid item>
-            <Link
-              component={RouterLink}
-              color='secondary.main'
-              to='/categories'
-              variant='body2'>
-              {'Back to Categories'}
-            </Link>
+          <Grid item sx={{ my: 4 }}>
+            <Button
+              variant='outlined'
+              color='secondary'
+              onClick={() => navigate(-1)}>
+              Go back
+            </Button>
           </Grid>
-          {/* </Grid> */}
         </Grid>
       </Container>
     </AnimatedPage>

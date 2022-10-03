@@ -281,9 +281,16 @@ const AddPlant = () => {
             </Button>
             <Grid container justifyContent='flex-end'>
               <Grid item>
-                <Link component={RouterLink} sx={{ color: 'secondary.main'}} to='/plants' variant='body2'>
+              <Button
+                variant='outlined'
+                color='secondary'
+                // sx={{ backgroundColor: 'grey.800' }}
+                onClick={() => navigate(-1)}>
+                Go back
+              </Button>
+                {/* <Link component={RouterLink} sx={{ color: 'secondary.main'}} to='/plants' variant='body2'>
                   Back to plants
-                </Link>
+                </Link> */}
               </Grid>
             </Grid>
           </Box>

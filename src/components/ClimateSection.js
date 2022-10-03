@@ -3,6 +3,7 @@ import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Grid from '@mui/material/Grid';
 import ClimateZones from '../images/climate-zones.png';
+import Link from '@mui/material/Link';
 
 const ClimateSection = () => {
   return (
@@ -30,100 +31,82 @@ const ClimateSection = () => {
             />
           </Grid>
           <Grid item xs={12} md={6} order={{ xs: 1, md: 2 }} sx={{ pb: 3 }}>
-            <Typography
-              variant='h3'
-              align='center'
-              color='text.primary'
-              gutterBottom>
-              Climate Zones
-            </Typography>
-            <Typography
-              // variant='h6'
-              align='left'
-              sx={{ px: 4 }}
-              color='text.secondary'
-              component='p'>
-              In the end of the 19th century, Wladimir Koeppen developed a
-              climate classification system based on the annual and monthly
-              averages of temperature and precipitation. This system is still
-              used today and is the basis for the climate zones used in this
-              application. The climate zones are based on the Köppen-Geiger
-              climate classification system.
-            </Typography>
-            <Typography
-              align='left'
-              sx={{ px: 4 }}
-              color='text.secondary'
-              component='p'>
-              The climate zones are divided into 5 categories: A, B, C, D and E.
-              A is the warmest and E is the coldest.
-            </Typography>
-            <Typography
-              align='left'
-              sx={{ px: 4 }}
-              color='text.secondary'
-              component='p'>
-              A: Tropical
-            </Typography>
-            <Typography
-              align='left'
-              sx={{ px: 4 }}
-              color='text.secondary'
-              component='p'>
-              B: Dry
-            </Typography>
-            <Typography
-              align='left'
-              sx={{ px: 4 }}
-              color='text.secondary'
-              component='p'>
-              C: Temperate
-            </Typography>
-            <Typography
-              align='left'
-              sx={{ px: 4 }}
-              color='text.secondary'
-              component='p'>
-              D: Continental
-            </Typography>
-            <Typography
-              align='left'
-              sx={{ px: 4 }}
-              color='text.secondary'
-              component='p'>
-              E: Polar
-            </Typography>
-            <Typography
-              align='left'
-              sx={{ px: 4 }}
-              color='text.secondary'
-              component='p'>
-              The climate zones are further divided into 6 subcategories based
-              on the amount of precipitation and the temperature. The
-              subcategories are denoted by a letter after the main category. The
-              subcategories are as follows:
-            </Typography>
-            <Typography
-              align='left'
-              sx={{ px: 4 }}
-              color='text.secondary'
-              component='p'>
-              a: Hot and dry b: Hot and wet c: Warm and dry d: Warm and wet e:
-              Cold and dry f: Cold and wet
-            </Typography>
-            <Typography
-              align='left'
-              sx={{ px: 4 }}
-              color='text.secondary'
-              component='p'>
-              Growing vegetables at home used to be common, however it has
-              become less common in recent years. This is due to the fact that
-              many people live in apartments and do not have access to a garden.
-              In addition, many people do not have the time to grow their own
-              vegetables. This application aims to make it easier for people to
-              grow their own vegetables at home. It reduces your footprint and
-              helps you to eat healthier. It also helps you to save money.
-            </Typography>
+            <Box sx={{ mb: 5 }}>
+              <Typography
+                variant='h3'
+                align='center'
+                color='text.primary'
+                gutterBottom>
+                Climate Zones
+              </Typography>
+              <Typography
+                // variant='h6'
+                align='left'
+                sx={{ px: 4, mb: 2 }}
+                color='text.secondary'
+                variant='body1'>
+                At the end of the 19th century, a botanist Wladimir Koeppen
+                developed a climate classification system based on annual and
+                monthly temperature and rainfall averages. The Köppen-Geiger
+                classification system is still used today and is the basis for
+                the climate zones used in this application.
+              </Typography>
+              <Typography
+                align='left'
+                sx={{ px: 4, mb: 2 }}
+                color='text.secondary'
+                variant='body1'>
+                Five main climate zones contain a further 30 sub-zones defining
+                differences in weather. Scientists use this system widely today
+                to map global changes in weather patterns.
+              </Typography>
+
+              <Typography
+                align='left'
+                sx={{ px: 4, mb: 2 }}
+                color='text.secondary'
+                variant='body1'>
+                Knowing and understanding the weather patterns for your locale
+                is an excellent basis for growing success. The knowledge helps
+                you understand the types of plants that grow in your climate
+                zone and the intricacies of the weather where you live. Growing
+                what you can at home can help to reduce the ecological
+                footprint.
+              </Typography>
+              <Typography
+                align='left'
+                sx={{ px: 4, mb: 2 }}
+                color='text.secondary'
+                variant='body1'>
+                Growing at home is fun, healthy, saves you money, and is
+                beneficial for the environment.
+              </Typography>
+              <Typography
+                align='left'
+                sx={{ px: 4 }}
+                color='secondary.dark'
+                variant='body1'>
+                <Link
+                  href='https://geodiode.com/climate/koppen-classification/'
+                  target='_blank'
+                  rel='noopener'
+                  sx={{color: 'secondary.main'}}>
+                  Educational resource (inlcludes great 10 minute video).
+                </Link>
+              </Typography>
+              <Typography
+                align='left'
+                sx={{ px: 4 }}
+                variant='body1'>
+                <Link
+                  href='https://earthhow.com/koppen-climate-classification/'
+                  target='_blank'
+                  rel='noopener'
+                  sx={{color: 'secondary.main'}}>
+                  Explanation of the climate zones.
+                </Link>
+              </Typography>
+            </Box>
           </Grid>
         </Grid>
       </Container>

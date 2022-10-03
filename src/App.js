@@ -10,7 +10,7 @@ import Signup from './pages/Signup';
 import Contact from './pages/Contact';
 import Profile from './pages/Profile';
 import EditProfile from './pages/crud/EditProfile';
-import EventCalendar from './pages/EventCalendar';
+// import EventCalendar from './pages/EventCalendar';
 import Events from './pages/Events';
 import AddEvent from './pages/crud/AddEvent';
 import EditEvent from './pages/crud/EditEvent';
@@ -29,7 +29,6 @@ import ResetPassword from './pages/ResetPassword';
 import Activate from './pages/Activate';
 import PrivateRoutes from './pages/PrivateRoutes';
 import AuthContextProvider from './contexts/AuthContext';
-import { useEventsContext }  from './contexts/EventsContext';
 
 import { ToastContainer } from 'react-toastify';
 
@@ -40,7 +39,6 @@ import 'react-toastify/dist/ReactToastify.min.css';
 function App() {
 
 
-  console.log(useEventsContext())
   const location = useLocation();
   return (
     <div>
@@ -58,7 +56,7 @@ function App() {
               <Route path='almanac' element={<Almanac />} />
               <Route path='profile' element={<Profile />} />
               <Route path='profile/edit' element={<EditProfile />} />
-              <Route path='calendar' element={<EventCalendar />} />
+              {/* <Route path='calendar' element={<EventCalendar />} /> */}
               <Route path='events' element={<Events />} />
               <Route path='event/:id' element={<ViewEvent />} />
               <Route path='event/add' element={<AddEvent />} />

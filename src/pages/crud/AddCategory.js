@@ -2,19 +2,17 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Container from '@mui/material/Container';
 import Grid from '@mui/material/Grid';
-import axios from 'axios';
 import instance from '../../utils/axiosClient';
-// import { useNavigate } from 'react-router-dom';
-import { Link as RouterLink } from 'react-router-dom';
-import Link from '@mui/material/Link';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
-// import ArrowBackIos from '@mui/icons-material/ArrowBackIos';
 import AnimatedPage from '../../components/AnimatedPage';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.min.css';
 import { getCookie } from '../../utils/helpers';
+import { Fade, Zoom } from '@mui/material';
+import Pumpkin from '../../images/pumpkin.jpg';
+import CucumberSlice from '../../images/cucumber_slice.jpg';
 
 const AddCategory = () => {
   const navigate = useNavigate();
@@ -54,7 +52,6 @@ const AddCategory = () => {
           description: '',
           buttonText: 'Added Category',
         });
-        // toast.success(category.data.message);
         navigate('/categories');
       } catch (error) {
         console.log('CATEGORY ADD ERROR', error.response.data);
@@ -65,33 +62,9 @@ const AddCategory = () => {
     addCategory();
   };
 
-  //   axios({
-  //     method: 'POST',
-  //     url: `${process.env.REACT_APP_API}/category/create`,
-  //     data: {
-  //       category: values.category,
-  //       description: values.description,
-  //     },
-  //     headers: {
-  //       Authorization: `Bearer ${token}`,
-  //     },
-  //   })
-  //     .then(response => {
-  //       console.log('CATEGORY CREATED', response);
-  //       setValues({ ...values, buttonText: 'Added Category' });
-  //       toast.success(`Successfully added ${values.category}`);
-  //       navigate('/categories');
-  //     })
-  //     .catch(error => {
-  //       console.log('CATEGORY CREATE ERROR', error.response.data);
-  //       setValues({ ...values, buttonText: 'Add Category' });
-  //       toast.error(error.response.data.error);
-  //     });
-  // };
-
   return (
     <AnimatedPage>
-      <Container component='main' maxWidth='xs'>
+      <Container component='main' maxWidth='xl'>
         <Box
           sx={{
             marginTop: 8,
@@ -102,63 +75,84 @@ const AddCategory = () => {
             alignItems: 'center',
           }}>
           <h1>Add Category</h1>
-
-          <Box
-            component='form'
-            onSubmit={handleSubmit}
-            noValidate
-            sx={{ mt: 1 }}>
-            <TextField
-              margin='normal'
-              required
-              fullWidth
-              value={values.category}
-              id='category'
-              label='New Category'
-              name='category'
-              size='small'
-              onChange={handleValues}
-              autoFocus
-            />
-            {/* <Grid item xs={12}> */}
-            <TextField
-              required
-              fullWidth
-              multiline
-              rows={1}
-              value={values.description}
-              name='description'
-              label='Description'
-              id='description'
-              size='small'
-              onChange={handleValues}
-            />
-            {/* </Grid> */}
-            <Button
-              type='submit'
-              fullWidth
-              variant='contained'
-              sx={{ mt: 3, mb: 2 }}>
-              {values.buttonText}
-            </Button>
-            <Grid container>
-              <Grid item xs></Grid>
-              <Grid item>
-                <Link component={RouterLink} to='/categories' variant='body2'>
-                  {'Back to Categories'}
-                </Link>
-              </Grid>
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm={4}>
+            <Fade in={true} timeout={2000}>
+                <Box
+                  component='img'
+                  sx={{ maxWidth: '100%', height: 'auto' }}
+                  alt='image'
+                  src={Pumpkin}></Box>
+              </Fade>
             </Grid>
-          </Box>
-
-          {/* <Button
-            color='primary'
-            variant='outlined'
-            size='small'
-            onClick={() => navigate(-1)}>
-            <ArrowBackIos fontSize='small' />
-            Back
-          </Button> */}
+            <Grid
+              item
+              xs={12}
+              sm={4}
+              sx={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'flex-start',
+              }}>
+              <Box
+                component='form'
+                onSubmit={handleSubmit}
+                noValidate
+                sx={{ mt: 1 }}>
+                <TextField
+                  margin='normal'
+                  required
+                  fullWidth
+                  value={values.category}
+                  id='category'
+                  label='New Category'
+                  name='category'
+                  size='small'
+                  onChange={handleValues}
+                  autoFocus
+                />
+                <TextField
+                  required
+                  fullWidth
+                  multiline
+                  rows={1}
+                  value={values.description}
+                  name='description'
+                  label='Description'
+                  id='description'
+                  size='small'
+                  onChange={handleValues}
+                />
+                <Button
+                  type='submit'
+                  fullWidth
+                  variant='contained'
+                  sx={{ mt: 3, mb: 2 }}>
+                  {values.buttonText}
+                </Button>
+                <Grid container>
+                  <Grid item xs></Grid>
+                  <Grid item>
+                    <Button
+                      variant='outlined'
+                      color='secondary'
+                      onClick={() => navigate(-1)}>
+                      Go back
+                    </Button>
+                  </Grid>
+                </Grid>
+              </Box>
+            </Grid>
+            <Grid item xs={12} sm={4}>
+            <Fade in={true} timeout={2000}>
+                <Box
+                  component='img'
+                  sx={{ maxWidth: '100%', height: 'auto' }}
+                  alt='image'
+                  src={CucumberSlice}></Box>
+              </Fade>
+            </Grid>
+          </Grid>
         </Box>
       </Container>
     </AnimatedPage>

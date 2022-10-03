@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useParams, useLocation, Link as RouterLink } from 'react-router-dom';
+import {
+  useNavigate,
+  useLocation,
+} from 'react-router-dom';
 import Container from '@mui/material/Container';
 import Grid from '@mui/material/Grid';
-// import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
-import Link from '@mui/material/Link';
 import { toast } from 'react-toastify';
-// import ArrowBackIos from '@mui/icons-material/ArrowBackIos';
 import AnimatedPage from '../../components/AnimatedPage';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -19,48 +19,52 @@ import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import FormHelperText from '@mui/material/FormHelperText';
 import Select from '@mui/material/Select';
-// import { getCookie } from '../../utils/helpers';
-// import axios from 'axios';
 import instance from '../../utils/axiosClient';
 
 const EditEvent = () => {
   const { state } = useLocation();
-  const { id } = useParams();
+  // const { id } = useParams();
   const navigate = useNavigate();
 
   const [values, setValues] = useState(state);
-  // const [values, setValues] = useState({
-  //   category_id: '',
-  //   plant_id: '',
-  //   repeat_cycle: '',
-  // });
 
 
   // useEffect(() => {
   //   setValues({ ...state });
   // }, [state]);
 
-  // setValues({ ...state });
+
   // const [values, setValues] = useState({
   //   event_name: '',
   //   description: '',
   //   category_id: '',
   //   plant_id: '',
   //   occurs_at: null,
-  //   month: '',
+  //   occurs_to: null,
   //   repeat_cycle: '',
   //   repeat_frequency: 0,
   //   notes: '',
-  //   // buttonText: 'Sign Up',
   // });
+  // setValues((prev) => ({ ...prev,
+  //   event_name: state.event_name,
+  //   description: state.description,
+  //   category_id: state.category_id,
+  //   plant_id: state.plant_id,
+  //   occurs_at: state.occurs_at,
+  //   occurs_to: state.occurs_to,
+  //   repeat_cycle: state.repeat_cycle,
+  //   repeat_frequency: state.repeat_frequency,
+  //   notes: state.notes,
+  //  }));
+  // setValues({ ...state });
 
-  const [ categories, setCategories ] = useState([]);
-  const [ plants, setPlants ] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [plants, setPlants] = useState([]);
 
   // Handle form values and set to state
   const handleValues = event => {
     setValues({ ...values, [event.target.name]: event.target.value });
-    console.log('Select event', event.currentTarget);
+    // console.log('Select event', event.currentTarget);
   };
 
   useEffect(() => {
@@ -69,14 +73,14 @@ const EditEvent = () => {
         const {
           data: { allCategories },
         } = await instance.get(`/categories`);
-        console.log('SUCCESS CATEGORIES', allCategories);
-        setCategories(allCategories)
-      }catch (err) {
+        // console.log('SUCCESS CATEGORIES', allCategories);
+        setCategories(allCategories);
+      } catch (err) {
         console.log(err.response.data);
         toast.error(err.response.data.error);
-        navigate('/categories')
+        navigate('/categories');
       }
-  };
+    };
     getCategories();
   }, [navigate]);
 
@@ -86,7 +90,7 @@ const EditEvent = () => {
         const {
           data: { allPlants },
         } = await instance.get(`/plants`);
-        console.log('SUCCESS PLANT', allPlants);
+        // console.log('SUCCESS PLANT', allPlants);
         setPlants(allPlants);
       } catch (err) {
         console.log(err.response.data);
@@ -97,14 +101,18 @@ const EditEvent = () => {
     getPlants();
   }, [navigate]);
 
-  console.log('STATE', state);
+  // console.log('STATE', state);
 
+  const id = state._id;
+
+  // const category_id = values.category._id;
   const category_id = state.category._id;
   const category_name = state.category.category || '';
+  // const plant_id = values.plant._id || '';
   const plant_id = state.plant._id || '';
   const plant_name = state.plant.common_name || '';
 
-  console.log('values.plant_id typeof', typeof values.plant_id);
+  // console.log('values.plant_id typeof', typeof values.plant_id);
   // const { event_name, description, occurs_at, month, repeat_cycle, repeat_frequency, notes } = state;
 
   // useEffect(() => {
@@ -114,6 +122,7 @@ const EditEvent = () => {
   //     category_id,
   //     plant_id,
   //     occurs_at,
+  //     occurs_to,
   //     month,
   //     repeat_cycle,
   //     repeat_frequency,
@@ -121,40 +130,41 @@ const EditEvent = () => {
   //      }));
   // }, []);
   useEffect(() => {
-    setValues(prev => ({ ...prev,
+    setValues(prev => ({
+      ...prev,
       category_id: state.category._id,
-      plant_id: state.plant._id
-     }));
+      plant_id: state.plant._id,
+    }));
   }, [state.category._id, state.plant._id]);
 
-console.log('saved_state_values', values);
+  // console.log('saved_state_values', values);
 
   const handleSubmit = async event => {
     event.preventDefault();
     setValues({ ...values });
     // console.log('SUBMIT VALUES', values);
-      try {
-        const {
-          data: { updatedEvent },
-        } = await instance.put(`/event/update/${values.id}`, {
-          event_name: values.event_name,
-          description: values.description,
-          category: values.category_id,
-          plant: values.plant_id,
-          occurs_at: values.occurs_at,
-          month: values.month,
-          repeat_cycle: values.repeat_cycle,
-          repeat_frequency: values.repeat_frequency,
-          notes: values.notes,
-        });
-        // console.log('SUCCESS', updatedEvent);
-        setValues({ ...values });
-        toast.success(`Event "${updatedEvent.event_name}" updated successfully`);
-        navigate('/events');
-      } catch (err) {
-        console.log(err.response.data);
-        toast.error(err.response.data.error);
-      }
+    try {
+      const {
+        data: { updatedEvent },
+      } = await instance.put(`/event/update/${values._id}`, {
+        event_name: values.event_name,
+        description: values.description,
+        occurs_at: values.occurs_at,
+        occurs_to: values.occurs_to,
+        repeat_cycle: values.repeat_cycle,
+        repeat_frequency: values.repeat_frequency,
+        notes: values.notes,
+        category: values.category_id,
+        plant: values.plant_id,
+      });
+      // console.log('SUCCESS', updatedEvent);
+      setValues({ ...values });
+      toast.success(`Event "${updatedEvent.event_name}" updated successfully`);
+      navigate('/events');
+    } catch (err) {
+      console.log(err.response.data);
+      toast.error(err.response.data.error);
+    }
   };
 
   return (
@@ -170,8 +180,6 @@ console.log('saved_state_values', values);
             alignItems: 'center',
           }}>
           <h1>Edit Event Page</h1>
-          {/* Start form here */}
-
           <Box
             component='form'
             noValidate
@@ -209,20 +217,24 @@ console.log('saved_state_values', values);
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                  <FormControl required fullWidth sx={{ minWidth: 120 }} size='small'>
+                  <FormControl
+                    required
+                    fullWidth
+                    sx={{ minWidth: 120 }}
+                    size='small'>
                     <InputLabel id='category_id'>Category</InputLabel>
                     <Select
                       labelId='category_id'
                       id='category_id'
                       name='category_id'
-                      value={ values?.category_id || '' }
+                      value={values?.category_id || ''}
+                      // MUI: You have provided an out-of-range value `undefined`
                       label='Category'
-                      onChange={handleValues}
-                      >
+                      onChange={handleValues}>
                       <MenuItem value={''}>
                         <em>None</em>
                       </MenuItem>
-                      {categories.map((category) => (
+                      {categories.map(category => (
                         <MenuItem key={category._id} value={category._id}>
                           {category.category}
                         </MenuItem>
@@ -232,20 +244,24 @@ console.log('saved_state_values', values);
                   </FormControl>
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                  <FormControl required fullWidth sx={{ minWidth: 120 }} size='small'>
+                  <FormControl
+                    required
+                    fullWidth
+                    sx={{ minWidth: 120 }}
+                    size='small'>
                     <InputLabel id='plant_id'>Plant</InputLabel>
                     <Select
                       labelId='plant_id'
                       id='plant_id'
                       name='plant_id'
                       value={values?.plant_id || ''}
+                      // MUI: You have provided an out-of-range value `undefined`
                       label='Plant'
-                      onChange={handleValues}
-                      >
+                      onChange={handleValues}>
                       <MenuItem value={''}>
                         <em>None</em>
                       </MenuItem>
-                      {plants.map((plant) => (
+                      {plants.map(plant => (
                         <MenuItem key={plant._id} value={plant._id}>
                           {plant.common_name}
                         </MenuItem>
@@ -266,7 +282,12 @@ console.log('saved_state_values', values);
                       setValues({ ...values, occurs_at: newValue });
                     }}
                     renderInput={params => (
-                      <TextField required helperText="Required" size='small' {...params} />
+                      <TextField
+                        required
+                        helperText='Required'
+                        size='small'
+                        {...params}
+                      />
                     )}
                   />
                 </Grid>
@@ -323,7 +344,6 @@ console.log('saved_state_values', values);
                 </Grid>
                 <Grid item xs={12}>
                   <TextField
-                    // required
                     fullWidth
                     multiline
                     rows={4}
@@ -346,27 +366,15 @@ console.log('saved_state_values', values);
             </Button>
             <Grid container justifyContent='flex-end'>
               <Grid item>
-                <Link
-                  component={RouterLink}
-                  sx={{ color: 'secondary.main' }}
-                  to='/events'
-                  variant='body2'>
-                  Back to events
-                </Link>
+                <Button
+                  variant='outlined'
+                  color='secondary'
+                  onClick={() => navigate(-1)}>
+                  Go back
+                </Button>
               </Grid>
             </Grid>
           </Box>
-
-          {/* End form here */}
-          {/* {values.name}
-          <Button
-            color='primary'
-            variant='outlined'
-            size='small'
-            onClick={() => navigate(-1)}>
-            <ArrowBackIos fontSize='small' />
-            Back
-          </Button> */}
         </Box>
       </Container>
     </AnimatedPage>
