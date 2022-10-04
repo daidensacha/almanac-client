@@ -17,14 +17,20 @@ import LinearProgress from '@mui/material/LinearProgress';
 import AnimatedPage from '../components/AnimatedPage';
 import axios from 'axios';
 import climateZoneData from '../data/climate-zone';
-import { getCookie, isAuth, signout, updateUser, setLocalStorage, removeLocalStorage } from '../utils/helpers';
+import {
+  getCookie,
+  isAuth,
+  signout,
+  updateUser,
+  setLocalStorage,
+  removeLocalStorage,
+} from '../utils/helpers';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.min.css';
 
 const Profile = () => {
   const navigate = useNavigate();
-  let userZoneInititial = JSON.parse(localStorage.getItem('userZone')) || { };
-
+  let userZoneInititial = JSON.parse(localStorage.getItem('userZone')) || {};
 
   // Set state for form data
   const [loading, setLoading] = useState(false);
@@ -62,7 +68,7 @@ const Profile = () => {
   //   shortDescription: '',
   //   longDesription: '',
   // });
-   const [userZone, setUserZone] = useState(userZoneInititial);
+  const [userZone, setUserZone] = useState(userZoneInititial);
 
   // const {latitude, longitude} = location;
   // Fetch climage zone data for users location
@@ -70,9 +76,9 @@ const Profile = () => {
     setLoading(true);
     const url = `http://climateapi.scottpinkelman.com/api/v1/location/${latitude}/${longitude}`;
     try {
-      const res = await fetch(url);
+      const res = await fetch(url, { referrerPolicy: 'unsafe-url' });
       const data = await res.json();
-      console.log({data})
+      console.log({ data });
       const { koppen_geiger_zone, zone_description } = data.return_values[0];
       setLocation(prevState => ({
         ...prevState,
@@ -85,7 +91,7 @@ const Profile = () => {
       console.log(error);
     }
   };
-  console.log({location})
+  console.log({ location });
   // Geolocation successCallback
   const successPosition = position => {
     setLocation(prevState => ({
@@ -164,14 +170,15 @@ const Profile = () => {
     setChecked(event.target.checked);
     event.target.checked ? setLoading(true) : setLoading(false);
     event.target.checked ? getCurrentLocation() : setLoading(false);
-    !event.target.checked && setLocation(prevState => ({
-      ...prevState,
-      latitude: '',
-      longitude: '',
-      koppen_geiger_zone: '',
-      zone_description: ''
-    }));
-  }
+    !event.target.checked &&
+      setLocation(prevState => ({
+        ...prevState,
+        latitude: '',
+        longitude: '',
+        koppen_geiger_zone: '',
+        zone_description: '',
+      }));
+  };
 
   // Handle the form user input change to load to the users state
   const handleUserChange = event => {
@@ -183,9 +190,7 @@ const Profile = () => {
     setLocation({ ...location, [event.target.name]: event.target.value });
   };
 
-
   useEffect(() => {
-
     const userSubzone = location.koppen_geiger_zone;
     // Get the user's climate zone
     if (userSubzone && checked) {
@@ -201,58 +206,57 @@ const Profile = () => {
   }, [location, checked]);
   // console.log('userZone', userZone);
 
-
-
   const token = getCookie('token');
 
   useEffect(() => {
-
-
-  const loadProfile = () => {
-    // let token = isAuth().token;
-    axios({
-      method: 'GET',
-      url: `${process.env.REACT_APP_API}/user/${isAuth()._id}`,
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then(response => {
-        console.log('PRIVATE PROFILE UPDATE', response);
-        const {
-          role,
-          firstname,
-          lastname,
-          email,
-          show_location, // to checked state true or false
-          latitude,
-          longitude,
-          koppen_geiger_zone,
-          zone_description,
-        } = response.data;
-        setUser({ ...user, role, firstname, lastname, email });
-        setLocation({
-          ...location,
-          latitude,
-          longitude,
-          koppen_geiger_zone,
-          zone_description,
-        });
-        setChecked(show_location);
+    const loadProfile = () => {
+      // let token = isAuth().token;
+      axios({
+        method: 'GET',
+        url: `${process.env.REACT_APP_API}/user/${isAuth()._id}`,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       })
-      .catch(error => {
-        console.log('PRIVATE PROFILE UPDATE ERROR', error.response.data.error);
-        if (error.response.status === 401) {
-          signout(() => {
-            navigate('/signin');
+        .then(response => {
+          console.log('PRIVATE PROFILE UPDATE', response);
+          const {
+            role,
+            firstname,
+            lastname,
+            email,
+            show_location, // to checked state true or false
+            latitude,
+            longitude,
+            koppen_geiger_zone,
+            zone_description,
+          } = response.data;
+          setUser({ ...user, role, firstname, lastname, email });
+          setLocation({
+            ...location,
+            latitude,
+            longitude,
+            koppen_geiger_zone,
+            zone_description,
           });
-          toast.error(error.response.data.error);
-        }
-      });
-  };
+          setChecked(show_location);
+        })
+        .catch(error => {
+          console.log(
+            'PRIVATE PROFILE UPDATE ERROR',
+            error.response.data.error,
+          );
+          if (error.response.status === 401) {
+            signout(() => {
+              navigate('/signin');
+            });
+            toast.error(error.response.data.error);
+          }
+        });
+    };
 
-  loadProfile();
-}, [ ]);
+    loadProfile();
+  }, []);
 
   const { role, firstname, lastname, email, password } = user;
   const show_location = checked;
@@ -402,7 +406,13 @@ const Profile = () => {
               <Box component='div' sx={{ mt: 3 }}>
                 <FormControlLabel
                   control={
-                    <Switch name='show_location' id='show_location' defaultValue={checked} checked={checked} onChange={handleChecked} />
+                    <Switch
+                      name='show_location'
+                      id='show_location'
+                      defaultValue={checked}
+                      checked={checked}
+                      onChange={handleChecked}
+                    />
                   }
                   label='Show Location'
                 />
