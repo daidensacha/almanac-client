@@ -14,9 +14,12 @@ import { Fade, Zoom } from '@mui/material';
 import Pumpkin from '../../images/pumpkin.jpg';
 import CucumberSlice from '../../images/cucumber_slice.jpg';
 
+import { useCategoriesContext } from '../../contexts/CategoriesContext';
+
 const AddCategory = () => {
   const navigate = useNavigate();
 
+  const {setCategories} = useCategoriesContext();
   const [values, setValues] = useState({
     category: '',
     description: '',
@@ -46,6 +49,7 @@ const AddCategory = () => {
           description,
         });
         console.log('CATEGORY ADDED', newCategory);
+        setCategories(prev => [...prev, newCategory]);
         setValues({
           ...values,
           category: '',

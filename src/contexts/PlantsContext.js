@@ -14,7 +14,7 @@ const PlantsContextProvider = ({children}) => {
         // console.log('SUCCESS CONTEXT PLANT', allPlants);
         setPlants(allPlants);
       } catch (err) {
-        console.log(err.response.data);
+        console.log(err.response.data.error);
       }
     };
     getPlants();

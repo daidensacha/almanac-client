@@ -19,8 +19,10 @@ import MenuItem from '@mui/material/MenuItem';
 import FormHelperText from '@mui/material/FormHelperText';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
-import { useEventsContext } from '../../contexts/EventsContext';
+// import { useEventsContext } from '../../contexts/EventsContext';
 import Events from '../Events';
+
+import { useEventsContext } from '../../contexts/EventsContext';
 
 const AddEvent = () => {
 
@@ -124,8 +126,9 @@ const AddEvent = () => {
           plant: values.plant_id, // plant_id selected from dropdown
         });
         // console.log('SUCCESS EVENT', newEvent);
-        setEvents(events => [...events, newEvent]);
+        setEvents(prev => [...prev, newEvent]);
         toast.success('Event created successfully');
+
         navigate('/events');
       } catch (err) {
         console.log(err.response.data);

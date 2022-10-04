@@ -72,6 +72,7 @@ const Profile = () => {
     try {
       const res = await fetch(url);
       const data = await res.json();
+      console.log({data})
       const { koppen_geiger_zone, zone_description } = data.return_values[0];
       setLocation(prevState => ({
         ...prevState,
@@ -84,7 +85,7 @@ const Profile = () => {
       console.log(error);
     }
   };
-
+  console.log({location})
   // Geolocation successCallback
   const successPosition = position => {
     setLocation(prevState => ({
@@ -97,6 +98,8 @@ const Profile = () => {
     }));
     const { latitude, longitude } = position.coords;
     // Get the climate zone
+    console.log('Latitude is :', latitude);
+    console.log('Longitude is :', longitude);
     getClimateZone(latitude, longitude);
     setLoading(false);
   };
