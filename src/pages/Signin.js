@@ -21,8 +21,8 @@ const Signin = () => {
   const {user, setUser} = useAuthContext()
 
   const [values, setValues] = useState({
-    email: 'daidensacha@gmail.com',
-    password: 'Dsacha123',
+    email: '',
+    password: '',
     buttonText: 'Sign In',
   });
 

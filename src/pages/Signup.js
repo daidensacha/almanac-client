@@ -16,10 +16,10 @@ import 'react-toastify/dist/ReactToastify.min.css';
 
 const Signup = () => {
   const [values, setValues] = useState({
-    firstname: 'Daiden',
-    lastname: 'Sacha',
-    email: 'daidensacha@gmail.com',
-    password: 'Dsacha123',
+    firstname: '',
+    lastname: '',
+    email: '',
+    password: '',
     buttonText: 'Sign Up',
   });
 
