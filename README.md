@@ -1,4 +1,4 @@
-![](src/images/mockup3.png)
+![](src/images/mockup3.jpg)
 
 # Garden Almanac App
 
