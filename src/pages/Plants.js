@@ -101,7 +101,7 @@ const Plants = () => {
     );
   }, [search, plants]);
 
-  console.log('filteredPlants', filteredPlants);
+  // console.log('filteredPlants', filteredPlants);
 
   const onSearchChange = searchQuery => {
     setSearch(searchQuery);

@@ -27,7 +27,7 @@ const AddEvent = () => {
   const { plants } = usePlantsContext();
   const { categories } = useCategoriesContext();
 
-  console.log('CONTEXT EVENTS', events);
+  // console.log('CONTEXT EVENTS', events);
   const navigate = useNavigate();
 
   const [values, setValues] = useState({

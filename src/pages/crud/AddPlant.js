@@ -42,7 +42,7 @@ const AddPlant = () => {
   const handleSubmit = event => {
     event.preventDefault();
     setValues({ ...values });
-    console.log('SUBMIT VALUES', values);
+    // console.log('SUBMIT VALUES', values);
 
     const createPlant = async () => {
       try {

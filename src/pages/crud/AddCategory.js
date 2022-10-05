@@ -32,7 +32,7 @@ const AddCategory = () => {
     setValues({ ...values, [event.target.name]: event.target.value });
   };
 
-  console.log(values);
+  // console.log(values);
 
   // const token = getCookie('token');
 

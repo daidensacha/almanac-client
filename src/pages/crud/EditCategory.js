@@ -33,7 +33,7 @@ const EditCategory = () => {
     setValues({ ...values, [event.target.name]: event.target.value });
   };
 
-  console.log('VALUES', values);
+  // console.log('VALUES', values);
   const id = state._id;
   const { category, description } = state;
 

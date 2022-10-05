@@ -57,27 +57,6 @@ const Categories = () => {
     p: 4,
   };
 
-  // const token = getCookie('token');
-
-  // const [categories, setCategories] = useState([]);
-
-  // useEffect(() => {
-  //   const getCategories = async () => {
-  //     try {
-  //       const {
-  //         data: { allCategories },
-  //       } = await instance.get(`/categories`);
-  //       // console.log('SUCCESS CATEGORIES', allCategories);
-  //       setCategories(allCategories);
-  //     } catch (err) {
-  //       console.log(err.response.data.error);
-  //       toast.error(err.response.data.error);
-  //       navigate('/categories');
-  //     }
-  //   };
-  //   getCategories();
-  // }, [navigate]);
-
   const archiveCategory = async id => {
     try {
       const {
@@ -122,7 +101,7 @@ const Categories = () => {
     );
   }, [search, categories]);
 
-  console.log('filteredEvents', filteredCategories);
+  // console.log('filteredEvents', filteredCategories);
 
   const onSearchChange = searchQuery => {
     setSearch(searchQuery);

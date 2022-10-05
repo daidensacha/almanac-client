@@ -36,7 +36,7 @@ const EditEvent = () => {
 
   const [values, setValues] = useState(state);
 
-  console.log('VALUES', values);
+  // console.log('VALUES', values);
   // useEffect(() => {
   //   setValues({ ...state });
   // }, [state]);

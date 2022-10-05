@@ -157,7 +157,7 @@ const ViewEvent = () => {
                         <Box component='span' fontWeight='bold'>
                           to
                         </Box>
-                      )}
+                      )}{' '}
                       {state.occurs_to && moment(state.occurs_to).format('D MMM')}
                     </Typography>
                     <Typography variant='body2' color='text.secondary'>
@@ -170,14 +170,14 @@ const ViewEvent = () => {
                       <Box component='span' fontWeight='bold'>
                         spacing
                       </Box>{' '}
-                      of {state.spacing || ' ______________ '} cm
+                      of {state.plant.spacing || ' ______________ '} cm
                     </Typography>
                     <Typography variant='body2' color='text.secondary'>
                       <Box component='span' fontWeight='bold'>
                         Fertilise:
                       </Box>{' '}
-                      {state.fertilise || ' ______________ '} with{' '}
-                      {state.fertiliser_type || ' ______________ '} fertiliser.
+                      {state.plant.fertilise || ' ______________ '} with{' '}
+                      {state.plant.fertiliser_type || ' ______________ '} fertiliser.
                     </Typography>
                     <Typography variant='body2' color='text.secondary'>
                       <Box component='span' fontWeight='bold'>
