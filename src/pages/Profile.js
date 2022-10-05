@@ -75,7 +75,7 @@ const Profile = () => {
     try {
       const {
         data: { climateZone },
-      } = await instance.get(`/climate-zone?latitude=${latitude}&longitude=${longitude}`);
+      } = await instance.get(`/climate-zone/${latitude}/${longitude}`);
       console.log('SUCCESS climateZone', climateZone);
       const { koppen_geiger_zone, zone_description } = climateZone.return_values[0];
       setLocation(prevState => ({
