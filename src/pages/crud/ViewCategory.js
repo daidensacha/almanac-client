@@ -20,6 +20,7 @@ import Stack from '@mui/material/Stack';
 import ButtonGroup from '@mui/material/ButtonGroup';
 import IconButton from '@mui/material/IconButton';
 import PageviewIcon from '@mui/icons-material/Pageview';
+import ArrowBackIos from '@mui/icons-material/ArrowBackIos';
 import EventIcon from '@mui/icons-material/Event';
 import AnimatedPage from '../../components/AnimatedPage';
 import Beetroot from '../../images/beetroot.jpg';
@@ -206,10 +207,12 @@ const ViewCategory = () => {
           </Grid>
           <Grid item sx={{ my: 4 }}>
             <Button
-              variant='outlined'
               color='secondary'
+              variant='outlined'
+              size='small'
               onClick={() => navigate(-1)}>
-              Go back
+              <ArrowBackIos fontSize='small' />
+              Back
             </Button>
           </Grid>
         </Grid>

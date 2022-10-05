@@ -275,24 +275,18 @@ const EditPlant = () => {
             </Button>
             <Grid container justifyContent='flex-end'>
               <Grid item>
-                <Link
-                  component={RouterLink}
-                  sx={{ color: 'secondary.main' }}
-                  to='/plants'
-                  variant='body2'>
-                  Back to plants
-                </Link>
+                <Button
+                  color='secondary'
+                  variant='outlined'
+                  size='small'
+                  onClick={() => navigate(-1)}>
+                  <ArrowBackIos fontSize='small' />
+                  Back
+                </Button>
               </Grid>
             </Grid>
           </Box>
-          <Button
-            color='secondary'
-            variant='outlined'
-            size='small'
-            onClick={() => navigate(-1)}>
-            <ArrowBackIos fontSize='small' />
-            Back to plants
-          </Button>
+
         </Box>
       </Container>
     </AnimatedPage>

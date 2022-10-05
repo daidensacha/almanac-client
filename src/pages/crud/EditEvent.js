@@ -8,6 +8,7 @@ import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
+import ArrowBackIos from '@mui/icons-material/ArrowBackIos';
 import { toast } from 'react-toastify';
 import AnimatedPage from '../../components/AnimatedPage';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -381,10 +382,12 @@ const EditEvent = () => {
             <Grid container justifyContent='flex-end'>
               <Grid item>
                 <Button
-                  variant='outlined'
                   color='secondary'
+                  variant='outlined'
+                  size='small'
                   onClick={() => navigate(-1)}>
-                  Go back
+                  <ArrowBackIos fontSize='small' />
+                  Back
                 </Button>
               </Grid>
             </Grid>

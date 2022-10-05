@@ -13,6 +13,7 @@ import Stack from '@mui/material/Stack';
 import ButtonGroup from '@mui/material/ButtonGroup';
 import { FaLeaf } from 'react-icons/fa';
 import PageviewIcon from '@mui/icons-material/Pageview';
+import ArrowBackIos from '@mui/icons-material/ArrowBackIos';
 import Typography from '@mui/material/Typography';
 import AnimatedPage from '../../components/AnimatedPage';
 import moment from 'moment';
@@ -303,10 +304,12 @@ const ViewEvent = () => {
           </Grid>
           <Grid item sx={{ my: 4 }}>
             <Button
-              variant='outlined'
               color='secondary'
+              variant='outlined'
+              size='small'
               onClick={() => navigate(-1)}>
-              Go back
+              <ArrowBackIos fontSize='small' />
+              Back
             </Button>
           </Grid>
         </Grid>

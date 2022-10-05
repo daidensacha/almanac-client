@@ -9,6 +9,7 @@ import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
+import ArrowBackIos from '@mui/icons-material/ArrowBackIos';
 import AnimatedPage from '../../components/AnimatedPage';
 import { toast } from 'react-toastify';
 import { useCategoriesContext } from '../../contexts/CategoriesContext';
@@ -125,14 +126,15 @@ const EditCategory = () => {
                 </Button>
               </Grid>
             </Grid>
-            <Grid container>
-              <Grid item xs></Grid>
+            <Grid container justifyContent='flex-end'>
               <Grid item>
                 <Button
-                  variant='outlined'
                   color='secondary'
+                  variant='outlined'
+                  size='small'
                   onClick={() => navigate(-1)}>
-                  Go back
+                  <ArrowBackIos fontSize='small' />
+                  Back
                 </Button>
               </Grid>
             </Grid>

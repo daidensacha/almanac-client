@@ -19,6 +19,7 @@ import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import IconButton from '@mui/material/IconButton';
 import PageviewIcon from '@mui/icons-material/Pageview';
+import ArrowBackIos from '@mui/icons-material/ArrowBackIos';
 import EventIcon from '@mui/icons-material/Event';
 import CherryTomatoes from '../../images/cherry_tomatoes.jpg';
 import moment from 'moment';
@@ -191,6 +192,7 @@ const ViewPlant = () => {
                   </CardContent>
                 </Card>
               </Zoom>
+              
             </Grid>
             <Grid item xs={12} sm={6} md={4} sx={{ mt: 5 }}>
               <Box
@@ -242,16 +244,19 @@ const ViewPlant = () => {
                     </ListItem>
                   )}
                 </List>
+
               </Box>
             </Grid>
           </Grid>
           <Grid item sx={{ my: 4 }}>
-            <Button
-              variant='outlined'
-              color='secondary'
-              onClick={() => navigate(-1)}>
-              Go back
-            </Button>
+              <Button
+                color='secondary'
+                variant='outlined'
+                size='small'
+                onClick={() => navigate(-1)}>
+                <ArrowBackIos fontSize='small' />
+                Back
+              </Button>
           </Grid>
         </Grid>
       </Container>
