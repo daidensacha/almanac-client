@@ -9,7 +9,7 @@ import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-// import LocationSearchingIcon from '@mui/icons-material/LocationSearching';
+import instance from '../utils/axiosClient';
 import GpsFixedIcon from '@mui/icons-material/GpsFixed';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
@@ -70,28 +70,48 @@ const Profile = () => {
   // });
   const [userZone, setUserZone] = useState(userZoneInititial);
 
-  // const {latitude, longitude} = location;
-  // Fetch climage zone data for users location
   const getClimateZone = async (latitude, longitude) => {
-    setLoading(true);
-    const url = `http://climateapi.scottpinkelman.com/api/v1/location/${latitude}/${longitude}`;
+    setLoading(true)
     try {
-      const res = await fetch(url);
-      const data = await res.json();
-      console.log({ data });
-      const { koppen_geiger_zone, zone_description } = data.return_values[0];
+      const {
+        data: { climateZone },
+      } = await instance.get(`/climate-zone?latitude=${latitude}&longitude=${longitude}`);
+      console.log('SUCCESS climateZone', climateZone);
+      const { koppen_geiger_zone, zone_description } = climateZone.return_values[0];
       setLocation(prevState => ({
         ...prevState,
         loading: false,
         koppen_geiger_zone: `${koppen_geiger_zone}`,
         zone_description: `${zone_description}`,
       }));
-      setLoading(false);
-    } catch (error) {
-      console.log(error);
+      setLoading(false)
+    } catch (err) {
+      console.log(err);
     }
   };
-  console.log({ location });
+
+  // const {latitude, longitude} = location;
+  // Fetch climage zone data for users location
+  // const getClimateZone = async (latitude, longitude) => {
+  //   setLoading(true);
+  //   const url = `http://climateapi.scottpinkelman.com/api/v1/location/${latitude}/${longitude}`;
+  //   try {
+  //     const res = await fetch(url);
+  //     const data = await res.json();
+  //     console.log({ data });
+  //     const { koppen_geiger_zone, zone_description } = data.return_values[0];
+  //     setLocation(prevState => ({
+  //       ...prevState,
+  //       loading: false,
+  //       koppen_geiger_zone: `${koppen_geiger_zone}`,
+  //       zone_description: `${zone_description}`,
+  //     }));
+  //     setLoading(false);
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // };
+  // console.log({ location });
   // Geolocation successCallback
   const successPosition = position => {
     setLocation(prevState => ({
@@ -104,8 +124,6 @@ const Profile = () => {
     }));
     const { latitude, longitude } = position.coords;
     // Get the climate zone
-    console.log('Latitude is :', latitude);
-    console.log('Longitude is :', longitude);
     getClimateZone(latitude, longitude);
     setLoading(false);
   };
