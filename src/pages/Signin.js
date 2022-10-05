@@ -1,6 +1,7 @@
 import AnimatedPage from '../components/AnimatedPage';
 import Avatar from '@mui/material/Avatar';
-import Button from '@mui/material/Button';
+// import Button from '@mui/material/Button';
+import LoadingButton from '@mui/lab/LoadingButton';
 import TextField from '@mui/material/TextField';
 import Link from '@mui/material/Link';
 import Grid from '@mui/material/Grid';
@@ -20,6 +21,7 @@ const Signin = () => {
   const navigate = useNavigate();
   const { setUser } = useAuthContext()
 
+  const [loading, setLoading] = useState(false);
   const [values, setValues] = useState({
     email: '',
     password: '',
@@ -36,7 +38,8 @@ const Signin = () => {
   // Handle form submit
   const handleSubmit = event => {
     event.preventDefault();
-    setValues({ ...values, buttonText: '...Signing In' });
+    setLoading(true);
+    setValues({ ...values, buttonText: '... Signing In' });
     axios({
       method: 'POST',
       url: `${process.env.REACT_APP_API}/signin`,
@@ -58,6 +61,7 @@ const Signin = () => {
           });
           toast.success(`Hey ${response.data.user.firstname}, Welcome back!`);
           setUser(true)
+          setLoading(false);
           navigate('/', { replace: true });
         });
 
@@ -120,13 +124,15 @@ const Signin = () => {
               size='small'
               onChange={handleValues}
             />
-            <Button
+            <LoadingButton
               type='submit'
+              loading={loading}
+              loadingPosition="start"
               fullWidth
               variant='contained'
               sx={{ mt: 3, mb: 2 }}>
               {buttonText}
-            </Button>
+            </LoadingButton>
             <Grid container>
               <Grid item xs>
                 <Link

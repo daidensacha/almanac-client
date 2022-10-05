@@ -24,7 +24,7 @@ import {
   setLocalStorage,
   removeLocalStorage,
 } from '../utils/helpers';
-import { ToastContainer, toast } from 'react-toastify';
+import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.min.css';
 
 const Profile = () => {
@@ -297,7 +297,6 @@ const Profile = () => {
           display: 'flex',
           flexDirection: 'column',
         }}>
-        <ToastContainer />
         <Box
           sx={{
             marginTop: 8,

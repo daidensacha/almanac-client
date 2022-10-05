@@ -1,5 +1,6 @@
 import AnimatedPage from '../components/AnimatedPage';
 import Avatar from '@mui/material/Avatar';
+import LoadingButton from '@mui/lab/LoadingButton';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import Link from '@mui/material/Link';
@@ -15,6 +16,8 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.min.css';
 
 const Signup = () => {
+
+  const [loading, setLoading] = useState(false);
   const [values, setValues] = useState({
     firstname: '',
     lastname: '',
@@ -33,7 +36,8 @@ const Signup = () => {
   // Handle form submit
   const handleSubmit = event => {
     event.preventDefault();
-    setValues({ ...values, buttonText: '...Signing Up' });
+    setLoading(true);
+    setValues({ ...values, buttonText: '... Signing Up' });
     axios({
       method: 'POST',
       url: `${process.env.REACT_APP_API}/signup`,
@@ -49,6 +53,7 @@ const Signup = () => {
           password: '',
           buttonText: 'Signed Up',
         });
+        setLoading(false);
         toast.success(response.data.message);
       })
       .catch(error => {
@@ -137,13 +142,15 @@ const Signup = () => {
                 />
               </Grid>
             </Grid>
-            <Button
+            <LoadingButton
               type='submit'
               fullWidth
+              loading={loading}
+              loadingPosition="start"
               variant='contained'
               sx={{ mt: 3, mb: 2 }}>
               {buttonText}
-            </Button>
+            </LoadingButton>
             <Grid container justifyContent='flex-end'>
               <Grid item>
                 <Link component={RouterLink} to='/signin' variant='body2'>

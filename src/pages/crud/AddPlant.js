@@ -6,6 +6,7 @@ import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
+import ArrowBackIos from '@mui/icons-material/ArrowBackIos';
 import { toast } from 'react-toastify';
 import AnimatedPage from '../../components/AnimatedPage';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -14,10 +15,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import MomentUtils from '@date-io/moment';
 import { usePlantsContext } from '../../contexts/PlantsContext';
 
-// import axios from 'axios';
-
 const AddPlant = () => {
-
   const navigate = useNavigate();
 
   const { setPlants } = usePlantsContext();
@@ -34,11 +32,7 @@ const AddPlant = () => {
     spacing: '',
     depth: '',
     notes: '',
-    // buttonText: 'Sign Up',
   });
-
-  // console.log('VALUES', values);
-  // console.log('SELECTED DATE', selectedDate);
 
   // Handle form values and set to state
   const handleValues = event => {
@@ -69,10 +63,9 @@ const AddPlant = () => {
         });
         console.log('PLANT CREATED', newPlant);
         setPlants(prev => [...prev, newPlant]);
-        setValues((prev) => ({
+        setValues(prev => ({
           ...prev,
         }));
-
         toast.success('Plant created');
         navigate('/plants');
       } catch (error) {
@@ -97,7 +90,6 @@ const AddPlant = () => {
             alignItems: 'center',
           }}>
           <h1>Add Plant</h1>
-          {/* Start form elements */}
 
           <Box
             component='form'
@@ -169,10 +161,6 @@ const AddPlant = () => {
                     name='plant_at'
                     id='plant_at'
                     value={values.plant_at}
-                    // color='secondary'
-                    // disableFuture
-                    // openTo='year'
-                    // views={['year', 'month', 'day']}
                     inputFormat='dd/MM/yyyy'
                     onChange={newValue => {
                       setValues({ ...values, plant_at: newValue });
@@ -194,7 +182,7 @@ const AddPlant = () => {
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                <DatePicker
+                  <DatePicker
                     fullWidth
                     label='Harvest at'
                     name='harvest_at'
@@ -211,7 +199,7 @@ const AddPlant = () => {
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <DatePicker
-                  fullWidth
+                    fullWidth
                     label='Harvest to'
                     name='harvest_to'
                     id='harvest_to'
@@ -227,7 +215,7 @@ const AddPlant = () => {
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <TextField
-                  fullWidth
+                    fullWidth
                     value={values.fertilise}
                     name='fertilise'
                     id='fertilise'
@@ -272,20 +260,17 @@ const AddPlant = () => {
             </Button>
             <Grid container justifyContent='flex-end'>
               <Grid item>
-              <Button
-                variant='outlined'
-                color='secondary'
-                // sx={{ backgroundColor: 'grey.800' }}
-                onClick={() => navigate(-1)}>
-                Go back
-              </Button>
-                {/* <Link component={RouterLink} sx={{ color: 'secondary.main'}} to='/plants' variant='body2'>
-                  Back to plants
-                </Link> */}
+                <Button
+                  color='secondary'
+                  variant='outlined'
+                  size='small'
+                  onClick={() => navigate(-1)}>
+                  <ArrowBackIos fontSize='small' />
+                  Back
+                </Button>
               </Grid>
             </Grid>
           </Box>
-          {/* End form elements */}
         </Box>
       </Container>
     </AnimatedPage>

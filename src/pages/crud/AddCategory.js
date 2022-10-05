@@ -6,6 +6,7 @@ import instance from '../../utils/axiosClient';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
+import ArrowBackIos from '@mui/icons-material/ArrowBackIos';
 import AnimatedPage from '../../components/AnimatedPage';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.min.css';
@@ -19,7 +20,7 @@ import { useCategoriesContext } from '../../contexts/CategoriesContext';
 const AddCategory = () => {
   const navigate = useNavigate();
 
-  const {setCategories} = useCategoriesContext();
+  const { setCategories } = useCategoriesContext();
 
   const [values, setValues] = useState({
     category: '',
@@ -57,6 +58,7 @@ const AddCategory = () => {
           description: '',
           buttonText: 'Added Category',
         });
+        toast.success('Category created');
         navigate('/categories');
       } catch (error) {
         console.log('CATEGORY ADD ERROR', error.response.data);
@@ -82,7 +84,7 @@ const AddCategory = () => {
           <h1>Add Category</h1>
           <Grid container spacing={2}>
             <Grid item xs={12} sm={4}>
-            <Fade in={true} timeout={2000}>
+              <Fade in={true} timeout={2000}>
                 <Box
                   component='img'
                   sx={{ maxWidth: '100%', height: 'auto' }}
@@ -139,17 +141,19 @@ const AddCategory = () => {
                   <Grid item xs></Grid>
                   <Grid item>
                     <Button
-                      variant='outlined'
                       color='secondary'
+                      variant='outlined'
+                      size='small'
                       onClick={() => navigate(-1)}>
-                      Go back
+                      <ArrowBackIos fontSize='small' />
+                      Back
                     </Button>
                   </Grid>
                 </Grid>
               </Box>
             </Grid>
             <Grid item xs={12} sm={4}>
-            <Fade in={true} timeout={2000}>
+              <Fade in={true} timeout={2000}>
                 <Box
                   component='img'
                   sx={{ maxWidth: '100%', height: 'auto' }}

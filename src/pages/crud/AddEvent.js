@@ -6,6 +6,7 @@ import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
+import ArrowBackIos from '@mui/icons-material/ArrowBackIos';
 import { toast } from 'react-toastify';
 import AnimatedPage from '../../components/AnimatedPage';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -22,7 +23,6 @@ import { usePlantsContext } from '../../contexts/PlantsContext';
 import { useCategoriesContext } from '../../contexts/CategoriesContext';
 
 const AddEvent = () => {
-
   const { events, setEvents } = useEventsContext();
   const { plants } = usePlantsContext();
   const { categories } = useCategoriesContext();
@@ -47,7 +47,6 @@ const AddEvent = () => {
     setValues({ ...values, [event.target.name]: event.target.value });
   };
 
-
   const handleSubmit = event => {
     event.preventDefault();
     setValues({ ...values });
@@ -70,16 +69,14 @@ const AddEvent = () => {
         });
         // console.log('SUCCESS EVENT', newEvent);
         setEvents(prev => [...prev, newEvent]);
-        toast.success('Event created successfully');
-
+        toast.success('Event created');
         navigate('/events');
       } catch (err) {
         console.log(err.response.data);
         toast.error(err.response.data.error);
       }
-    }
+    };
     createEvent();
-
   };
 
   return (
@@ -132,7 +129,11 @@ const AddEvent = () => {
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                  <FormControl required fullWidth sx={{ minWidth: 120 }} size='small'>
+                  <FormControl
+                    required
+                    fullWidth
+                    sx={{ minWidth: 120 }}
+                    size='small'>
                     <InputLabel id='category_id'>Category</InputLabel>
                     <Select
                       labelId='category_id'
@@ -140,9 +141,8 @@ const AddEvent = () => {
                       name='category_id'
                       value={values.category_id}
                       label='Category'
-                      onChange={handleValues}
-                      >
-                      {categories.map((category) => (
+                      onChange={handleValues}>
+                      {categories.map(category => (
                         <MenuItem key={category._id} value={category._id}>
                           {category.category}
                         </MenuItem>
@@ -152,7 +152,11 @@ const AddEvent = () => {
                   </FormControl>
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                  <FormControl required fullWidth sx={{ minWidth: 120 }} size='small'>
+                  <FormControl
+                    required
+                    fullWidth
+                    sx={{ minWidth: 120 }}
+                    size='small'>
                     <InputLabel id='plant_id'>Plant</InputLabel>
                     <Select
                       labelId='plant_id'
@@ -161,7 +165,7 @@ const AddEvent = () => {
                       value={values.plant_id}
                       label='Plant'
                       onChange={handleValues}>
-                      {plants.map((plant) => (
+                      {plants.map(plant => (
                         <MenuItem key={plant._id} value={plant._id}>
                           {plant.common_name}
                         </MenuItem>
@@ -182,7 +186,12 @@ const AddEvent = () => {
                       setValues({ ...values, occurs_at: newValue });
                     }}
                     renderInput={params => (
-                      <TextField required helperText="Required" size='small' {...params} />
+                      <TextField
+                        required
+                        helperText='Required'
+                        size='small'
+                        {...params}
+                      />
                     )}
                   />
                 </Grid>
@@ -260,12 +269,14 @@ const AddEvent = () => {
             </Button>
             <Grid container justifyContent='flex-end'>
               <Grid item>
-              <Button
-                variant='outlined'
-                color='secondary'
-                onClick={() => navigate(-1)}>
-                Go back
-              </Button>
+                <Button
+                  color='secondary'
+                  variant='outlined'
+                  size='small'
+                  onClick={() => navigate(-1)}>
+                  <ArrowBackIos fontSize='small' />
+                  Back
+                </Button>
               </Grid>
             </Grid>
           </Box>
