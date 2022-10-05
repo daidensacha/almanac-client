@@ -47,34 +47,12 @@ const Plants = () => {
   const navigate = useNavigate();
 
   const { plants, setPlants } = usePlantsContext();
-  // console.log('aaaaaaaaaaaaaaaaaaaaaaaaaaaaa', plants);
   // const randomImage = RandomImage();
 
   const [open, setOpen] = useState(false);
-  // const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
-  // const [plants, setPlants] = useState([]);
-
-  // useEffect(() => {
-  //   const getPlants = async () => {
-  //     try {
-  //       const {
-  //         data: { allPlants },
-  //       } = await instance.get(`/plants`);
-  //       // console.log('SUCCESS PLANT', allPlants);
-  //       setPlants(allPlants);
-  //     } catch (err) {
-  //       console.log(err.response.data.error);
-  //       toast.error(err.response.data.error);
-  //       navigate('/plants');
-  //     }
-  //   };
-  //   getPlants();
-  // }, [navigate]);
-
   const archivePlant = async id => {
-    // console.log('DELETE', id);
     try {
       const {
         data: { archivedPlant },
@@ -82,7 +60,6 @@ const Plants = () => {
         archived: true,
       });
 
-      // console.log('ARCHIVE PLANT SUCCESS', `${archivedPlant.archived}`);
       handleClose();
       setPlants(prev => prev.filter(plant => plant._id !== id));
       console.log('ARCHIVE PLANT SUCCESS', `${archivedPlant.archived}`);
@@ -96,9 +73,8 @@ const Plants = () => {
   const [deleteCurrentPlant, setDeleteCurrentPlant] = useState(null);
   const deleteHandler = (e, id) => {
     setDeleteCurrentPlant(id);
-    setOpen(true)
+    setOpen(true);
   };
-
 
   // start of search filter
   const [search, setSearch] = useState('');
@@ -115,11 +91,8 @@ const Plants = () => {
   };
 
   useEffect(() => {
-    // console.log('what is sort', plants?.sort(sortPlants));
-    // search &&
     setFilteredPlants(
       plants?.sort(sortPlants).filter(plant => {
-        // console.log('from use effect', plant);
         return (
           plant?.common_name.toLowerCase().includes(search.toLowerCase()) ||
           plant?.botanical_name.toLowerCase().includes(search.toLowerCase())
@@ -290,52 +263,54 @@ const Plants = () => {
                                 size='small'
                                 aria-label='delete'
                                 sx={{ color: 'grey.700' }}
-                                onClick={(e) => deleteHandler(e, row._id)}>
+                                onClick={e => deleteHandler(e, row._id)}>
                                 <DeleteIcon />
                               </IconButton>
                             </Stack>
                           </TableCell>
-                          <Modal
-                            open={open}
-                            onClose={handleClose}
-                            aria-labelledby='modal-modal-title'
-                            aria-describedby='modal-modal-description'>
-                            <Box sx={modalStyle}>
-                              <Typography
-                                id='modal-modal-title'
-                                variant='h6'
-                                component='h2'>
-                                Are you sure?
-                              </Typography>
-                              <Grid container spacing={2}>
-                                <Grid item xs={12} sm={6}>
-                                  <Button
-                                    type='button'
-                                    fullWidth
-                                    variant='contained'
-                                    color='secondary'
-                                    sx={{ mt: 3, mb: 2 }}
-                                    onClick={handleClose}>
-                                    Cancel
-                                  </Button>
-                                </Grid>
-                                <Grid item xs={12} sm={6}>
-                                  <Button
-                                    type='button'
-                                    fullWidth
-                                    variant='contained'
-                                    color='error'
-                                    sx={{ mt: 3, mb: 2 }}
-                                    onClick={() => archivePlant(deleteCurrentPlant)}>
-                                    Delete
-                                  </Button>
-                                </Grid>
-                              </Grid>
-                            </Box>
-                          </Modal>
                         </TableRow>
                       ))}
                     </TableBody>
+                    {/* Start modal */}
+                    <Modal
+                      open={open}
+                      onClose={handleClose}
+                      aria-labelledby='modal-modal-title'
+                      aria-describedby='modal-modal-description'>
+                      <Box sx={modalStyle}>
+                        <Typography
+                          id='modal-modal-title'
+                          variant='h6'
+                          component='h2'>
+                          Are you sure?
+                        </Typography>
+                        <Grid container spacing={2}>
+                          <Grid item xs={12} sm={6}>
+                            <Button
+                              type='button'
+                              fullWidth
+                              variant='contained'
+                              color='secondary'
+                              sx={{ mt: 3, mb: 2 }}
+                              onClick={handleClose}>
+                              Cancel
+                            </Button>
+                          </Grid>
+                          <Grid item xs={12} sm={6}>
+                            <Button
+                              type='button'
+                              fullWidth
+                              variant='contained'
+                              color='error'
+                              sx={{ mt: 3, mb: 2 }}
+                              onClick={() => archivePlant(deleteCurrentPlant)}>
+                              Delete
+                            </Button>
+                          </Grid>
+                        </Grid>
+                      </Box>
+                    </Modal>
+                    {/* End modal */}
                   </Table>
                 </TableContainer>
               </Zoom>

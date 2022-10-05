@@ -36,7 +36,7 @@ import SearchBar from '../components/ui/SearchFilter';
 const Categories = () => {
   const navigate = useNavigate();
 
-  const {categories, setCategories} = useCategoriesContext()
+  const { categories, setCategories } = useCategoriesContext();
 
   const [open, setOpen] = useState(false);
 
@@ -78,7 +78,6 @@ const Categories = () => {
   //   getCategories();
   // }, [navigate]);
 
-
   const archiveCategory = async id => {
     try {
       const {
@@ -94,11 +93,11 @@ const Categories = () => {
       toast.error(err.response.data.error);
     }
   };
-  
+
   const [deleteCurrentCategory, setDeleteCurrentCategory] = useState(null);
   const deleteHandler = (e, id) => {
     setDeleteCurrentCategory(id);
-    setOpen(true)
+    setOpen(true);
   };
 
   // Start of Search Filter
@@ -240,155 +239,155 @@ const Categories = () => {
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {filteredCategories
-                        ?.map((row, index) => (
-                          <Fragment key={row._id}>
-                            <TableRow
-                              key={row._id}
-                              sx={{
-                                '&:last-child td, &:last-child th': {
-                                  border: 0,
-                                },
-                              }}>
-                              <TableCell>
+                      {filteredCategories?.map((row, index) => (
+                        <Fragment key={row._id}>
+                          <TableRow
+                            key={row._id}
+                            sx={{
+                              '&:last-child td, &:last-child th': {
+                                border: 0,
+                              },
+                            }}>
+                            <TableCell>
+                              <IconButton
+                                aria-label='expand row'
+                                size='small'
+                                onClick={() =>
+                                  setShowDescription(
+                                    showDescription === row._id
+                                      ? false
+                                      : row._id,
+                                  )
+                                }>
+                                {showDescription === row._id ? (
+                                  <KeyboardArrowUpIcon />
+                                ) : (
+                                  <KeyboardArrowDownIcon />
+                                )}
+                              </IconButton>
+                            </TableCell>
+                            <TableCell component='th' scope='row'>
+                              {index + 1}
+                            </TableCell>
+                            <TableCell align='left'>{row.category}</TableCell>
+                            <TableCell align='center'>
+                              <Stack
+                                direction='row'
+                                align='end'
+                                spacing={2}
+                                sx={{
+                                  display: 'flex',
+                                  justifyContent: 'flex-end',
+                                }}>
                                 <IconButton
-                                  aria-label='expand row'
                                   size='small'
+                                  comonent='button'
+                                  aria-label='view'
+                                  color='info'
                                   onClick={() =>
-                                    setShowDescription(
-                                      showDescription === row._id
-                                        ? false
-                                        : row._id,
-                                    )
+                                    navigate(`/category/${row._id}`, {
+                                      state: row,
+                                    })
                                   }>
-                                  {showDescription === row._id ? (
-                                    <KeyboardArrowUpIcon />
-                                  ) : (
-                                    <KeyboardArrowDownIcon />
-                                  )}
+                                  <PageviewIcon />
                                 </IconButton>
-                              </TableCell>
-                              <TableCell component='th' scope='row'>
-                                {index + 1}
-                              </TableCell>
-                              <TableCell align='left'>{row.category}</TableCell>
-                              <TableCell align='center'>
-                                <Stack
-                                  direction='row'
-                                  align='end'
-                                  spacing={2}
-                                  sx={{
-                                    display: 'flex',
-                                    justifyContent: 'flex-end',
-                                  }}>
-                                  <IconButton
-                                    size='small'
-                                    comonent='button'
-                                    aria-label='view'
-                                    color='info'
-                                    onClick={() =>
-                                      navigate(`/category/${row._id}`, {
-                                        state: row,
-                                      })
-                                    }>
-                                    <PageviewIcon />
-                                  </IconButton>
-                                  <IconButton
-                                    size='small'
-                                    component='button'
-                                    aria-label='edit'
-                                    sx={{ color: 'secondary.main' }}
-                                    onClick={() =>
-                                      navigate(`/category/edit/${row._id}`, {
-                                        state: row,
-                                      })
-                                    }>
-                                    <EditIcon />
-                                  </IconButton>
-                                  <IconButton
-                                    size='small'
-                                    aria-label='delete'
-                                    sx={{ color: 'grey.700' }}
-                                    // onClick={() => setOpen(true)}
-                                    onClick={(e) => deleteHandler(e, row._id)}>
-                                    <DeleteIcon />
-                                  </IconButton>
-                                </Stack>
-                              </TableCell>
-                              <Modal
-                                open={open}
-                                onClose={handleClose}
-                                aria-labelledby='modal-modal-title'
-                                aria-describedby='modal-modal-description'>
-                                <Box sx={modalStyle}>
-                                  <Typography
-                                    id='modal-modal-title'
-                                    variant='h6'
-                                    component='h2'>
-                                    Are you sure?
-                                  </Typography>
-                                  <Grid container spacing={2}>
-                                    <Grid item xs={12} sm={6}>
-                                      <Button
-                                        type='button'
-                                        fullWidth
-                                        variant='contained'
-                                        color='secondary'
-                                        sx={{ mt: 3, mb: 2 }}
-                                        onClick={handleClose}>
-                                        Cancel
-                                      </Button>
-                                    </Grid>
-                                    <Grid item xs={12} sm={6}>
-                                      <Button
-                                        type='button'
-                                        fullWidth
-                                        variant='contained'
-                                        color='error'
-                                        sx={{ mt: 3, mb: 2 }}
-                                        onClick={() =>
-                                          archiveCategory(deleteCurrentCategory)
-                                          // archiveCategory(row._id)
-                                        }>
-                                        Delete
-                                      </Button>
-                                    </Grid>
-                                  </Grid>
+                                <IconButton
+                                  size='small'
+                                  component='button'
+                                  aria-label='edit'
+                                  sx={{ color: 'secondary.main' }}
+                                  onClick={() =>
+                                    navigate(`/category/edit/${row._id}`, {
+                                      state: row,
+                                    })
+                                  }>
+                                  <EditIcon />
+                                </IconButton>
+                                <IconButton
+                                  size='small'
+                                  aria-label='delete'
+                                  sx={{ color: 'grey.700' }}
+                                  // onClick={() => setOpen(true)}
+                                  onClick={e => deleteHandler(e, row._id)}>
+                                  <DeleteIcon />
+                                </IconButton>
+                              </Stack>
+                            </TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell
+                              style={{ paddingBottom: 0, paddingTop: 0 }}
+                              colSpan={6}>
+                              <Collapse
+                                in={showDescription === row._id}
+                                timeout='auto'
+                                unmountOnExit>
+                                <Box sx={{ margin: 1 }}>
+                                  <Table size='small' aria-label='purchases'>
+                                    <TableBody>
+                                      <TableRow key={row._id}>
+                                        <TableCell
+                                          sx={{
+                                            maxWidth: '310px',
+                                            borderBottom: 'none',
+                                            whiteSpace: 'normal',
+                                            wordBreak: 'break-word',
+                                            padding: 'none',
+                                          }}>
+                                          {row.description}
+                                        </TableCell>
+                                      </TableRow>
+                                    </TableBody>
+                                  </Table>
                                 </Box>
-                              </Modal>
-                            </TableRow>
-                            <TableRow>
-                              <TableCell
-                                style={{ paddingBottom: 0, paddingTop: 0 }}
-                                colSpan={6}>
-                                <Collapse
-                                  in={showDescription === row._id}
-                                  timeout='auto'
-                                  unmountOnExit>
-                                  <Box sx={{ margin: 1 }}>
-                                    <Table size='small' aria-label='purchases'>
-                                      <TableBody>
-                                        <TableRow key={row._id}>
-                                          <TableCell
-                                            sx={{
-                                              maxWidth: '310px',
-                                              borderBottom: 'none',
-                                              whiteSpace: 'normal',
-                                              wordBreak: 'break-word',
-                                              padding: 'none',
-                                            }}>
-                                            {row.description}
-                                          </TableCell>
-                                        </TableRow>
-                                      </TableBody>
-                                    </Table>
-                                  </Box>
-                                </Collapse>
-                              </TableCell>
-                            </TableRow>
-                          </Fragment>
-                        ))}
+                              </Collapse>
+                            </TableCell>
+                          </TableRow>
+                        </Fragment>
+                      ))}
                     </TableBody>
+                    {/* Start modal */}
+                    <Modal
+                      open={open}
+                      onClose={handleClose}
+                      aria-labelledby='modal-modal-title'
+                      aria-describedby='modal-modal-description'>
+                      <Box sx={modalStyle}>
+                        <Typography
+                          id='modal-modal-title'
+                          variant='h6'
+                          component='h2'>
+                          Are you sure?
+                        </Typography>
+                        <Grid container spacing={2}>
+                          <Grid item xs={12} sm={6}>
+                            <Button
+                              type='button'
+                              fullWidth
+                              variant='contained'
+                              color='secondary'
+                              sx={{ mt: 3, mb: 2 }}
+                              onClick={handleClose}>
+                              Cancel
+                            </Button>
+                          </Grid>
+                          <Grid item xs={12} sm={6}>
+                            <Button
+                              type='button'
+                              fullWidth
+                              variant='contained'
+                              color='error'
+                              sx={{ mt: 3, mb: 2 }}
+                              onClick={() =>
+                                archiveCategory(deleteCurrentCategory)
+                              }>
+                              Delete
+                            </Button>
+                          </Grid>
+                        </Grid>
+                      </Box>
+                    </Modal>
+                    {/* End modal */}
                   </Table>
                 </TableContainer>
               </Zoom>

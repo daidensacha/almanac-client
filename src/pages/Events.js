@@ -62,9 +62,7 @@ const Events = () => {
         const {
           data: { allEvents },
         } = await instance.get(`/events`);
-        // console.log('SUCCESS EVENTS', allEvents);
         setEvents(allEvents);
-        // console.log('allEvents', allEvents);
       } catch (err) {
         console.log(err.response.data);
         toast.error(err.response.data.error);
@@ -73,8 +71,6 @@ const Events = () => {
     };
     getEvents();
   }, [navigate]);
-
-  // console.log('EVENTS', events);
 
   const archiveEvent = async id => {
     try {
@@ -86,7 +82,6 @@ const Events = () => {
       console.log('ARCHIVED EVENT', archivedEvent);
       handleClose();
       setEvents(prev => prev.filter(event => event._id !== id));
-      // setPlants(prev => prev.filter(plant => plant._id !== id));
     } catch (err) {
       console.log(err.response.data.error);
       toast.error(err.response.data.error);
@@ -96,12 +91,11 @@ const Events = () => {
   const [deleteCurrentEvent, setDeleteCurrentEvent] = useState(null);
   const deleteHandler = (e, id) => {
     setDeleteCurrentEvent(id);
-    setOpen(true)
+    setOpen(true);
   };
 
   const [search, setSearch] = useState('');
   const [filteredEvents, setFilteredEvents] = useState([]);
-  // console.log('search', search);
 
   // Prop variables for SearchBar
   const placeholder = 'Search Events';
@@ -131,8 +125,6 @@ const Events = () => {
       }),
     );
   }, [search, events]);
-
-  // console.log('filteredEvents', filteredEvents);
 
   const onSearchChange = searchQuery => {
     setSearch(searchQuery);
@@ -291,54 +283,54 @@ const Events = () => {
                                 size='small'
                                 aria-label='delete'
                                 sx={{ color: 'grey.700' }}
-                                onClick={(e) => deleteHandler(e, row._id)}>
+                                onClick={e => deleteHandler(e, row._id)}>
                                 <DeleteIcon />
                               </IconButton>
                             </Stack>
                           </TableCell>
-                          {/* Start modal */}
-                          <Modal
-                            open={open}
-                            onClose={handleClose}
-                            aria-labelledby='modal-modal-title'
-                            aria-describedby='modal-modal-description'>
-                            <Box sx={modalStyle}>
-                              <Typography
-                                id='modal-modal-title'
-                                variant='h6'
-                                component='h2'>
-                                Are you sure?
-                              </Typography>
-                              <Grid container spacing={2}>
-                                <Grid item xs={12} sm={6}>
-                                  <Button
-                                    type='button'
-                                    fullWidth
-                                    variant='contained'
-                                    color='secondary'
-                                    sx={{ mt: 3, mb: 2 }}
-                                    onClick={handleClose}>
-                                    Cancel
-                                  </Button>
-                                </Grid>
-                                <Grid item xs={12} sm={6}>
-                                  <Button
-                                    type='button'
-                                    fullWidth
-                                    variant='contained'
-                                    color='error'
-                                    sx={{ mt: 3, mb: 2 }}
-                                    onClick={() => archiveEvent(deleteCurrentEvent)}>
-                                    Delete
-                                  </Button>
-                                </Grid>
-                              </Grid>
-                            </Box>
-                          </Modal>
-                          {/* End Modal */}
                         </TableRow>
                       ))}
                     </TableBody>
+                    {/* Start modal */}
+                    <Modal
+                      open={open}
+                      onClose={handleClose}
+                      aria-labelledby='modal-modal-title'
+                      aria-describedby='modal-modal-description'>
+                      <Box sx={modalStyle}>
+                        <Typography
+                          id='modal-modal-title'
+                          variant='h6'
+                          component='h2'>
+                          Are you sure?
+                        </Typography>
+                        <Grid container spacing={2}>
+                          <Grid item xs={12} sm={6}>
+                            <Button
+                              type='button'
+                              fullWidth
+                              variant='contained'
+                              color='secondary'
+                              sx={{ mt: 3, mb: 2 }}
+                              onClick={handleClose}>
+                              Cancel
+                            </Button>
+                          </Grid>
+                          <Grid item xs={12} sm={6}>
+                            <Button
+                              type='button'
+                              fullWidth
+                              variant='contained'
+                              color='error'
+                              sx={{ mt: 3, mb: 2 }}
+                              onClick={() => archiveEvent(deleteCurrentEvent)}>
+                              Delete
+                            </Button>
+                          </Grid>
+                        </Grid>
+                      </Box>
+                    </Modal>
+                    {/* End Modal */}
                   </Table>
                 </TableContainer>
               </Zoom>
