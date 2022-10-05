@@ -11,9 +11,12 @@ import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import AnimatedPage from '../../components/AnimatedPage';
 import { toast } from 'react-toastify';
+import { useCategoriesContext } from '../../contexts/CategoriesContext';
 
 const EditCategory = () => {
   const { state } = useLocation();
+
+  const { setCategories } = useCategoriesContext();
   // console.log('STATE', state);
   // const { id } = useParams();
   const navigate = useNavigate();
@@ -44,14 +47,18 @@ const EditCategory = () => {
 
     try {
       const {
-        data: { message },
+        data: { updateCategory },
       } = await instance.put(`/category/update/${id}`, {
         category: values.category,
         description: values.description,
       });
-      console.log('CATEGORY UPDATED', message);
+      console.log('CATEGORY UPDATED', updateCategory);
       setValues({ ...values, buttonText: 'Updated Category' });
       // toast.success('Successfully updated');
+      //spread state, exclude current category, add updated category
+      setCategories((prev) =>  [
+          ...prev.filter((category) => category._id !== state._id), updateCategory,]
+      );
       navigate('/categories');
     } catch (err) {
       console.log('CATEGORY UPDATE ERROR', err.response.data);

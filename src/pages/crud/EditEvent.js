@@ -20,15 +20,22 @@ import FormControl from '@mui/material/FormControl';
 import FormHelperText from '@mui/material/FormHelperText';
 import Select from '@mui/material/Select';
 import instance from '../../utils/axiosClient';
+import { useEventsContext } from '../../contexts/EventsContext';
+import { usePlantsContext } from '../../contexts/PlantsContext';
+import { useCategoriesContext } from '../../contexts/CategoriesContext';
 
 const EditEvent = () => {
   const { state } = useLocation();
   // const { id } = useParams();
   const navigate = useNavigate();
 
+  const { events, setEvents } = useEventsContext();
+  const { plants } = usePlantsContext();
+  const { categories } = useCategoriesContext();
+
   const [values, setValues] = useState(state);
 
-
+  console.log('VALUES', values);
   // useEffect(() => {
   //   setValues({ ...state });
   // }, [state]);
@@ -58,59 +65,60 @@ const EditEvent = () => {
   //  }));
   // setValues({ ...state });
 
-  const [categories, setCategories] = useState([]);
-  const [plants, setPlants] = useState([]);
+  // const [categories, setCategories] = useState([]);
+  // const [plants, setPlants] = useState([]);
 
   // Handle form values and set to state
   const handleValues = event => {
     setValues({ ...values, [event.target.name]: event.target.value });
+    console.log(event.target.name, event.target.value);
     // console.log('Select event', event.currentTarget);
   };
 
-  useEffect(() => {
-    const getCategories = async () => {
-      try {
-        const {
-          data: { allCategories },
-        } = await instance.get(`/categories`);
-        // console.log('SUCCESS CATEGORIES', allCategories);
-        setCategories(allCategories);
-      } catch (err) {
-        console.log(err.response.data);
-        toast.error(err.response.data.error);
-        navigate('/categories');
-      }
-    };
-    getCategories();
-  }, [navigate]);
+  // useEffect(() => {
+  //   const getCategories = async () => {
+  //     try {
+  //       const {
+  //         data: { allCategories },
+  //       } = await instance.get(`/categories`);
+  //       // console.log('SUCCESS CATEGORIES', allCategories);
+  //       setCategories(allCategories);
+  //     } catch (err) {
+  //       console.log(err.response.data);
+  //       toast.error(err.response.data.error);
+  //       navigate('/categories');
+  //     }
+  //   };
+  //   getCategories();
+  // }, [navigate]);
 
-  useEffect(() => {
-    const getPlants = async () => {
-      try {
-        const {
-          data: { allPlants },
-        } = await instance.get(`/plants`);
-        // console.log('SUCCESS PLANT', allPlants);
-        setPlants(allPlants);
-      } catch (err) {
-        console.log(err.response.data);
-        toast.error(err.response.data.error);
-        navigate('/plants');
-      }
-    };
-    getPlants();
-  }, [navigate]);
+  // useEffect(() => {
+  //   const getPlants = async () => {
+  //     try {
+  //       const {
+  //         data: { allPlants },
+  //       } = await instance.get(`/plants`);
+  //       // console.log('SUCCESS PLANT', allPlants);
+  //       setPlants(allPlants);
+  //     } catch (err) {
+  //       console.log(err.response.data);
+  //       toast.error(err.response.data.error);
+  //       navigate('/plants');
+  //     }
+  //   };
+  //   getPlants();
+  // }, [navigate]);
 
   // console.log('STATE', state);
 
-  const id = state._id;
+  // const id = state._id;
 
-  // const category_id = values.category._id;
-  const category_id = state.category._id;
-  const category_name = state.category.category || '';
-  // const plant_id = values.plant._id || '';
-  const plant_id = state.plant._id || '';
-  const plant_name = state.plant.common_name || '';
+  const category_id = values.category._id;
+  // const category_id = state.category._id;
+  // const category_name = state.category.category || '';
+  const plant_id = values.plant._id || '';
+  // const plant_id = state.plant._id || '';
+  // const plant_name = state.plant.common_name || '';
 
   // console.log('values.plant_id typeof', typeof values.plant_id);
   // const { event_name, description, occurs_at, month, repeat_cycle, repeat_frequency, notes } = state;
@@ -159,6 +167,11 @@ const EditEvent = () => {
       });
       // console.log('SUCCESS', updatedEvent);
       setValues({ ...values });
+      //spread state, exclude current category, add updated category
+      setEvents((prev) => [
+        ...prev.filter((event) => event._id !== state._id), updatedEvent,
+      ]);
+      console.log('Update event', events)
       toast.success(`Event "${updatedEvent.event_name}" updated successfully`);
       navigate('/events');
     } catch (err) {
@@ -167,6 +180,7 @@ const EditEvent = () => {
     }
   };
 
+  // console.log('Updated events', events)
   return (
     <AnimatedPage>
       <Container component='main' maxWidth='xs'>

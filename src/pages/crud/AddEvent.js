@@ -19,15 +19,18 @@ import MenuItem from '@mui/material/MenuItem';
 import FormHelperText from '@mui/material/FormHelperText';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
-// import { useEventsContext } from '../../contexts/EventsContext';
-import Events from '../Events';
-
 import { useEventsContext } from '../../contexts/EventsContext';
+import { usePlantsContext } from '../../contexts/PlantsContext';
+import { useCategoriesContext } from '../../contexts/CategoriesContext';
+// import Events from '../Events';
 
 const AddEvent = () => {
 
   const { events, setEvents } = useEventsContext();
-  // console.log('CONTEXT EVENTS', events);
+  const { plants } = usePlantsContext();
+  const { categories } = useCategoriesContext();
+
+  console.log('CONTEXT EVENTS', events);
   const navigate = useNavigate();
 
   const [values, setValues] = useState({
@@ -42,8 +45,8 @@ const AddEvent = () => {
     notes: '',
   });
 
-  const [ categories, setCategories ] = useState([]);
-  const [ plants, setPlants ] = useState([]);
+  // const [ categories, setCategories ] = useState([]);
+  // const [ plants, setPlants ] = useState([]);
 
   // console.log('PLANT ITEM ID', plants[0]._id)
 
@@ -66,39 +69,39 @@ const AddEvent = () => {
   const handleValues = event => {
     setValues({ ...values, [event.target.name]: event.target.value });
   };
-  useEffect(() => {
-    const getCategories = async () => {
-      try {
-        const {
-          data: { allCategories },
-        } = await instance.get(`/categories`);
-        // console.log('SUCCESS CATEGORIES', allCategories);
-        setCategories(allCategories)
-      }catch (err) {
-        console.log(err.response.data);
-        toast.error(err.response.data.error);
-        navigate('/categories')
-      }
-  };
-    getCategories();
-  }, [navigate]);
+  // useEffect(() => {
+  //   const getCategories = async () => {
+  //     try {
+  //       const {
+  //         data: { allCategories },
+  //       } = await instance.get(`/categories`);
+  //       // console.log('SUCCESS CATEGORIES', allCategories);
+  //       setCategories(allCategories)
+  //     }catch (err) {
+  //       console.log(err.response.data);
+  //       toast.error(err.response.data.error);
+  //       navigate('/categories')
+  //     }
+  // };
+  //   getCategories();
+  // }, [navigate]);
 
-  useEffect(() => {
-    const getPlants = async () => {
-      try {
-        const {
-          data: { allPlants },
-        } = await instance.get(`/plants`);
-        // console.log('SUCCESS PLANT', allPlants);
-        setPlants(allPlants);
-      } catch (err) {
-        console.log(err.response.data);
-        toast.error(err.response.data.error);
-        navigate('/plants');
-      }
-    };
-    getPlants();
-  }, [navigate]);
+  // useEffect(() => {
+  //   const getPlants = async () => {
+  //     try {
+  //       const {
+  //         data: { allPlants },
+  //       } = await instance.get(`/plants`);
+  //       // console.log('SUCCESS PLANT', allPlants);
+  //       setPlants(allPlants);
+  //     } catch (err) {
+  //       console.log(err.response.data);
+  //       toast.error(err.response.data.error);
+  //       navigate('/plants');
+  //     }
+  //   };
+  //   getPlants();
+  // }, [navigate]);
 
   // console.log( 'CATEGORIES', categories );
   // console.log( 'PLANTS', plants );

@@ -17,9 +17,9 @@ import moment from 'moment';
 
 const Almanac = () => {
   const navigate = useNavigate();
-  const { events, setEvents } = useEventsContext();
-  const { plants, setPlants } = usePlantsContext();
-  const { categories, setCategories } = useCategoriesContext();
+  const { events } = useEventsContext();
+  const { plants } = usePlantsContext();
+  const { categories } = useCategoriesContext();
 
   // const Jan = events.filter(event => moment(event.occurs_at).month() === 0);
   // const Feb = events.filter(event => moment(event.occurs_at).month() === 1);
@@ -172,6 +172,7 @@ const Almanac = () => {
                                   }>
                                   <PageviewIcon />
                                 </IconButton>
+                                {moment(event.occurs_at).format('D MMM')} -{' '}
                                 {event.event_name}
                               </Typography>
                             ),

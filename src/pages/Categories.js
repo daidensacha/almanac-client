@@ -30,12 +30,14 @@ import Typography from '@mui/material/Typography';
 import AnimatedPage from '../components/AnimatedPage';
 import { ButtonGroup, Button } from '@mui/material';
 import { toast } from 'react-toastify';
-// import { getCookie } from '../utils/helpers';
+import { useCategoriesContext } from '../contexts/CategoriesContext';
 import Cherries from '../images/cherries.jpg';
 import SearchBar from '../components/ui/SearchFilter';
 
 const Categories = () => {
   const navigate = useNavigate();
+
+  const {categories, setCategories} = useCategoriesContext()
 
   const [open, setOpen] = useState(false);
 
@@ -58,24 +60,24 @@ const Categories = () => {
 
   // const token = getCookie('token');
 
-  const [categories, setCategories] = useState([]);
+  // const [categories, setCategories] = useState([]);
 
-  useEffect(() => {
-    const getCategories = async () => {
-      try {
-        const {
-          data: { allCategories },
-        } = await instance.get(`/categories`);
-        // console.log('SUCCESS CATEGORIES', allCategories);
-        setCategories(allCategories);
-      } catch (err) {
-        console.log(err.response.data.error);
-        toast.error(err.response.data.error);
-        navigate('/categories');
-      }
-    };
-    getCategories();
-  }, [navigate]);
+  // useEffect(() => {
+  //   const getCategories = async () => {
+  //     try {
+  //       const {
+  //         data: { allCategories },
+  //       } = await instance.get(`/categories`);
+  //       // console.log('SUCCESS CATEGORIES', allCategories);
+  //       setCategories(allCategories);
+  //     } catch (err) {
+  //       console.log(err.response.data.error);
+  //       toast.error(err.response.data.error);
+  //       navigate('/categories');
+  //     }
+  //   };
+  //   getCategories();
+  // }, [navigate]);
 
   const archiveCategory = async id => {
     try {
@@ -102,12 +104,15 @@ const Categories = () => {
   const placeholder = 'Search Categories';
   const helpertext = 'Search: Category Name';
 
+  // Sort Categories by Name
+  const sortCategories = (a, b) => {
+    return a.category.localeCompare(b.category);
+  };
+
   useEffect(() => {
     setFilteredCategories(
-      categories.filter(category => {
-        return (
-          category.category.toLowerCase().includes(search.toLowerCase())
-        );
+      categories.sort(sortCategories).filter(category => {
+        return category.category.toLowerCase().includes(search.toLowerCase());
       }),
     );
   }, [search, categories]);
@@ -165,7 +170,10 @@ const Categories = () => {
                 alignContent: 'flex-start',
               }}>
               <Box variant='container' sx={{ width: '100%' }}>
-                <Stack direction='row' sx={{justifyContent: 'center'}} spacing={2}>
+                <Stack
+                  direction='row'
+                  sx={{ justifyContent: 'center' }}
+                  spacing={2}>
                   <Box
                     sx={{
                       display: 'flex',
@@ -180,10 +188,14 @@ const Categories = () => {
                       color='secondary'
                       size='small'
                       aria-label='small button group'>
-                      <Button color='secondary' onClick={() => navigate(`/plants`)}>
+                      <Button
+                        color='secondary'
+                        onClick={() => navigate(`/plants`)}>
                         Plants
                       </Button>
-                      <Button color='secondary' onClick={() => navigate('/events')}>
+                      <Button
+                        color='secondary'
+                        onClick={() => navigate('/events')}>
                         Events
                       </Button>
                       <Button
@@ -195,17 +207,17 @@ const Categories = () => {
                     </ButtonGroup>
                   </Box>
                 </Stack>
-                <Box sx={{display: 'flex', justifyContent: 'center' }}>
-                    <SearchBar
-                      sx={{}}
-                      found={filteredCategories}
-                      helpertext={helpertext}
-                      placeholder={placeholder}
-                      onSearch={onSearchChange}
-                      value={search}
-                      handleClearClick={handleClearClick}
-                    />
-                  </Box>
+                <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                  <SearchBar
+                    sx={{}}
+                    found={filteredCategories}
+                    helpertext={helpertext}
+                    placeholder={placeholder}
+                    onSearch={onSearchChange}
+                    value={search}
+                    handleClearClick={handleClearClick}
+                  />
+                </Box>
               </Box>
               <Zoom in={true} timeout={1000}>
                 <TableContainer sx={{ maxWidth: 650 }}>
@@ -222,147 +234,152 @@ const Categories = () => {
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {filteredCategories?.map((row, index) => (
-                        <Fragment key={row._id}>
-                          <TableRow
-                            key={row._id}
-                            sx={{
-                              '&:last-child td, &:last-child th': { border: 0 },
-                            }}>
-                            <TableCell>
-                              <IconButton
-                                aria-label='expand row'
-                                size='small'
-                                onClick={() =>
-                                  setShowDescription(
-                                    showDescription === row._id
-                                      ? false
-                                      : row._id,
-                                  )
-                                }>
-                                {showDescription === row._id ? (
-                                  <KeyboardArrowUpIcon />
-                                ) : (
-                                  <KeyboardArrowDownIcon />
-                                )}
-                              </IconButton>
-                            </TableCell>
-                            <TableCell component='th' scope='row'>
-                              {index + 1}
-                            </TableCell>
-                            <TableCell align='left'>{row.category}</TableCell>
-                            <TableCell align='center'>
-                              <Stack
-                                direction='row'
-                                align='end'
-                                spacing={2}
-                                sx={{
-                                  display: 'flex',
-                                  justifyContent: 'flex-end',
-                                }}>
+                      {filteredCategories
+                        ?.map((row, index) => (
+                          <Fragment key={row._id}>
+                            <TableRow
+                              key={row._id}
+                              sx={{
+                                '&:last-child td, &:last-child th': {
+                                  border: 0,
+                                },
+                              }}>
+                              <TableCell>
                                 <IconButton
+                                  aria-label='expand row'
                                   size='small'
-                                  comonent='button'
-                                  aria-label='view'
-                                  color='info'
                                   onClick={() =>
-                                    navigate(`/category/${row._id}`, {
-                                      state: row,
-                                    })
+                                    setShowDescription(
+                                      showDescription === row._id
+                                        ? false
+                                        : row._id,
+                                    )
                                   }>
-                                  <PageviewIcon />
+                                  {showDescription === row._id ? (
+                                    <KeyboardArrowUpIcon />
+                                  ) : (
+                                    <KeyboardArrowDownIcon />
+                                  )}
                                 </IconButton>
-                                <IconButton
-                                  size='small'
-                                  component='button'
-                                  aria-label='edit'
-                                  sx={{ color: 'secondary.main' }}
-                                  onClick={() =>
-                                    navigate(`/category/edit/${row._id}`, {
-                                      state: row,
-                                    })
-                                  }>
-                                  <EditIcon />
-                                </IconButton>
-                                <IconButton
-                                  size='small'
-                                  aria-label='delete'
-                                  sx={{ color: 'grey.700' }}
-                                  onClick={() => setOpen(true)}>
-                                  <DeleteIcon />
-                                </IconButton>
-                              </Stack>
-                            </TableCell>
-                            <Modal
-                              open={open}
-                              onClose={handleClose}
-                              aria-labelledby='modal-modal-title'
-                              aria-describedby='modal-modal-description'>
-                              <Box sx={modalStyle}>
-                                <Typography
-                                  id='modal-modal-title'
-                                  variant='h6'
-                                  component='h2'>
-                                  Are you sure?
-                                </Typography>
-                                <Grid container spacing={2}>
-                                  <Grid item xs={12} sm={6}>
-                                    <Button
-                                      type='button'
-                                      fullWidth
-                                      variant='contained'
-                                      color='secondary'
-                                      sx={{ mt: 3, mb: 2 }}
-                                      onClick={handleClose}>
-                                      Cancel
-                                    </Button>
+                              </TableCell>
+                              <TableCell component='th' scope='row'>
+                                {index + 1}
+                              </TableCell>
+                              <TableCell align='left'>{row.category}</TableCell>
+                              <TableCell align='center'>
+                                <Stack
+                                  direction='row'
+                                  align='end'
+                                  spacing={2}
+                                  sx={{
+                                    display: 'flex',
+                                    justifyContent: 'flex-end',
+                                  }}>
+                                  <IconButton
+                                    size='small'
+                                    comonent='button'
+                                    aria-label='view'
+                                    color='info'
+                                    onClick={() =>
+                                      navigate(`/category/${row._id}`, {
+                                        state: row,
+                                      })
+                                    }>
+                                    <PageviewIcon />
+                                  </IconButton>
+                                  <IconButton
+                                    size='small'
+                                    component='button'
+                                    aria-label='edit'
+                                    sx={{ color: 'secondary.main' }}
+                                    onClick={() =>
+                                      navigate(`/category/edit/${row._id}`, {
+                                        state: row,
+                                      })
+                                    }>
+                                    <EditIcon />
+                                  </IconButton>
+                                  <IconButton
+                                    size='small'
+                                    aria-label='delete'
+                                    sx={{ color: 'grey.700' }}
+                                    onClick={() => setOpen(true)}>
+                                    <DeleteIcon />
+                                  </IconButton>
+                                </Stack>
+                              </TableCell>
+                              <Modal
+                                open={open}
+                                onClose={handleClose}
+                                aria-labelledby='modal-modal-title'
+                                aria-describedby='modal-modal-description'>
+                                <Box sx={modalStyle}>
+                                  <Typography
+                                    id='modal-modal-title'
+                                    variant='h6'
+                                    component='h2'>
+                                    Are you sure?
+                                  </Typography>
+                                  <Grid container spacing={2}>
+                                    <Grid item xs={12} sm={6}>
+                                      <Button
+                                        type='button'
+                                        fullWidth
+                                        variant='contained'
+                                        color='secondary'
+                                        sx={{ mt: 3, mb: 2 }}
+                                        onClick={handleClose}>
+                                        Cancel
+                                      </Button>
+                                    </Grid>
+                                    <Grid item xs={12} sm={6}>
+                                      <Button
+                                        type='button'
+                                        fullWidth
+                                        variant='contained'
+                                        color='error'
+                                        sx={{ mt: 3, mb: 2 }}
+                                        onClick={() =>
+                                          archiveCategory(row._id)
+                                        }>
+                                        Delete
+                                      </Button>
+                                    </Grid>
                                   </Grid>
-                                  <Grid item xs={12} sm={6}>
-                                    <Button
-                                      type='button'
-                                      fullWidth
-                                      variant='contained'
-                                      color='error'
-                                      sx={{ mt: 3, mb: 2 }}
-                                      onClick={() => archiveCategory(row._id)}>
-                                      Delete
-                                    </Button>
-                                  </Grid>
-                                </Grid>
-                              </Box>
-                            </Modal>
-                          </TableRow>
-                          <TableRow>
-                            <TableCell
-                              style={{ paddingBottom: 0, paddingTop: 0 }}
-                              colSpan={6}>
-                              <Collapse
-                                in={showDescription === row._id}
-                                timeout='auto'
-                                unmountOnExit>
-                                <Box sx={{ margin: 1 }}>
-                                  <Table size='small' aria-label='purchases'>
-                                    <TableBody>
-                                      <TableRow key={row._id}>
-                                        <TableCell
-                                          sx={{
-                                            maxWidth: '310px',
-                                            borderBottom: 'none',
-                                            whiteSpace: 'normal',
-                                            wordBreak: 'break-word',
-                                            padding: 'none',
-                                          }}>
-                                          {row.description}
-                                        </TableCell>
-                                      </TableRow>
-                                    </TableBody>
-                                  </Table>
                                 </Box>
-                              </Collapse>
-                            </TableCell>
-                          </TableRow>
-                        </Fragment>
-                      ))}
+                              </Modal>
+                            </TableRow>
+                            <TableRow>
+                              <TableCell
+                                style={{ paddingBottom: 0, paddingTop: 0 }}
+                                colSpan={6}>
+                                <Collapse
+                                  in={showDescription === row._id}
+                                  timeout='auto'
+                                  unmountOnExit>
+                                  <Box sx={{ margin: 1 }}>
+                                    <Table size='small' aria-label='purchases'>
+                                      <TableBody>
+                                        <TableRow key={row._id}>
+                                          <TableCell
+                                            sx={{
+                                              maxWidth: '310px',
+                                              borderBottom: 'none',
+                                              whiteSpace: 'normal',
+                                              wordBreak: 'break-word',
+                                              padding: 'none',
+                                            }}>
+                                            {row.description}
+                                          </TableCell>
+                                        </TableRow>
+                                      </TableBody>
+                                    </Table>
+                                  </Box>
+                                </Collapse>
+                              </TableCell>
+                            </TableRow>
+                          </Fragment>
+                        ))}
                     </TableBody>
                   </Table>
                 </TableContainer>

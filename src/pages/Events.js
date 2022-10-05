@@ -4,7 +4,6 @@ import instance from '../utils/axiosClient';
 import Container from '@mui/material/Container';
 import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
-import Fab from '@mui/material/Fab';
 import Stack from '@mui/material/Stack';
 import IconButton from '@mui/material/IconButton';
 import AddIcon from '@mui/icons-material/Add';
@@ -26,11 +25,11 @@ import PageviewIcon from '@mui/icons-material/Pageview';
 import TipsAndUpdatesIcon from '@mui/icons-material/TipsAndUpdates';
 import { toast } from 'react-toastify';
 import { Fade, Zoom } from '@mui/material';
-// import Berries from '../images/mockup-graphics-mw233LhCbQ8-unsplash.jpg';
 import Raspberries from '../images/raspberries.jpg';
 import AnimatedPage from '../components/AnimatedPage';
 import SearchBar from '../components/ui/SearchFilter';
 import moment from 'moment';
+import { useEventsContext } from '../contexts/EventsContext';
 
 const modalStyle = {
   position: 'absolute',
@@ -46,6 +45,10 @@ const modalStyle = {
 
 const Events = () => {
   const navigate = useNavigate();
+
+  // const { events, setEvents } = useEventsContext();
+
+  // console.log('EVENTS CONTEXT', events);
 
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
@@ -83,7 +86,6 @@ const Events = () => {
       // console.log('ARCHIVE EVENT SUCCESS', `${archivedEvent.archived}`);
       handleClose();
       setEvents(prev => prev.filter(event => event._id !== id));
-
     } catch (err) {
       console.log(err.response.data.error);
       toast.error(err.response.data.error);
@@ -96,16 +98,28 @@ const Events = () => {
 
   // Prop variables for SearchBar
   const placeholder = 'Search Events';
-  const helpertext = 'Search: event, plant, category or month'
+  const helpertext = 'Search: event, plant, category or month';
+
+  // Sort Events by Name
+  const sortEvents = (a, b) => {
+    return a.event_name.localeCompare(b.event_name);
+  };
 
   useEffect(() => {
     setFilteredEvents(
-      events.filter(event => {
+      events.sort(sortEvents).filter(event => {
         return (
           event.event_name.toLowerCase().includes(search.toLowerCase()) ||
-          event.plant.common_name.toLowerCase().includes(search.toLowerCase()) ||
-          event.category.category.toLowerCase().includes(search.toLowerCase()) ||
-          moment(event.occurs_at).format('MMMM').toLowerCase().includes(search.toLowerCase())
+          event.plant.common_name
+            .toLowerCase()
+            .includes(search.toLowerCase()) ||
+          event.category.category
+            .toLowerCase()
+            .includes(search.toLowerCase()) ||
+          moment(event.occurs_at)
+            .format('MMMM')
+            .toLowerCase()
+            .includes(search.toLowerCase())
         );
       }),
     );
@@ -164,48 +178,51 @@ const Events = () => {
                 alignContent: 'flex-start',
               }}>
               <Box variant='container' sx={{ width: '100%' }}>
-                  <Stack direction='row' sx={{justifyContent: 'center'}} spacing={2}>
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignContent: 'center',
-                        '& > *': {
-                          m: 1,
-                        },
-                      }}>
-                      <ButtonGroup
-                        variant='outlined'
-                        color='secondary'
-                        size='small'
-                        sx={{ mx: 'auto' }}
-                        aria-label='small button group'>
-                        <Button onClick={() => navigate(`/plants`)}>
-                          Plants
-                        </Button>
-                        <Button
-                          variant='contained'
-                          startIcon={<AddIcon />}
-                          onClick={() => navigate('/event/add')}>
-                          Event
-                        </Button>
-                        <Button onClick={() => navigate(`/categories`)}>
-                          Categories
-                        </Button>
-                      </ButtonGroup>
-                    </Box>
-                  </Stack>
-                  <Box sx={{display: 'flex', justifyContent: 'center' }}>
-                    <SearchBar
-                      sx={{}}
-                      found={filteredEvents}
-                      helpertext={helpertext}
-                      placeholder={placeholder}
-                      onSearch={onSearchChange}
-                      value={search}
-                      handleClearClick={handleClearClick}
-                    />
+                <Stack
+                  direction='row'
+                  sx={{ justifyContent: 'center' }}
+                  spacing={2}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignContent: 'center',
+                      '& > *': {
+                        m: 1,
+                      },
+                    }}>
+                    <ButtonGroup
+                      variant='outlined'
+                      color='secondary'
+                      size='small'
+                      sx={{ mx: 'auto' }}
+                      aria-label='small button group'>
+                      <Button onClick={() => navigate(`/plants`)}>
+                        Plants
+                      </Button>
+                      <Button
+                        variant='contained'
+                        startIcon={<AddIcon />}
+                        onClick={() => navigate('/event/add')}>
+                        Event
+                      </Button>
+                      <Button onClick={() => navigate(`/categories`)}>
+                        Categories
+                      </Button>
+                    </ButtonGroup>
                   </Box>
+                </Stack>
+                <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                  <SearchBar
+                    sx={{}}
+                    found={filteredEvents}
+                    helpertext={helpertext}
+                    placeholder={placeholder}
+                    onSearch={onSearchChange}
+                    value={search}
+                    handleClearClick={handleClearClick}
+                  />
+                </Box>
               </Box>
               <Zoom in={true} timeout={1000}>
                 <TableContainer sx={{ maxWidth: 650 }}>

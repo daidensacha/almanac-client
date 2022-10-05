@@ -76,7 +76,7 @@ const Profile = () => {
     setLoading(true);
     const url = `http://climateapi.scottpinkelman.com/api/v1/location/${latitude}/${longitude}`;
     try {
-      const res = await fetch(url, { referrerPolicy: 'unsafe-url' });
+      const res = await fetch(url);
       const data = await res.json();
       console.log({ data });
       const { koppen_geiger_zone, zone_description } = data.return_values[0];

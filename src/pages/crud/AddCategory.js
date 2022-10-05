@@ -13,7 +13,6 @@ import { getCookie } from '../../utils/helpers';
 import { Fade, Zoom } from '@mui/material';
 import Pumpkin from '../../images/pumpkin.jpg';
 import CucumberSlice from '../../images/cucumber_slice.jpg';
-
 import { useCategoriesContext } from '../../contexts/CategoriesContext';
 
 const AddCategory = () => {

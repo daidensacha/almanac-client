@@ -1,25 +1,26 @@
 import { useState } from 'react';
-import { useNavigate, Link as RouterLink } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import instance from '../../utils/axiosClient';
 import Container from '@mui/material/Container';
 import Grid from '@mui/material/Grid';
-// import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
-import Link from '@mui/material/Link';
 import { toast } from 'react-toastify';
 import AnimatedPage from '../../components/AnimatedPage';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import MomentUtils from '@date-io/moment';
+import { usePlantsContext } from '../../contexts/PlantsContext';
 
 import axios from 'axios';
 
 const AddPlant = () => {
 
   const navigate = useNavigate();
+
+  const { setPlants } = usePlantsContext();
 
   const [values, setValues] = useState({
     common_name: '',
@@ -41,20 +42,20 @@ const AddPlant = () => {
   console.log('VALUES', values);
   // console.log('SELECTED DATE', selectedDate);
 
-  const {
-    common_name,
-    botanical_name,
-    sow_at,
-    plant_at,
-    harvest_at,
-    harvest_to,
-    fertilise,
-    fertiliser_type,
-    spacing,
-    depth,
-    notes,
-    // buttonText,
-  } = values;
+  // const {
+  //   common_name,
+  //   botanical_name,
+  //   sow_at,
+  //   plant_at,
+  //   harvest_at,
+  //   harvest_to,
+  //   fertilise,
+  //   fertiliser_type,
+  //   spacing,
+  //   depth,
+  //   notes,
+  //   // buttonText,
+  // } = values;
 
   // Handle form values and set to state
   const handleValues = event => {
@@ -81,11 +82,12 @@ const AddPlant = () => {
           depth: values.depth,
           notes: values.notes,
         });
+        setPlants(prev => [...prev, newPlant]);
         console.log('PLANT CREATED', newPlant);
         toast.success('Plant created');
         navigate('/plants');
       } catch (error) {
-        console.log('PLANT CREATE ERROR', error.response.data);
+        console.log('PLANT CREATE ERROR', error.response.data.error);
         toast.error(error.response.data.error);
       }
     };

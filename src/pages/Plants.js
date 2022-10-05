@@ -29,6 +29,7 @@ import instance from '../utils/axiosClient';
 import Berries from '../images/berries.jpg';
 import RandomImage from '../images/RandomImage';
 import SearchBar from '../components/ui/SearchFilter';
+import { usePlantsContext } from '../contexts/PlantsContext';
 
 const modalStyle = {
   position: 'absolute',
@@ -45,30 +46,32 @@ const modalStyle = {
 const Plants = () => {
   const navigate = useNavigate();
 
+  const { plants, setPlants } = usePlantsContext();
+
   const randomImage = RandomImage();
 
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
-  const [plants, setPlants] = useState([]);
+  // const [plants, setPlants] = useState([]);
 
-  useEffect(() => {
-    const getPlants = async () => {
-      try {
-        const {
-          data: { allPlants },
-        } = await instance.get(`/plants`);
-        // console.log('SUCCESS PLANT', allPlants);
-        setPlants(allPlants);
-      } catch (err) {
-        console.log(err.response.data.error);
-        toast.error(err.response.data.error);
-        navigate('/plants');
-      }
-    };
-    getPlants();
-  }, [navigate]);
+  // useEffect(() => {
+  //   const getPlants = async () => {
+  //     try {
+  //       const {
+  //         data: { allPlants },
+  //       } = await instance.get(`/plants`);
+  //       // console.log('SUCCESS PLANT', allPlants);
+  //       setPlants(allPlants);
+  //     } catch (err) {
+  //       console.log(err.response.data.error);
+  //       toast.error(err.response.data.error);
+  //       navigate('/plants');
+  //     }
+  //   };
+  //   getPlants();
+  // }, [navigate]);
 
   const archivePlant = async id => {
     // console.log('DELETE', id);
@@ -97,9 +100,14 @@ const Plants = () => {
   const placeholder = 'Search Plants';
   const helpertext = 'Search: Common or Botanical name';
 
+  // Sort Plants by Name
+  const sortPlants = (a, b) => {
+    return a.common_name.localeCompare(b.common_name);
+  };
+
   useEffect(() => {
     setFilteredPlants(
-      plants.filter(plant => {
+      plants.sort(sortPlants).filter(plant => {
         return (
           plant.common_name.toLowerCase().includes(search.toLowerCase()) ||
           plant.botanical_name.toLowerCase().includes(search.toLowerCase())

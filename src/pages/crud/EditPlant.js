@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import {
   useNavigate,
-  useParams,
   useLocation,
   Link as RouterLink,
 } from 'react-router-dom';
@@ -19,13 +18,16 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import MomentUtils from '@date-io/moment';
 import instance from '../../utils/axiosClient';
+import { usePlantsContext } from '../../contexts/PlantsContext';
 
 const EditPlant = () => {
   const { state } = useLocation();
-  const { id } = useParams();
-  console.log('ID', id);
+  // const { id } = useParams();
+  // console.log('ID', id);
   console.log('STATE', state);
   const navigate = useNavigate();
+
+  const { setPlants } = usePlantsContext();
 
   const [values, setValues] = useState({
     common_name: '',
@@ -61,7 +63,7 @@ const EditPlant = () => {
     try {
       const {
         data: { updatedPlant },
-      } = await instance.put(`/plant/update/${id}`, {
+      } = await instance.put(`/plant/update/${state._id}`, {
         common_name: values.common_name,
         botanical_name: values.botanical_name,
         sow_at: values.sow_at,
@@ -75,10 +77,14 @@ const EditPlant = () => {
         notes: values.notes,
       });
       // console.log('PLANT UPDATED', updatedPlant);
+      //spread state, exclude current plant, add updated plant
+      setPlants((prev) => [
+        ...prev.filter((plant) => plant._id !== state._id, updatedPlant),
+      ]);
       toast.success('Plant updated');
       navigate('/plants');
     } catch (error) {
-      console.log(error);
+      // console.log(error);
       console.log('PLANT EDIT ERROR', error.response.data.error);
       toast.error(error.response.data.error);
     }

@@ -1,15 +1,12 @@
-import { useState, useEffect } from 'react';
 import {
   useNavigate,
-  useParams,
   useLocation,
-  Link as RouterLink,
 } from 'react-router-dom';
-import instance from '../../utils/axiosClient';
+// import instance from '../../utils/axiosClient';
 import { Container, Grid, Box } from '@mui/material';
 import { Fade, Zoom } from '@mui/material';
 import { List, ListItem, ListItemText } from '@mui/material';
-import { Card, CardContent, CardMedia, CardActions } from '@mui/material';
+import { Card, CardContent, CardMedia } from '@mui/material';
 import { Button, IconButton, ListItemIcon } from '@mui/material';
 import CategoryIcon from '@mui/icons-material/Category';
 import Stack from '@mui/material/Stack';
@@ -19,7 +16,7 @@ import PageviewIcon from '@mui/icons-material/Pageview';
 import Typography from '@mui/material/Typography';
 import AnimatedPage from '../../components/AnimatedPage';
 import moment from 'moment';
-import { useEventsContext } from '../../contexts/EventsContext';
+// import { useEventsContext } from '../../contexts/EventsContext';
 import { usePlantsContext } from '../../contexts/PlantsContext';
 import { useCategoriesContext } from '../../contexts/CategoriesContext';
 import Broccoli from '../../images/broccoli.jpg';
@@ -32,9 +29,9 @@ const ViewEvent = () => {
   // console.log('ID', id);
   const navigate = useNavigate();
 
-  const { events, setEvents } = useEventsContext();
-  const { plants, setPlants } = usePlantsContext();
-  const { categories, setCategories } = useCategoriesContext();
+  // const { events, setEvents } = useEventsContext();
+  const { plants  } = usePlantsContext();
+  const { categories } = useCategoriesContext();
 
   // const plant_name = state.plant.common_name;
   const filteredPlants = plants.filter(plant => plant._id === state.plant._id);
@@ -154,13 +151,13 @@ const ViewEvent = () => {
                       </Box>{' '}
                       {moment(state.occurs_at).format('D MMM') ||
                         ' ______________ '}
-                      ,{' '}
+                      {' '}
                       {state.occurs_to && (
                         <Box component='span' fontWeight='bold'>
                           to
                         </Box>
                       )}
-                      {state.occurs_to && state.occurs_to}
+                      {state.occurs_to && moment(state.occurs_to).format('D MMM')}
                     </Typography>
                     <Typography variant='body2' color='text.secondary'>
                       <Box component='span' fontWeight='bold'>
