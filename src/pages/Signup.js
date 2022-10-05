@@ -58,6 +58,7 @@ const Signup = () => {
       })
       .catch(error => {
         console.log('SIGNUP ERROR', error.response.data);
+        setLoading(false);
         setValues({ ...values, buttonText: 'Sign Up' });
         toast.error(error.response.data.error);
       });

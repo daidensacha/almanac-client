@@ -68,6 +68,7 @@ const Signin = () => {
       })
       .catch(error => {
         console.log('SIGNIN ERROR', error.response.data);
+        setLoading(false);
         setValues({ ...values, buttonText: 'Sign In' });
         toast.error(error.response.data.error);
       });
