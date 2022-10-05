@@ -10,7 +10,7 @@ import AccountCircle from '@mui/icons-material/AccountCircle';
 import Container from '@mui/material/Container';
 import Button from '@mui/material/Button';
 import MenuItem from '@mui/material/MenuItem';
-import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 import useScrollTrigger from '@mui/material/useScrollTrigger';
 import { isAuth, signout } from '../../utils/helpers';
 import { useAuthContext } from '../../contexts/AuthContext';
@@ -68,7 +68,6 @@ const settings = user
       { menuTitle: 'Sign up', pageUrl: 'signup' },
     ];
 
-  const navigate = useNavigate();
 
   const [anchorElNav, setAnchorElNav] = React.useState(null);
   const [anchorElUser, setAnchorElUser] = React.useState(null);

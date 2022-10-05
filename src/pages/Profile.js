@@ -60,48 +60,26 @@ const Profile = () => {
   const [userZone, setUserZone] = useState(userZoneInititial);
 
   const getClimateZone = async (latitude, longitude) => {
-    setLoading(true)
+    setLoading(true);
     try {
       const {
         data: { climateZone },
       } = await instance.get(`/climate-zone/${latitude}/${longitude}`);
       console.log('SUCCESS climateZone', climateZone);
-      const { koppen_geiger_zone, zone_description } = climateZone.return_values[0];
+      const { koppen_geiger_zone, zone_description } =
+        climateZone.return_values[0];
       setLocation(prevState => ({
         ...prevState,
         loading: false,
         koppen_geiger_zone: `${koppen_geiger_zone}`,
         zone_description: `${zone_description}`,
       }));
-      setLoading(false)
+      setLoading(false);
     } catch (err) {
       console.log(err);
     }
   };
 
-  // const {latitude, longitude} = location;
-  // Fetch climage zone data for users location
-  // const getClimateZone = async (latitude, longitude) => {
-  //   setLoading(true);
-  //   const url = `http://climateapi.scottpinkelman.com/api/v1/location/${latitude}/${longitude}`;
-  //   try {
-  //     const res = await fetch(url);
-  //     const data = await res.json();
-  //     console.log({ data });
-  //     const { koppen_geiger_zone, zone_description } = data.return_values[0];
-  //     setLocation(prevState => ({
-  //       ...prevState,
-  //       loading: false,
-  //       koppen_geiger_zone: `${koppen_geiger_zone}`,
-  //       zone_description: `${zone_description}`,
-  //     }));
-  //     setLoading(false);
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
-  // console.log({ location });
-  // Geolocation successCallback
   const successPosition = position => {
     setLocation(prevState => ({
       ...prevState,

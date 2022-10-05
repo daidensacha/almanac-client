@@ -3,7 +3,6 @@ import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Grid from '@mui/material/Grid';
 import CropsAerial1 from '../images/crops_aerial_1.jpg';
-import CropsAerial2 from '../images/crops_aerial_2.jpg';
 
 const TriviaSection = () => {
   return (

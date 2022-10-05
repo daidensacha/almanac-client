@@ -53,91 +53,16 @@ const EditEvent = () => {
   //   repeat_frequency: 0,
   //   notes: '',
   // });
-  // setValues((prev) => ({ ...prev,
-  //   event_name: state.event_name,
-  //   description: state.description,
-  //   category_id: state.category_id,
-  //   plant_id: state.plant_id,
-  //   occurs_at: state.occurs_at,
-  //   occurs_to: state.occurs_to,
-  //   repeat_cycle: state.repeat_cycle,
-  //   repeat_frequency: state.repeat_frequency,
-  //   notes: state.notes,
-  //  }));
-  // setValues({ ...state });
 
-  // const [categories, setCategories] = useState([]);
-  // const [plants, setPlants] = useState([]);
+
 
   // Handle form values and set to state
   const handleValues = event => {
     setValues({ ...values, [event.target.name]: event.target.value });
     console.log(event.target.name, event.target.value);
-    // console.log('Select event', event.currentTarget);
   };
 
-  // useEffect(() => {
-  //   const getCategories = async () => {
-  //     try {
-  //       const {
-  //         data: { allCategories },
-  //       } = await instance.get(`/categories`);
-  //       // console.log('SUCCESS CATEGORIES', allCategories);
-  //       setCategories(allCategories);
-  //     } catch (err) {
-  //       console.log(err.response.data);
-  //       toast.error(err.response.data.error);
-  //       navigate('/categories');
-  //     }
-  //   };
-  //   getCategories();
-  // }, [navigate]);
 
-  // useEffect(() => {
-  //   const getPlants = async () => {
-  //     try {
-  //       const {
-  //         data: { allPlants },
-  //       } = await instance.get(`/plants`);
-  //       // console.log('SUCCESS PLANT', allPlants);
-  //       setPlants(allPlants);
-  //     } catch (err) {
-  //       console.log(err.response.data);
-  //       toast.error(err.response.data.error);
-  //       navigate('/plants');
-  //     }
-  //   };
-  //   getPlants();
-  // }, [navigate]);
-
-  // console.log('STATE', state);
-
-  // const id = state._id;
-
-  const category_id = values.category._id;
-  // const category_id = state.category._id;
-  // const category_name = state.category.category || '';
-  const plant_id = values.plant._id || '';
-  // const plant_id = state.plant._id || '';
-  // const plant_name = state.plant.common_name || '';
-
-  // console.log('values.plant_id typeof', typeof values.plant_id);
-  // const { event_name, description, occurs_at, month, repeat_cycle, repeat_frequency, notes } = state;
-
-  // useEffect(() => {
-  //   setValues(prev => ({ ...prev,
-  //     event_name,
-  //     description,
-  //     category_id,
-  //     plant_id,
-  //     occurs_at,
-  //     occurs_to,
-  //     month,
-  //     repeat_cycle,
-  //     repeat_frequency,
-  //     notes,
-  //      }));
-  // }, []);
   useEffect(() => {
     setValues(prev => ({
       ...prev,
@@ -146,7 +71,6 @@ const EditEvent = () => {
     }));
   }, [state.category._id, state.plant._id]);
 
-  // console.log('saved_state_values', values);
 
   const handleSubmit = async event => {
     event.preventDefault();
@@ -243,7 +167,6 @@ const EditEvent = () => {
                       id='category_id'
                       name='category_id'
                       value={values?.category_id || ''}
-                      // MUI: You have provided an out-of-range value `undefined`
                       label='Category'
                       onChange={handleValues}>
                       <MenuItem value={''}>
@@ -270,7 +193,6 @@ const EditEvent = () => {
                       id='plant_id'
                       name='plant_id'
                       value={values?.plant_id || ''}
-                      // MUI: You have provided an out-of-range value `undefined`
                       label='Plant'
                       onChange={handleValues}>
                       <MenuItem value={''}>
@@ -324,7 +246,6 @@ const EditEvent = () => {
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <TextField
-                    // defaultValue={0}
                     value={values.repeat_frequency}
                     name='repeat_frequency'
                     type='number'

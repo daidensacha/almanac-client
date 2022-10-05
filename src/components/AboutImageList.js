@@ -2,7 +2,6 @@ import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
 import WaSunset from '../images/wa-sunset.jpg'
 import Koala from '../images/wa-koala.jpg'
-import Kangaroos from '../images/wa-kangaroos.jpg'
 import Beach from '../images/wa-south-beach.jpg'
 
 function srcset(image, size, rows = 1, cols = 1) {

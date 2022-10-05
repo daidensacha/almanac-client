@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Container, Divider, Grid } from '@mui/material';
 import Box from '@mui/material/Box';
@@ -10,26 +9,15 @@ import { useCategoriesContext } from '../contexts/CategoriesContext';
 import AnimatedPage from '../components/AnimatedPage';
 import IconButton from '@mui/material/IconButton';
 import PageviewIcon from '@mui/icons-material/Pageview';
-// import Button from '@mui/material/Button';
-// import ButtonGroup from '@mui/material/ButtonGroup';
 import { ButtonGroup, Button } from '@mui/material';
 import moment from 'moment';
 
 const Almanac = () => {
   const navigate = useNavigate();
+
   const { events } = useEventsContext();
   const { plants } = usePlantsContext();
   const { categories } = useCategoriesContext();
-
-  // const Jan = events.filter(event => moment(event.occurs_at).month() === 0);
-  // const Feb = events.filter(event => moment(event.occurs_at).month() === 1);
-  // const Mar = events.filter(event => moment(event.occurs_at).month() === 2);
-  // const Apr = events.filter(event => moment(event.occurs_at).month() === 3);
-
-  // console.log('JAN', Jan);
-  // console.log('FEB', Feb);
-  // console.log('MAR', Mar);
-  // console.log('APR', Apr);
 
   const monthNames = [
     'January',
@@ -57,8 +45,6 @@ const Almanac = () => {
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            // alignItems: 'flex-start',
-            // justifyContent: 'center',
           }}>
           <h1>Almanac</h1>
           <Box

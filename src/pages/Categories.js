@@ -85,7 +85,7 @@ const Categories = () => {
       } = await instance.patch(`/category/archive/${id}`, {
         archived: true,
       });
-      // console.log('ARCHIVE PLANT SUCCESS', `${archiveCategory.archived}`);
+      console.log('ARCHIVE CATEGORY SUCCESS', archiveCategory);
       handleClose();
       setCategories(prev => prev.filter(category => category._id !== id));
     } catch (err) {
