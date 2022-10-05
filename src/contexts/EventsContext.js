@@ -3,7 +3,7 @@ import instance from '../utils/axiosClient';
 
 const EventContextProvider = ({ children }) => {
   const [events, setEvents] = useState([]);
-
+  console.log('CONTEXT EVENTS', events);
   useEffect(() => {
     const getEvents = async () => {
       try {

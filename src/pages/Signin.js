@@ -18,7 +18,7 @@ import { useAuthContext } from '../contexts/AuthContext';
 
 const Signin = () => {
   const navigate = useNavigate();
-  const {user, setUser} = useAuthContext()
+  const { setUser } = useAuthContext()
 
   const [values, setValues] = useState({
     email: '',

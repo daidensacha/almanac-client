@@ -9,16 +9,18 @@ import TextField from '@mui/material/TextField';
 import AnimatedPage from '../../components/AnimatedPage';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.min.css';
-import { getCookie } from '../../utils/helpers';
-import { Fade, Zoom } from '@mui/material';
+// import { getCookie } from '../../utils/helpers';
+import { Fade } from '@mui/material';
 import Pumpkin from '../../images/pumpkin.jpg';
 import CucumberSlice from '../../images/cucumber_slice.jpg';
 import { useCategoriesContext } from '../../contexts/CategoriesContext';
+// import { useAuthContext } from '../contexts/AuthContext';
 
 const AddCategory = () => {
   const navigate = useNavigate();
 
   const {setCategories} = useCategoriesContext();
+
   const [values, setValues] = useState({
     category: '',
     description: '',
@@ -31,7 +33,7 @@ const AddCategory = () => {
 
   console.log(values);
 
-  const token = getCookie('token');
+  // const token = getCookie('token');
 
   const handleSubmit = event => {
     event.preventDefault();

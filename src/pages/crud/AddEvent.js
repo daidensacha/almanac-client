@@ -1,13 +1,11 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, Link as RouterLink } from 'react-router-dom';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import instance from '../../utils/axiosClient';
 import Container from '@mui/material/Container';
 import Grid from '@mui/material/Grid';
-// import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
-import Link from '@mui/material/Link';
 import { toast } from 'react-toastify';
 import AnimatedPage from '../../components/AnimatedPage';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -22,7 +20,6 @@ import Select from '@mui/material/Select';
 import { useEventsContext } from '../../contexts/EventsContext';
 import { usePlantsContext } from '../../contexts/PlantsContext';
 import { useCategoriesContext } from '../../contexts/CategoriesContext';
-// import Events from '../Events';
 
 const AddEvent = () => {
 
@@ -45,67 +42,10 @@ const AddEvent = () => {
     notes: '',
   });
 
-  // const [ categories, setCategories ] = useState([]);
-  // const [ plants, setPlants ] = useState([]);
-
-  // console.log('PLANT ITEM ID', plants[0]._id)
-
-  // console.log('VALUES', values);
-  // console.log('SELECTED DATE', selectedDate);
-
-  // const {
-  //   event_name,
-  //   description,
-  //   occurs_at,
-  //   occurs_to
-  //   repeat_cycle,
-  //   repeat_frequency,
-  //   notes,
-  //   plant_id,
-  //   category_id,
-  // } = values;
-
   // Handle form values and set to state
   const handleValues = event => {
     setValues({ ...values, [event.target.name]: event.target.value });
   };
-  // useEffect(() => {
-  //   const getCategories = async () => {
-  //     try {
-  //       const {
-  //         data: { allCategories },
-  //       } = await instance.get(`/categories`);
-  //       // console.log('SUCCESS CATEGORIES', allCategories);
-  //       setCategories(allCategories)
-  //     }catch (err) {
-  //       console.log(err.response.data);
-  //       toast.error(err.response.data.error);
-  //       navigate('/categories')
-  //     }
-  // };
-  //   getCategories();
-  // }, [navigate]);
-
-  // useEffect(() => {
-  //   const getPlants = async () => {
-  //     try {
-  //       const {
-  //         data: { allPlants },
-  //       } = await instance.get(`/plants`);
-  //       // console.log('SUCCESS PLANT', allPlants);
-  //       setPlants(allPlants);
-  //     } catch (err) {
-  //       console.log(err.response.data);
-  //       toast.error(err.response.data.error);
-  //       navigate('/plants');
-  //     }
-  //   };
-  //   getPlants();
-  // }, [navigate]);
-
-  // console.log( 'CATEGORIES', categories );
-  // console.log( 'PLANTS', plants );
-  // console.log('PLANT ITEM ID', plants[0]._id)
 
 
   const handleSubmit = event => {

@@ -17,7 +17,6 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import Collapse from '@mui/material/Collapse';
 import CheckIcon from '@mui/icons-material/Check';
 import Box from '@mui/material/Box';
-import Fab from '@mui/material/Fab';
 import Stack from '@mui/material/Stack';
 import IconButton from '@mui/material/IconButton';
 import { Fade, Zoom } from '@mui/material';
@@ -41,7 +40,7 @@ const Categories = () => {
 
   const [open, setOpen] = useState(false);
 
-  const handleOpen = () => setOpen(true);
+  // const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
   const [showDescription, setShowDescription] = useState(false);
@@ -79,6 +78,7 @@ const Categories = () => {
   //   getCategories();
   // }, [navigate]);
 
+
   const archiveCategory = async id => {
     try {
       const {
@@ -93,6 +93,12 @@ const Categories = () => {
       console.log(err.response.data.error);
       toast.error(err.response.data.error);
     }
+  };
+  
+  const [deleteCurrentCategory, setDeleteCurrentCategory] = useState(null);
+  const deleteHandler = (e, id) => {
+    setDeleteCurrentCategory(id);
+    setOpen(true)
   };
 
   // Start of Search Filter
@@ -303,7 +309,8 @@ const Categories = () => {
                                     size='small'
                                     aria-label='delete'
                                     sx={{ color: 'grey.700' }}
-                                    onClick={() => setOpen(true)}>
+                                    // onClick={() => setOpen(true)}
+                                    onClick={(e) => deleteHandler(e, row._id)}>
                                     <DeleteIcon />
                                   </IconButton>
                                 </Stack>
@@ -340,7 +347,8 @@ const Categories = () => {
                                         color='error'
                                         sx={{ mt: 3, mb: 2 }}
                                         onClick={() =>
-                                          archiveCategory(row._id)
+                                          archiveCategory(deleteCurrentCategory)
+                                          // archiveCategory(row._id)
                                         }>
                                         Delete
                                       </Button>

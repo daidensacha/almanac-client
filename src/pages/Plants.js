@@ -27,7 +27,7 @@ import TableBody from '@mui/material/TableBody';
 import { toast } from 'react-toastify';
 import instance from '../utils/axiosClient';
 import Berries from '../images/berries.jpg';
-import RandomImage from '../images/RandomImage';
+// import RandomImage from '../images/RandomImage';
 import SearchBar from '../components/ui/SearchFilter';
 import { usePlantsContext } from '../contexts/PlantsContext';
 
@@ -47,11 +47,11 @@ const Plants = () => {
   const navigate = useNavigate();
 
   const { plants, setPlants } = usePlantsContext();
-
-  const randomImage = RandomImage();
+  // console.log('aaaaaaaaaaaaaaaaaaaaaaaaaaaaa', plants);
+  // const randomImage = RandomImage();
 
   const [open, setOpen] = useState(false);
-  const handleOpen = () => setOpen(true);
+  // const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
   // const [plants, setPlants] = useState([]);
@@ -81,15 +81,24 @@ const Plants = () => {
       } = await instance.patch(`/plant/archive/${id}`, {
         archived: true,
       });
+
       // console.log('ARCHIVE PLANT SUCCESS', `${archivedPlant.archived}`);
       handleClose();
-      toast.success(`${archivedPlant.common_name} successfully archived`);
       setPlants(prev => prev.filter(plant => plant._id !== id));
+      console.log('ARCHIVE PLANT SUCCESS', `${archivedPlant.archived}`);
+      toast.success(`${archivedPlant.common_name} successfully archived`);
     } catch (err) {
       console.log(err.response.data);
       toast.error(err.response.data.error);
     }
   };
+
+  const [deleteCurrentPlant, setDeleteCurrentPlant] = useState(null);
+  const deleteHandler = (e, id) => {
+    setDeleteCurrentPlant(id);
+    setOpen(true)
+  };
+
 
   // start of search filter
   const [search, setSearch] = useState('');
@@ -102,15 +111,18 @@ const Plants = () => {
 
   // Sort Plants by Name
   const sortPlants = (a, b) => {
-    return a.common_name.localeCompare(b.common_name);
+    return a?.common_name.localeCompare(b?.common_name);
   };
 
   useEffect(() => {
+    // console.log('what is sort', plants?.sort(sortPlants));
+    // search &&
     setFilteredPlants(
-      plants.sort(sortPlants).filter(plant => {
+      plants?.sort(sortPlants).filter(plant => {
+        // console.log('from use effect', plant);
         return (
-          plant.common_name.toLowerCase().includes(search.toLowerCase()) ||
-          plant.botanical_name.toLowerCase().includes(search.toLowerCase())
+          plant?.common_name.toLowerCase().includes(search.toLowerCase()) ||
+          plant?.botanical_name.toLowerCase().includes(search.toLowerCase())
         );
       }),
     );
@@ -170,51 +182,54 @@ const Plants = () => {
                 alignContent: 'flex-start',
               }}>
               <Box variant='container' sx={{ width: '100%' }}>
-                  <Stack direction='row' sx={{justifyContent: 'center'}} spacing={2}>
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignContent: 'center',
-                        '& > *': {
-                          m: 1,
-                        },
-                      }}>
-                      <ButtonGroup
-                        variant='outlined'
+                <Stack
+                  direction='row'
+                  sx={{ justifyContent: 'center' }}
+                  spacing={2}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignContent: 'center',
+                      '& > *': {
+                        m: 1,
+                      },
+                    }}>
+                    <ButtonGroup
+                      variant='outlined'
+                      color='secondary'
+                      size='small'
+                      sx={{ mx: 'auto' }}
+                      aria-label='small button group'>
+                      <Button
+                        variant='contained'
                         color='secondary'
-                        size='small'
-                        sx={{ mx: 'auto' }}
-                        aria-label='small button group'>
-                        <Button
-                          variant='contained'
-                          color='secondary'
-                          startIcon={<AddIcon />}
-                          onClick={() => navigate(`/plant/add`)}>
-                          Plant
-                        </Button>
-                        <Button
-                          color='secondary'
-                          onClick={() => navigate('/events')}>
-                          Events
-                        </Button>
-                        <Button onClick={() => navigate(`/categories`)}>
-                          Categories
-                        </Button>
-                      </ButtonGroup>
-                    </Box>
-                  </Stack>
-                  <Box sx={{display: 'flex', justifyContent: 'center' }}>
-                    <SearchBar
-                      sx={{mx:'auto'}}
-                      found={filteredPlants}
-                      helpertext={helpertext}
-                      placeholder={placeholder}
-                      onSearch={onSearchChange}
-                      value={search}
-                      handleClearClick={handleClearClick}
-                    />
+                        startIcon={<AddIcon />}
+                        onClick={() => navigate(`/plant/add`)}>
+                        Plant
+                      </Button>
+                      <Button
+                        color='secondary'
+                        onClick={() => navigate('/events')}>
+                        Events
+                      </Button>
+                      <Button onClick={() => navigate(`/categories`)}>
+                        Categories
+                      </Button>
+                    </ButtonGroup>
                   </Box>
+                </Stack>
+                <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                  <SearchBar
+                    sx={{ mx: 'auto' }}
+                    found={filteredPlants}
+                    helpertext={helpertext}
+                    placeholder={placeholder}
+                    onSearch={onSearchChange}
+                    value={search}
+                    handleClearClick={handleClearClick}
+                  />
+                </Box>
               </Box>
               <Zoom in={true} timeout={1000}>
                 <TableContainer sx={{ maxWidth: 650 }}>
@@ -275,7 +290,7 @@ const Plants = () => {
                                 size='small'
                                 aria-label='delete'
                                 sx={{ color: 'grey.700' }}
-                                onClick={() => setOpen(true)}>
+                                onClick={(e) => deleteHandler(e, row._id)}>
                                 <DeleteIcon />
                               </IconButton>
                             </Stack>
@@ -311,7 +326,7 @@ const Plants = () => {
                                     variant='contained'
                                     color='error'
                                     sx={{ mt: 3, mb: 2 }}
-                                    onClick={() => archivePlant(row._id)}>
+                                    onClick={() => archivePlant(deleteCurrentPlant)}>
                                     Delete
                                   </Button>
                                 </Grid>

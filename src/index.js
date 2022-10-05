@@ -9,6 +9,7 @@ import { BrowserRouter } from 'react-router-dom';
 import EventContextProvider from './contexts/EventsContext';
 import PlantsContextProvider from './contexts/PlantsContext';
 import CategoriesContextProvider from './contexts/CategoriesContext';
+import AuthContextProvider from './contexts/AuthContext';
 
 console.log(theme);
 const root = ReactDOM.createRoot(document.getElementById('root'));
@@ -17,6 +18,7 @@ root.render(
   <ThemeProvider theme={theme}>
     <CssBaseline />
     <BrowserRouter>
+      <AuthContextProvider>
       <EventContextProvider>
         <PlantsContextProvider>
           <CategoriesContextProvider>
@@ -24,6 +26,7 @@ root.render(
           </CategoriesContextProvider>
         </PlantsContextProvider>
       </EventContextProvider>
+      </AuthContextProvider>
     </BrowserRouter>
   </ThemeProvider>,
   // </React.StrictMode>

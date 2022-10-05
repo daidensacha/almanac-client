@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import {
   useNavigate,
   useLocation,
-  Link as RouterLink,
 } from 'react-router-dom';
 import Container from '@mui/material/Container';
 import Grid from '@mui/material/Grid';
@@ -10,7 +9,6 @@ import ArrowBackIos from '@mui/icons-material/ArrowBackIos';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
-import Link from '@mui/material/Link';
 import { toast } from 'react-toastify';
 import AnimatedPage from '../../components/AnimatedPage';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -24,7 +22,7 @@ const EditPlant = () => {
   const { state } = useLocation();
   // const { id } = useParams();
   // console.log('ID', id);
-  console.log('STATE', state);
+  // console.log('STATE', state);
   const navigate = useNavigate();
 
   const { setPlants } = usePlantsContext();
@@ -76,10 +74,10 @@ const EditPlant = () => {
         depth: values.depth,
         notes: values.notes,
       });
-      // console.log('PLANT UPDATED', updatedPlant);
+      console.log('PLANT UPDATED', updatedPlant);
       //spread state, exclude current plant, add updated plant
       setPlants((prev) => [
-        ...prev.filter((plant) => plant._id !== state._id, updatedPlant),
+        ...prev.filter((plant) => plant._id !== state._id), updatedPlant,
       ]);
       toast.success('Plant updated');
       navigate('/plants');

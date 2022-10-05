@@ -29,7 +29,7 @@ import Raspberries from '../images/raspberries.jpg';
 import AnimatedPage from '../components/AnimatedPage';
 import SearchBar from '../components/ui/SearchFilter';
 import moment from 'moment';
-import { useEventsContext } from '../contexts/EventsContext';
+// import { useEventsContext } from '../contexts/EventsContext';
 
 const modalStyle = {
   position: 'absolute',
@@ -51,7 +51,7 @@ const Events = () => {
   // console.log('EVENTS CONTEXT', events);
 
   const [open, setOpen] = useState(false);
-  const handleOpen = () => setOpen(true);
+  // const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
   const [events, setEvents] = useState([]);
@@ -83,13 +83,20 @@ const Events = () => {
       } = await instance.patch(`/event/archive/${id}`, {
         archived: true,
       });
-      // console.log('ARCHIVE EVENT SUCCESS', `${archivedEvent.archived}`);
+      console.log('ARCHIVED EVENT', archivedEvent);
       handleClose();
       setEvents(prev => prev.filter(event => event._id !== id));
+      // setPlants(prev => prev.filter(plant => plant._id !== id));
     } catch (err) {
       console.log(err.response.data.error);
       toast.error(err.response.data.error);
     }
+  };
+
+  const [deleteCurrentEvent, setDeleteCurrentEvent] = useState(null);
+  const deleteHandler = (e, id) => {
+    setDeleteCurrentEvent(id);
+    setOpen(true)
   };
 
   const [search, setSearch] = useState('');
@@ -284,7 +291,7 @@ const Events = () => {
                                 size='small'
                                 aria-label='delete'
                                 sx={{ color: 'grey.700' }}
-                                onClick={() => setOpen(true)}>
+                                onClick={(e) => deleteHandler(e, row._id)}>
                                 <DeleteIcon />
                               </IconButton>
                             </Stack>
@@ -321,7 +328,7 @@ const Events = () => {
                                     variant='contained'
                                     color='error'
                                     sx={{ mt: 3, mb: 2 }}
-                                    onClick={() => archiveEvent(row._id)}>
+                                    onClick={() => archiveEvent(deleteCurrentEvent)}>
                                     Delete
                                   </Button>
                                 </Grid>

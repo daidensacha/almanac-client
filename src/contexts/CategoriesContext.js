@@ -4,7 +4,7 @@ import instance from '../utils/axiosClient';
 const CategoriesContextProvider = ({children}) => {
 
   const [categories, setCategories] = useState([]);
-
+  console.log('CONTEXT CATEGORIES', categories);
   useEffect(() => {
     const getCategories = async () => {
       try {

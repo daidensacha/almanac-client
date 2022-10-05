@@ -28,7 +28,7 @@ import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import Activate from './pages/Activate';
 import PrivateRoutes from './pages/PrivateRoutes';
-import AuthContextProvider from './contexts/AuthContext';
+// import AuthContextProvider from './contexts/AuthContext';
 
 import { ToastContainer } from 'react-toastify';
 
@@ -42,7 +42,7 @@ function App() {
   const location = useLocation();
   return (
     <div>
-      <AuthContextProvider>
+      {/* <AuthContextProvider> */}
         <ResponsiveAppBar sx={{ bgcolor: 'primary.light' }} />
         <ToastContainer />
         <AnimatePresence mode='wait'>
@@ -76,7 +76,7 @@ function App() {
           </Routes>
         </AnimatePresence>
         <Footer />
-      </AuthContextProvider>
+      {/* </AuthContextProvider> */}
     </div>
   );
 }

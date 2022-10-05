@@ -14,7 +14,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import MomentUtils from '@date-io/moment';
 import { usePlantsContext } from '../../contexts/PlantsContext';
 
-import axios from 'axios';
+// import axios from 'axios';
 
 const AddPlant = () => {
 
@@ -37,25 +37,8 @@ const AddPlant = () => {
     // buttonText: 'Sign Up',
   });
 
-  // const [selectedDate, handleDateChange] = useState(new Date());
-
-  console.log('VALUES', values);
+  // console.log('VALUES', values);
   // console.log('SELECTED DATE', selectedDate);
-
-  // const {
-  //   common_name,
-  //   botanical_name,
-  //   sow_at,
-  //   plant_at,
-  //   harvest_at,
-  //   harvest_to,
-  //   fertilise,
-  //   fertiliser_type,
-  //   spacing,
-  //   depth,
-  //   notes,
-  //   // buttonText,
-  // } = values;
 
   // Handle form values and set to state
   const handleValues = event => {
@@ -69,7 +52,9 @@ const AddPlant = () => {
 
     const createPlant = async () => {
       try {
-        const { newPlant } = await instance.post(`/plant/create`, {
+        const {
+          data: { newPlant },
+        } = await instance.post(`/plant/create`, {
           common_name: values.common_name,
           botanical_name: values.botanical_name,
           sow_at: values.sow_at,
@@ -82,8 +67,12 @@ const AddPlant = () => {
           depth: values.depth,
           notes: values.notes,
         });
-        setPlants(prev => [...prev, newPlant]);
         console.log('PLANT CREATED', newPlant);
+        setPlants(prev => [...prev, newPlant]);
+        setValues((prev) => ({
+          ...prev,
+        }));
+
         toast.success('Plant created');
         navigate('/plants');
       } catch (error) {

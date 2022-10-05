@@ -4,7 +4,7 @@ import instance from '../utils/axiosClient';
 const PlantsContextProvider = ({children}) => {
 
   const [plants, setPlants] = useState([]);
-
+  console.log('CONTEXT PLANTS', plants);
   useEffect(() => {
     const getPlants = async () => {
       try {

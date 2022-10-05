@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link as RouterLink, useNavigate } from 'react-router-dom';
-import Link from '@mui/material/Link';
+import { useNavigate } from 'react-router-dom';
 import Container from '@mui/material/Container';
 import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
@@ -58,16 +57,6 @@ const Profile = () => {
   });
 
   // Set the state of the user climate zone data
-  // const [userZone, setUserZone] = useState({
-  //   subzone: '',
-  //   group: '',
-  //   color: '',
-  //   backgroundColor: '',
-  //   precipitationType: '',
-  //   heatLevel: '',
-  //   shortDescription: '',
-  //   longDesription: '',
-  // });
   const [userZone, setUserZone] = useState(userZoneInititial);
 
   const getClimateZone = async (latitude, longitude) => {
@@ -276,7 +265,7 @@ const Profile = () => {
     loadProfile();
   }, []);
 
-  const { role, firstname, lastname, email, password } = user;
+  const { firstname, lastname, password } = user;
   const show_location = checked;
   const { latitude, longitude, koppen_geiger_zone, zone_description } =
     location;
