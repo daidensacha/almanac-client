@@ -164,7 +164,7 @@ const ViewEvent = () => {
                       <Box component='span' fontWeight='bold'>
                         Plant:
                       </Box>{' '}
-                      {moment(state.plant_at).format('D MMM') ||
+                      {moment(state.plant.plant_at).format('D MMM') ||
                         ' ______________ '}{' '}
                       with{' '}
                       <Box component='span' fontWeight='bold'>
@@ -183,10 +183,10 @@ const ViewEvent = () => {
                       <Box component='span' fontWeight='bold'>
                         Harvest from:
                       </Box>{' '}
-                      {moment(state.harvest_at).format('D MMM') ||
+                      {moment(state.plant.harvest_at).format('D MMM') ||
                         ' ______________ '}{' '}
                       to{' '}
-                      {moment(state.harvest_to).format('D MMM') ||
+                      {moment(state.plant.harvest_to).format('D MMM') ||
                         ' ______________ '}
                     </Typography>
                     <Typography variant='body2' color='text.secondary'>

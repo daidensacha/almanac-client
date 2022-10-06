@@ -58,6 +58,7 @@ const Activate = () => {
           show: false,
         });
         toast.success(response.data.message);
+        navigate('/signin');
         // setTimeout(() => navigate('/signin'), 2000);
       })
       .catch(error => {
