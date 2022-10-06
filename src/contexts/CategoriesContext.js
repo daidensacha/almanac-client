@@ -1,7 +1,10 @@
 import { useEffect, useState, useContext, createContext } from 'react'
+import { useAuthContext } from './AuthContext';
 import instance from '../utils/axiosClient';
 
 const CategoriesContextProvider = ({children}) => {
+
+  const { user } = useAuthContext()
 
   const [categories, setCategories] = useState([]);
   console.log('CONTEXT CATEGORIES', categories);
@@ -17,8 +20,8 @@ const CategoriesContextProvider = ({children}) => {
         console.log(err.response.data.error);
       }
     };
-    getCategories();
-  }, []);
+    user && getCategories();
+  }, [user]);
 
   return (
 

@@ -1,7 +1,10 @@
 import { useEffect, useState, useContext, createContext } from 'react'
+import { useAuthContext } from './AuthContext';
 import instance from '../utils/axiosClient';
 
 const PlantsContextProvider = ({children}) => {
+
+  const { user } = useAuthContext()
 
   const [plants, setPlants] = useState([]);
   console.log('CONTEXT PLANTS', plants);
@@ -17,8 +20,8 @@ const PlantsContextProvider = ({children}) => {
         console.log(err.response.data.error);
       }
     };
-    getPlants();
-  }, []);
+    user && getPlants();
+  }, [user]);
 
   return (
 

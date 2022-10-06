@@ -1,7 +1,11 @@
 import { useEffect, useState, useContext, createContext } from 'react';
+import { useAuthContext } from './AuthContext';
 import instance from '../utils/axiosClient';
 
 const EventContextProvider = ({ children }) => {
+
+  const { user } = useAuthContext()
+
   const [events, setEvents] = useState([]);
   console.log('CONTEXT EVENTS', events);
   useEffect(() => {
@@ -17,8 +21,8 @@ const EventContextProvider = ({ children }) => {
         console.log(err.response.data.error);
       }
     };
-    getEvents();
-  }, []);
+    user && getEvents();
+  }, [user]);
 
   return (
     <EventContext.Provider value={{ events, setEvents }}>
