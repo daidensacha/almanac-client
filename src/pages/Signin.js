@@ -7,6 +7,7 @@ import Link from '@mui/material/Link';
 import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import LoginIcon from '@mui/icons-material/Login';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { Link as RouterLink, Navigate, useNavigate } from 'react-router-dom';
@@ -59,7 +60,7 @@ const Signin = () => {
             password: '',
             buttonText: 'Signed In',
           });
-          toast.success(`Hey ${response.data.user.firstname}, Welcome back!`);
+          toast.success(`Hey ${response.data.user.firstname}, Welcome!`);
           setUser(true)
           setLoading(false);
           navigate('/', { replace: true });
@@ -128,7 +129,8 @@ const Signin = () => {
             <LoadingButton
               type='submit'
               loading={loading}
-              loadingPosition="start"
+              loadingPosition="end"
+              endIcon={<LoginIcon />}
               fullWidth
               variant='contained'
               sx={{ mt: 3, mb: 2 }}>

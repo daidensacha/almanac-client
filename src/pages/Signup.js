@@ -1,6 +1,7 @@
 import AnimatedPage from '../components/AnimatedPage';
 import Avatar from '@mui/material/Avatar';
 import LoadingButton from '@mui/lab/LoadingButton';
+import PersonAddIcon from '@mui/icons-material/PersonAdd';
 // import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import Link from '@mui/material/Link';
@@ -12,7 +13,7 @@ import Container from '@mui/material/Container';
 import { Link as RouterLink } from 'react-router-dom';
 import { useState } from 'react';
 import axios from 'axios';
-import { ToastContainer, toast } from 'react-toastify';
+import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.min.css';
 
 const Signup = () => {
@@ -67,7 +68,6 @@ const Signup = () => {
   return (
     <AnimatedPage>
       <Container component='main' maxWidth='xs'>
-        <ToastContainer />
         <Box
           sx={{
             marginTop: 8,
@@ -147,7 +147,8 @@ const Signup = () => {
               type='submit'
               fullWidth
               loading={loading}
-              loadingPosition="start"
+              loadingPosition="end"
+              endIcon={<PersonAddIcon />}
               variant='contained'
               sx={{ mt: 3, mb: 2 }}>
               {buttonText}

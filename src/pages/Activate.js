@@ -13,7 +13,7 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { isExpired, decodeToken } from "react-jwt";
 import axios from 'axios';
-import { ToastContainer, toast } from 'react-toastify';
+import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.min.css';
 
 const Activate = () => {
@@ -71,7 +71,6 @@ const Activate = () => {
   return (
     <AnimatedPage>
       <Container component='main' maxWidth='xs'>
-        <ToastContainer />
         <Box
           sx={{
             marginTop: 8,

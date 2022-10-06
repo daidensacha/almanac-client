@@ -101,11 +101,7 @@ const Contact = () => {
               Submit Message
             </Button>
             <Grid container justifyContent='flex-end' sx={{mb: 4}}>
-              {/* <Grid item>
-                <Link component={RouterLink} to='/login' variant='body2'>
-                  Already have an account? Sign in
-                </Link>
-              </Grid> */}
+
             </Grid>
           </Box>
         </Box>
