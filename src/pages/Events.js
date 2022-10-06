@@ -64,7 +64,7 @@ const Events = () => {
         } = await instance.get(`/events`);
         setEvents(allEvents);
       } catch (err) {
-        console.log(err.response.data);
+        console.log(err.response.data.error);
         toast.error(err.response.data.error);
         navigate('/events');
       }
