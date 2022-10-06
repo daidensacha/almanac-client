@@ -1,7 +1,4 @@
-import {
-  useNavigate,
-  useLocation,
-} from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 // import instance from '../../utils/axiosClient';
 import { Container, Grid, Box } from '@mui/material';
 import { Fade, Zoom } from '@mui/material';
@@ -31,7 +28,7 @@ const ViewEvent = () => {
   const navigate = useNavigate();
 
   // const { events, setEvents } = useEventsContext();
-  const { plants  } = usePlantsContext();
+  const { plants } = usePlantsContext();
   const { categories } = useCategoriesContext();
 
   // const plant_name = state.plant.common_name;
@@ -151,14 +148,14 @@ const ViewEvent = () => {
                         Occurs:
                       </Box>{' '}
                       {moment(state.occurs_at).format('D MMM') ||
-                        ' ______________ '}
-                      {' '}
+                        ' ______________ '}{' '}
                       {state.occurs_to && (
                         <Box component='span' fontWeight='bold'>
                           to
                         </Box>
                       )}{' '}
-                      {state.occurs_to && moment(state.occurs_to).format('D MMM')}
+                      {state.occurs_to &&
+                        moment(state.occurs_to).format('D MMM')}
                     </Typography>
                     <Typography variant='body2' color='text.secondary'>
                       <Box component='span' fontWeight='bold'>
@@ -170,14 +167,15 @@ const ViewEvent = () => {
                       <Box component='span' fontWeight='bold'>
                         spacing
                       </Box>{' '}
-                      of {state.plant.spacing || ' ______________ '} cm
+                      of {state.plant.spacing || ' ______________ '}
                     </Typography>
                     <Typography variant='body2' color='text.secondary'>
                       <Box component='span' fontWeight='bold'>
                         Fertilise:
                       </Box>{' '}
                       {state.plant.fertilise || ' ______________ '} with{' '}
-                      {state.plant.fertiliser_type || ' ______________ '} fertiliser.
+                      {state.plant.fertiliser_type || ' ______________ '}{' '}
+                      fertiliser.
                     </Typography>
                     <Typography variant='body2' color='text.secondary'>
                       <Box component='span' fontWeight='bold'>
