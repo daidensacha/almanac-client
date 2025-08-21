@@ -1,0 +1,43 @@
+Drop-in usage guide
+
+1) Put this file into your client:
+   src/utils/unsplash.js
+
+2) Add your key to the client's .env:
+   VITE_UNSPLASH_ACCESS_KEY=YOUR_ACCESS_KEY
+   (Restart dev server after changing .env)
+
+3) Replace your image lines:
+
+PLANT (was):
+  image={`https://source.unsplash.com/featured/?${state.common_name}`}
+
+PLANT (now):
+  import { useUnsplashImage } from "../utils/unsplash";
+  const img = useUnsplashImage(state?.common_name, { width: 1200, height: 800 });
+  <CardMedia component="img" image={img} alt={state?.common_name} />
+
+EVENT (was):
+  image={`https://source.unsplash.com/featured/?${state.plant.common_name}`}
+
+EVENT (now):
+  const img = useUnsplashImage(state?.plant?.common_name, { width: 1200, height: 800 });
+  <CardMedia component="img" image={img} alt={state?.plant?.common_name} />
+
+CATEGORY (was):
+  image={`https://source.unsplash.com/featured/?${state.category}`}
+
+CATEGORY (now):
+  const img = useUnsplashImage(state?.category, { width: 1200, height: 800 });
+  <CardMedia component="img" image={img} alt={state?.category} />
+
+CAROUSEL (was):
+  backgroundImage: `url(https://source.unsplash.com/1600x900/?${props.item.name})`,
+
+CAROUSEL (now):
+  import { useUnsplashImage } from "../utils/unsplash";
+  const bg = useUnsplashImage(props?.item?.name, { width: 1600, height: 900 });
+  style={{ backgroundImage: `url(${bg})` }}
+
+
+fetch(‘https://api.unsplash.com/photos/random?query=raspberries&orientation=landscape&content_filter=high’,{headers:{Authorization:‘ywax32qY346nJqOFWh_S6-ey_qUz8Z_cfdh-BttWhSY’}}).then(r=>r.json()).then(j=>console.log(j.urls?.regular,j));
