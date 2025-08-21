@@ -1,4 +1,4 @@
-# Garden Almanac — Client
+# Garden Almanac — Client (Vite)
 
 ![](/src/images/mockup3.jpg)
 
@@ -16,9 +16,9 @@
 
 ## Stack
 
-- React 18 (VITE)
-- React Router 6???
-- MUI 6
+- React 18 (Vite)
+- React Router 6
+- MUI 6 (with date-fns for pickers)
 - Framer Motion
 - Axios (with auth helpers)
 - Toastify
@@ -32,7 +32,7 @@
 # from repo root
 npm install
 cp .env.example .env
-npm start
+npm run dev
 ```
 
 ### Requirements
@@ -46,22 +46,24 @@ Create **.env** in the client root:
 
 ```env
 # API base (server)
-REACT_APP_API=http://localhost:8000/api
+VITE_API=http://localhost:8000/api
 
 # Unsplash proxy (no key needed on client; key is stored on server)
-REACT_APP_UNSPLASH_PROXY=/api/unsplash/photos
+VITE_UNSPLASH_PROXY=/api/unsplash/photos
 ```
 
 > 🔒 **Important:** Do not put your Unsplash access key in the client. The server handles it securely.
+
+Access these in code via `import.meta.env.VITE_API`.
 
 ---
 
 ## Scripts
 
 ```bash
-npm start        # dev server on http://localhost:3000
-npm test         # tests
-npm run build    # production build
+npm run dev        # dev server on http://localhost:5173
+npm run build      # production build
+npm run preview    # preview production build locally
 ```
 
 ---
@@ -77,6 +79,7 @@ src/
     axiosClient.js
     helpers.js
     unsplash.js   # client helper that calls server /api/unsplash
+    dateHelpers.js
   data/
 ```
 
@@ -164,6 +167,39 @@ This repo also contains **community and contribution resources**:
 - [Open a Bug Report](../../issues/new?template=bug_report.md)
 - [Request a Feature](../../issues/new?template=feature_request.md)
 - [Contributing Guide](../CONTRIBUTING.md)
+
+---
+
+## Migration Notes (CRA → Vite)
+
+- **Build tool:** Migrated from Create React App to **Vite**
+
+  - Faster dev server, modern build pipeline.
+  - Commands: `npm run dev`, `npm run build`, `npm run preview`.
+
+- **Environment variables:**
+
+  - CRA used `process.env.REACT_APP_*`.
+  - Vite uses `import.meta.env.VITE_*`.
+  - Updated `.env.example` accordingly.
+
+- **File extensions:**
+
+  - All React files renamed from `.js` → `.jsx`.
+
+- **MUI upgrade:**
+
+  - Migrated from MUI v5 to **MUI v6**.
+  - `renderInput` props for DatePicker replaced by `slotProps={{ textField: { ... }}}`.
+  - Date adapters now use `AdapterDateFns` (with `date-fns`).
+
+- **Helper utilities:**
+
+  - Added `dateHelpers.js` with `toDateOrNull()` and `toIsoDateStringOrNull()`.
+
+- **Dev server port:**
+  - CRA ran on `http://localhost:3000`.
+  - Vite runs on `http://localhost:5173`.
 
 ---
 
