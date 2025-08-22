@@ -1,170 +1,122 @@
 import * as React from 'react';
-import CssBaseline from '@mui/material/CssBaseline';
+import Container from '@mui/material/Container';
 import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
+import Typography from '@mui/material/Typography';
 import { FaLeaf, FaRegCalendarAlt, FaBookOpen } from 'react-icons/fa';
 
 export default function AlmanacCards() {
   return (
-    <React.Fragment>
-      <CssBaseline />
-      <Box sx={{ bgcolor: 'primary.dark' }}>
-        <Grid item container maxWidth='100%' sm={12} p={2} sx={{ mx: 'auto' }}>
-          <Grid
-            item
-            xs={10}
-            sm={10}
-            md={4}
-            zeroMinWidth
-            sx={{
-              bgcolor: 'primary.dark',
-              mx: 'auto',
-              px: 2,
-              alignItems: 'stretch',
-            }}>
+    <Box sx={{ bgcolor: 'primary.dark', py: { xs: 3, sm: 4 } }}>
+      <Container maxWidth="lg">
+        <Grid container spacing={3}>
+          {/* Plants */}
+          <Grid item xs={12} sm={6} md={4}>
             <Card
+              elevation={2}
               sx={{
-                minWidth: 275,
-                minHeight: 410,
-                bgcolor: 'paper',
-                mb: 5,
+                // Let the grid control width; make card fill its cell and
+                // keep contents aligned even when heights differ.
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
                 borderRadius: 2,
-              }}>
-              <CardContent>
-                <Typography
-                  variant='h3'
-                  component='div'
-                  sx={{ textAlign: 'center', color: 'secondary.main' }}>
+                bgcolor: 'background.paper',
+              }}
+            >
+              <CardContent sx={{ flexGrow: 1 }}>
+                <Typography variant="h3" align="center" sx={{ color: 'secondary.main', mb: 1 }}>
                   <FaLeaf />
                 </Typography>
-                <Typography
-                  variant='h3'
-                  sx={{ color: 'primary.contrastText', textAlign: 'center' }}
-                  gutterBottom>
+                <Typography variant="h4" align="center" gutterBottom>
                   Plants
                 </Typography>
-                <Typography
-                  variant='h5'
-                  component='div'
-                  sx={{ textAlign: 'center' }}>
+                <Typography variant="h6" align="center">
                   Care for your plants.
                 </Typography>
-                <Typography
-                  sx={{ mb: 1.5, textAlign: 'center' }}
-                  color='text.secondary'>
+                <Typography color="text.secondary" align="center" sx={{ mb: 1.5 }}>
                   They will return the love.
                 </Typography>
-                <Typography variant='p' sx={{ textAlign: 'justify' }}>
-                  A profile for each plant with helpful information. When to
-                  sow, plant, harvest, fertilise. Add notes to help you remember
-                  what your plants need. Revise each year to keep your garden
-                  growing. A reference from previous years.
+                <Typography component="p" variant="body2" sx={{ textAlign: 'justify' }}>
+                  A profile for each plant with helpful information: when to sow, plant, harvest,
+                  fertilise. Add notes to help you remember what your plants need. Revisit each year
+                  to keep your garden growing.
                 </Typography>
               </CardContent>
             </Card>
-            {/* </Box> */}
           </Grid>
-          <Grid
-            item
-            xs={10}
-            sm={10}
-            md={4}
-            zeroMinWidth
-            sx={{ bgcolor: 'primary.dark', mx: 'auto', px: 2 }}>
+
+          {/* Events */}
+          <Grid item xs={12} sm={6} md={4}>
             <Card
+              elevation={2}
               sx={{
-                minWidth: 275,
-                minHeight: 410,
-                bgcolor: 'paper',
-                mb: 5,
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
                 borderRadius: 2,
-              }}>
-              <CardContent>
-                <Typography
-                  variant='h3'
-                  component='div'
-                  sx={{ textAlign: 'center', color: 'secondary.main' }}>
+                bgcolor: 'background.paper',
+              }}
+            >
+              <CardContent sx={{ flexGrow: 1 }}>
+                <Typography variant="h3" align="center" sx={{ color: 'secondary.main', mb: 1 }}>
                   <FaRegCalendarAlt />
                 </Typography>
-                <Typography
-                  variant='h3'
-                  sx={{ color: 'primary.contrastText', textAlign: 'center' }}
-                  gutterBottom>
+                <Typography variant="h4" align="center" gutterBottom>
                   Events
                 </Typography>
-                <Typography
-                  variant='h5'
-                  component='div'
-                  sx={{ textAlign: 'center' }}>
+                <Typography variant="h6" align="center">
                   Nature is cyclical.
                 </Typography>
-                <Typography
-                  sx={{ mb: 1.5, textAlign: 'center' }}
-                  color='text.secondary'>
+                <Typography color="text.secondary" align="center" sx={{ mb: 1.5 }}>
                   Every year same same but different.
                 </Typography>
-                <Typography variant='p'>
-                  Its easy to forget. Add events to your calendar to help you
-                  remember so you can be prepared each year. Events for each
-                  plant, or for the garden as a whole. Reminders of important
-                  dates, like first and last frost, or weather patterns.
+                <Typography component="p" variant="body2" sx={{ textAlign: 'justify' }}>
+                  It’s easy to forget. Add events to your calendar so you’re prepared:
+                  plant-specific tasks, garden-wide reminders, and important dates like first/last
+                  frost or seasonal patterns.
                 </Typography>
               </CardContent>
             </Card>
           </Grid>
-          <Grid
-            item
-            xs={10}
-            sm={10}
-            md={4}
-            zeroMinWidth
-            sx={{ bgcolor: 'primary.dark', mx: 'auto', px: 2 }}>
+
+          {/* Almanac */}
+          <Grid item xs={12} sm={6} md={4}>
             <Card
+              elevation={2}
               sx={{
-                minWidth: 275,
-                minHeight: 410,
-                bgcolor: 'paper',
-                mb: 5,
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
                 borderRadius: 2,
-              }}>
-              <CardContent>
-                <Typography
-                  variant='h3'
-                  component='div'
-                  sx={{ textAlign: 'center', color: 'secondary.main' }}>
+                bgcolor: 'background.paper',
+              }}
+            >
+              <CardContent sx={{ flexGrow: 1 }}>
+                <Typography variant="h3" align="center" sx={{ color: 'secondary.main', mb: 1 }}>
                   <FaBookOpen />
                 </Typography>
-                <Typography
-                  variant='h3'
-                  sx={{ color: 'primary.contrastText', textAlign: 'center' }}
-                  gutterBottom>
+                <Typography variant="h4" align="center" gutterBottom>
                   Almanac
                 </Typography>
-                <Typography
-                  variant='h5'
-                  component='div'
-                  sx={{ textAlign: 'center' }}>
+                <Typography variant="h6" align="center">
                   Review your records.
                 </Typography>
-                <Typography
-                  sx={{ mb: 1.5, textAlign: 'center' }}
-                  color='text.secondary'>
+                <Typography color="text.secondary" align="center" sx={{ mb: 1.5 }}>
                   Learn about your garden.
                 </Typography>
-                <Typography variant='p'>
-                  Your record to help you understand your garden's needs better.
-                  Specific for your climate zone, and for your garden. A
-                  reference to help impove the garden year after year. We
-                  nourish nature; and nature nourishes us.
+                <Typography component="p" variant="body2" sx={{ textAlign: 'justify' }}>
+                  A running record that makes your garden smarter over time—tailored to your climate
+                  zone and your space. Improve year after year: we nourish nature; nature nourishes
+                  us.
                 </Typography>
               </CardContent>
             </Card>
           </Grid>
         </Grid>
-      </Box>
-    </React.Fragment>
+      </Container>
+    </Box>
   );
 }
