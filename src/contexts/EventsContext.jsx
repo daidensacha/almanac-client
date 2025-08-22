@@ -1,32 +1,61 @@
-import { useEffect, useState, useContext, createContext } from 'react';
+/* @refresh reset */
+import { createContext, useContext, useEffect, useState } from 'react';
 import { useAuthContext } from './AuthContext';
 import instance from '@/utils/axiosClient';
+import { getAxiosErrorMessage } from '@/utils/error';
 
-const EventContextProvider = ({ children }) => {
+// Keep the context internal to avoid export-shape churn
+const EventsContext = createContext(null);
+EventsContext.displayName = 'EventsContext';
+
+export function useEventsContext() {
+  const ctx = useContext(EventsContext);
+  if (!ctx) throw new Error('useEventsContext must be used within <EventsContextProvider>');
+  return ctx;
+}
+
+const EventsContextProvider = ({ children }) => {
   const { user } = useAuthContext();
 
   const [events, setEvents] = useState([]);
-  // console.log('CONTEXT EVENTS', events);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
   useEffect(() => {
-    const getEvents = async () => {
+    if (!user?._id) {
+      setEvents([]);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      setError(null);
       try {
         const {
           data: { allEvents },
-        } = await instance.get(`/events`);
-        // console.log('SUCCESS CONTEXT EVENTS', allEvents);
-        setEvents(allEvents);
-        // console.log('allEvents', allEvents);
+        } = await instance.get('/events');
+        if (!cancelled) setEvents(allEvents ?? []);
       } catch (err) {
-        console.log(err.response.data.error);
+        const msg = getAxiosErrorMessage(err, 'Failed to load events');
+        if (!cancelled) {
+          setError(msg);
+          setEvents([]);
+        }
+        console.error('[Events] fetch failed:', msg, err);
+      } finally {
+        if (!cancelled) setLoading(false);
       }
+    })();
+    return () => {
+      cancelled = true;
     };
-    user && getEvents();
-  }, [user]);
+  }, [user?._id]);
 
-  return <EventContext.Provider value={{ events, setEvents }}>{children}</EventContext.Provider>;
+  return (
+    <EventsContext.Provider value={{ events, setEvents, loading, error }}>
+      {children}
+    </EventsContext.Provider>
+  );
 };
-const EventContext = createContext();
 
-export default EventContextProvider;
-
-export const useEventsContext = () => useContext(EventContext);
+export default EventsContextProvider;

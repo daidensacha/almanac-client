@@ -1,35 +1,62 @@
-import { useEffect, useState, useContext, createContext } from 'react';
+/* @refresh reload */
+import { createContext, useContext, useEffect, useState } from 'react';
 import { useAuthContext } from './AuthContext';
 import instance from '@/utils/axiosClient';
+import { getAxiosErrorMessage } from '@/utils/error';
+
+const CategoriesContext = createContext(null);
+CategoriesContext.displayName = 'CategoriesContext';
+
+export function useCategoriesContext() {
+  const ctx = useContext(CategoriesContext);
+  if (!ctx) throw new Error('useCategoriesContext must be used within <CategoriesContextProvider>');
+  return ctx;
+}
 
 const CategoriesContextProvider = ({ children }) => {
   const { user } = useAuthContext();
 
   const [categories, setCategories] = useState([]);
-  // console.log('CONTEXT CATEGORIES', categories);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
   useEffect(() => {
-    const getCategories = async () => {
+    if (!user?._id) {
+      setCategories([]);
+      return;
+    }
+
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      setError(null);
       try {
         const {
           data: { allCategories },
-        } = await instance.get(`/categories`);
-        // console.log('SUCCESS CONTEXT CATEGORIES', allCategories);
-        setCategories(allCategories);
+        } = await instance.get('/categories');
+        if (!cancelled) setCategories(allCategories ?? []);
       } catch (err) {
-        console.log(err.response.data.error);
+        const msg = getAxiosErrorMessage(err, 'Failed to load categories');
+        if (!cancelled) {
+          setError(msg);
+          setCategories([]);
+        }
+        console.error('[Categories] fetch failed:', msg, err);
+      } finally {
+        if (!cancelled) setLoading(false);
       }
+    })();
+
+    return () => {
+      cancelled = true;
     };
-    user && getCategories();
-  }, [user]);
+  }, [user?._id]);
 
   return (
-    <CategoriesContext.Provider value={{ categories, setCategories }}>
+    <CategoriesContext.Provider value={{ categories, setCategories, loading, error }}>
       {children}
     </CategoriesContext.Provider>
   );
 };
-const CategoriesContext = createContext();
 
 export default CategoriesContextProvider;
-
-export const useCategoriesContext = () => useContext(CategoriesContext);

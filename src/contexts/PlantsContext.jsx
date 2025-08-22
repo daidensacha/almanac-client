@@ -1,31 +1,36 @@
-import { useEffect, useState, useContext, createContext } from 'react';
-import { useAuthContext } from './AuthContext';
+/* @refresh reset */
+// src/contexts/PlantsContext.jsx
+import { createContext, useContext, useEffect, useState } from 'react';
 import instance from '@/utils/axiosClient';
+import { useAuthContext } from '@/contexts/AuthContext';
+import { getAxiosErrorMessage } from '@/utils/error';
 
-const PlantsContextProvider = ({ children }) => {
+export const PlantsContext = createContext(null);
+
+export function usePlantsContext() {
+  const ctx = useContext(PlantsContext);
+  if (!ctx) throw new Error('usePlantsContext must be used within <PlantsContextProvider>');
+  return ctx;
+}
+
+export default function PlantsContextProvider({ children }) {
   const { user } = useAuthContext();
-
   const [plants, setPlants] = useState([]);
-  // console.log('CONTEXT PLANTS', plants);
+
   useEffect(() => {
     const getPlants = async () => {
       try {
         const {
           data: { allPlants },
-        } = await instance.get(`/plants`);
-        // console.log('SUCCESS CONTEXT PLANT', allPlants);
+        } = await instance.get('/plants');
         setPlants(allPlants);
       } catch (err) {
-        console.log(err.response.data.error);
+        const msg = getAxiosErrorMessage(err, 'Failed to load plants');
+        console.error('[Plants] fetch failed:', msg, err);
       }
     };
-    user && getPlants();
+    if (user) getPlants();
   }, [user]);
 
   return <PlantsContext.Provider value={{ plants, setPlants }}>{children}</PlantsContext.Provider>;
-};
-const PlantsContext = createContext();
-
-export default PlantsContextProvider;
-
-export const usePlantsContext = () => useContext(PlantsContext);
+}
