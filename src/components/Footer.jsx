@@ -16,7 +16,6 @@ const FooterSection = () => {
 
   const timeLabel = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   const year = now.getFullYear();
-
   let leftSegment;
   if (showLocation && hasGeo && weather) {
     leftSegment = (

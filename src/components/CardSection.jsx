@@ -1,4 +1,6 @@
 import * as React from 'react';
+import { useEffect } from 'react';
+import api from '@/utils/axiosClient';
 import Container from '@mui/material/Container';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
@@ -8,6 +10,9 @@ import Typography from '@mui/material/Typography';
 import { FaLeaf, FaRegCalendarAlt, FaBookOpen } from 'react-icons/fa';
 
 export default function AlmanacCards() {
+  useEffect(() => {
+    console.log('[Footer] api baseURL =', api.defaults.baseURL, 'mode:', import.meta.env.MODE);
+  }, []);
   return (
     <Box sx={{ bgcolor: 'primary.dark', py: { xs: 3, sm: 4 } }}>
       <Container maxWidth="lg">

@@ -54,7 +54,7 @@ const TriviaSection = () => {
             >
               <Box
                 component="img"
-                sx={{ maxWidth: '100%', height: 'auto' }}
+                sx={{ maxWidth: '100%', height: 'auto', borderRadius: 2, boxShadow: 1 }}
                 alt="image"
                 src={CropsAerial1}
               ></Box>
