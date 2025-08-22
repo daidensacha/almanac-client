@@ -12,7 +12,7 @@ import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { isExpired, decodeToken } from 'react-jwt';
-import axios from 'axios';
+import api from '@/utils/axiosClient';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.min.css';
 
@@ -43,13 +43,10 @@ const Activate = () => {
   }, [jwtToken, values]);
 
   // Handle form submit
-  const clickSubmit = (event) => {
+  const clickSubmit = async (event) => {
     event.preventDefault();
-    axios({
-      method: 'POST',
-      url: `${import.meta.env.VITE_API}/account-activation`,
-      data: { token },
-    })
+    const { data } = await api
+      .put('/forgot-password', { token })
       .then((response) => {
         console.log('ACCOUNT ACTIVATION', response);
         setValues({

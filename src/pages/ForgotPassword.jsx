@@ -9,7 +9,7 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { Link as RouterLink } from 'react-router-dom';
-import axios from 'axios';
+import api from '@/utils/axiosClient';
 import { toast } from 'react-toastify';
 
 const ForgotPassword = () => {
@@ -23,7 +23,7 @@ const ForgotPassword = () => {
     if (!email) return toast.error('Please enter your email');
 
     try {
-      const { data } = await axios.put(`${import.meta.env.VITE_API}/forgot-password`, { email });
+      const { data } = await api.put('/forgot-password', { email });
       toast.success(data.message || 'If that email exists, a reset link has been sent');
     } catch (err) {
       const msg = err.response?.data?.error || 'Could not send reset link';

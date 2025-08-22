@@ -12,7 +12,7 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { Link as RouterLink } from 'react-router-dom';
 import { useState } from 'react';
-import axios from 'axios';
+import api from '@/utils/axiosClient';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.min.css';
 
@@ -34,15 +34,12 @@ const Signup = () => {
   };
 
   // Handle form submit
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
     setLoading(true);
     setValues({ ...values, buttonText: '... Signing Up' });
-    axios({
-      method: 'POST',
-      url: `${import.meta.env.VITE_API}/signup`,
-      data: { firstname, lastname, email, password },
-    })
+    const response = await api
+      .post('/signup', { firstname, lastname, email, password })
       .then((response) => {
         console.log('SIGNUP SUCCESS', response);
         setValues({

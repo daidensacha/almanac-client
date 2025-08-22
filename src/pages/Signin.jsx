@@ -12,7 +12,7 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { Link as RouterLink, Navigate, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import axios from 'axios';
+import api from '@/utils/axiosClient';
 import { authenticate, isAuth } from '@/utils/helpers';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.min.css';
@@ -37,22 +37,14 @@ const Signin = () => {
   };
 
   // Handle form submit
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
     setLoading(true);
     setValues({ ...values, buttonText: '... Signing In' });
-    axios({
-      method: 'POST',
-      url: `${import.meta.env.VITE_API}/signin`,
-      data: { email, password },
-    })
+    const response = await api
+      .post('/signin', { email, password })
       .then((response) => {
         console.log('SIGNIN SUCCESS', response);
-
-        // Save the response (user, token) to local storage/cookie
-        // authenticate() from helpers.js
-        // setCookie('token', response.data.token);
-        // setLocalStorage('user', response.data.user);
         authenticate(response, () => {
           setValues({
             ...values,

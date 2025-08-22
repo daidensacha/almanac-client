@@ -8,7 +8,7 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '@/utils/axiosClient';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { PASSWORD_REGEX, PASSWORD_MESSAGE } from '@daidensacha/almanac-shared';
@@ -39,19 +39,20 @@ const ResetPassword = () => {
       return;
     }
     if (password !== confirm) {
-      return toast.error('Passwords do not match.');
+      toast.error('Passwords do not match.');
+      return;
     }
 
     setLoading(true);
     try {
-      const { data } = await axios.put(`${import.meta.env.VITE_API}/reset-password`, {
+      const { data } = await api.put('/reset-password', {
         token,
         newPassword: password,
       });
       toast.success(data.message || 'Password reset. Please sign in.');
       navigate('/signin', { replace: true });
     } catch (err) {
-      const msg = err.response?.data?.error || 'Reset link invalid or expired';
+      const msg = err?.response?.data?.error || 'Reset link invalid or expired';
       toast.error(msg);
     } finally {
       setLoading(false);
