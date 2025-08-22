@@ -29,6 +29,7 @@ import ResetPassword from '@/pages/ResetPassword';
 import Activate from '@/pages/Activate';
 import PrivateRoutes from '@/pages/PrivateRoutes';
 import HealthCheck from '@/pages/HealthCheck';
+import OpenMeteoLab from '@/pages/dev/OpenMeteoLab';
 // import AuthContextProvider from '@/contexts/AuthContext';
 
 import { ToastContainer } from 'react-toastify';
@@ -54,6 +55,7 @@ function App() {
           {/* Private routes */}
           <Route element={<PrivateRoutes />}>
             <Route path="/health" element={<HealthCheck />} />
+            <Route path="/dev/openmeteo" element={<OpenMeteoLab />} />
             <Route path="almanac" element={<Almanac />} />
             <Route path="profile" element={<Profile />} />
             <Route path="profile/edit" element={<EditProfile />} />
