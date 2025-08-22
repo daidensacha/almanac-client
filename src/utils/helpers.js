@@ -10,14 +10,14 @@ export const setCookie = (key, value) => {
 };
 
 // remove cookie
-export const removeCookie = key => {
+export const removeCookie = (key) => {
   if (typeof window !== 'undefined') {
     cookie.remove(key, { expires: 1 });
   }
 };
 
 // get cookie
-export const getCookie = key => {
+export const getCookie = (key) => {
   if (typeof window !== 'undefined') {
     return cookie.get(key);
   }
@@ -31,7 +31,7 @@ export const setLocalStorage = (key, value) => {
   }
 };
 
-export const removeLocalStorage = key => {
+export const removeLocalStorage = (key) => {
   if (typeof window !== 'undefined') {
     localStorage.removeItem(key);
   }
@@ -59,22 +59,44 @@ export const isAuth = () => {
 };
 
 // Clear everything
-export const signout = next => {
+export const signout = (next) => {
   removeCookie('token');
   removeLocalStorage('user');
   next && next();
 };
 
 // Update user in localStorage (after profile update)
+// export const updateUser = (response, next) => {
+//   console.log('UPDATE USER IN LOCALSTORAGE HELPERS', response);
+//   if (typeof window !== 'undefined') {
+//     let auth = JSON.parse(localStorage.getItem('user'));
+//     auth = response.data;
+//     localStorage.setItem('user', JSON.stringify(auth));
+//   }
+//   next();
+// };
+
+// utils/helpers.js
 export const updateUser = (response, next) => {
   console.log('UPDATE USER IN LOCALSTORAGE HELPERS', response);
   if (typeof window !== 'undefined') {
-    let auth = JSON.parse(localStorage.getItem('user'));
-    auth = response.data;
-    localStorage.setItem('user', JSON.stringify(auth));
+    localStorage.setItem('user', JSON.stringify(response.data));
+    window.dispatchEvent(new Event('auth:user-updated')); // <-- important
   }
   next();
 };
+
+// THIS IS THE STABLE FUNCTION
+
+// export const updateUser = (response, next, setUser) => {
+//   console.log('UPDATE USER IN LOCALSTORAGE HELPERS', response);
+//   if (typeof window !== 'undefined') {
+//     const auth = response.data;
+//     localStorage.setItem('user', JSON.stringify(auth));
+//     if (setUser) setUser(auth); // update context state if provided
+//   }
+//   if (next) next();
+// };
 
 // Handy: get Authorization header for API calls
 export const getAuthHeader = () => {
