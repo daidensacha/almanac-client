@@ -78,26 +78,52 @@ function Item(props) {
   );
 }
 
-function CarouselText(props) {
+function CarouselText({ item }) {
   return (
-    <Box sx={{ textShadow: '0px 0px 4px primary.light' }}>
+    <Box
+      // sx={{ textShadow: '0px 0px 4px rgba(0,0,0,0.5)' }}
+      sx={{
+        bgcolor: 'rgba(0,0,0,0.4)',
+        borderRadius: 2,
+        px: { xs: 2, sm: 4 },
+        py: { xs: 1, sm: 2 },
+        display: 'inline-block',
+      }}
+    >
       <Typography
         variant="h1"
         component="div"
-        color="text.light"
-        sx={{ textShadow: '0px 0px 4px #fff' }}
+        color="common.white"
+        sx={{
+          textShadow: '0px 0px 4px rgba(0,0,0,0.8)',
+          fontSize: {
+            xs: '2.5rem', // ~40px on phones
+            sm: '3.5rem', // ~56px on small tablets
+            md: '5rem', // ~80px on desktops
+          },
+          fontWeight: 700,
+        }}
         gutterBottom
       >
-        {props.item.name}
+        {item.name}
       </Typography>
+
       <Typography
         variant="h4"
         component="div"
-        color="text.primary"
-        sx={{ textShadow: '0px 0px 4px #fff' }}
+        color="common.white"
+        sx={{
+          textShadow: '0px 0px 4px rgba(0,0,0,0.6)',
+          fontSize: {
+            xs: '1.2rem', // ~19px on phones
+            sm: '1.5rem', // ~24px
+            md: '2rem', // ~32px
+          },
+          fontWeight: 400,
+        }}
         gutterBottom
       >
-        {props.item.description}
+        {item.description}
       </Typography>
     </Box>
   );
