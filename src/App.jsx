@@ -76,7 +76,7 @@ function App() {
           <Route path="activate-account/:token" element={<Activate />} />
         </Routes>
       </AnimatePresence>
-      <Footer />
+      {/* <Footer /> */}
       {/* </AuthContextProvider> */}
     </div>
   );

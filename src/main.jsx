@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 import './index.css';
+import AppLayout from '@/components/AppLayout';
 import { ThemeProvider } from '@mui/material/';
 import theme from '@/components/ui/theme';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -21,7 +22,9 @@ createRoot(rootEl).render(
         <EventContextProvider>
           <PlantsContextProvider>
             <CategoriesContextProvider>
-              <App />
+              <AppLayout>
+                <App />
+              </AppLayout>
             </CategoriesContextProvider>
           </PlantsContextProvider>
         </EventContextProvider>
