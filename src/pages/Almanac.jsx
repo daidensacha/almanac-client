@@ -3,9 +3,6 @@ import { Container, Divider, Grid } from '@mui/material';
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
-// import { useEventsContext } from '@/contexts/EventsContext';
-// import { usePlantsContext } from '@/contexts/PlantsContext';
-// import { useCategoriesContext } from '@/contexts/CategoriesContext';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useMineList } from '@/hooks/useMineList';
 import AnimatedPage from '@/components/AnimatedPage';
@@ -17,9 +14,6 @@ import moment from 'moment';
 const Almanac = () => {
   const navigate = useNavigate();
 
-  // const { events } = useEventsContext();
-  // const { plants } = usePlantsContext();
-  // const { categories } = useCategoriesContext();
   const { user } = useAuthContext();
   const userId = user?._id;
 

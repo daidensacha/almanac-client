@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import instance from '@/utils/axiosClient';
+import api from '@/utils/axiosClient';
+import { useQueryClient } from '@tanstack/react-query';
 import Container from '@mui/material/Container';
 import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
@@ -13,12 +14,11 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { toDateOrNull, toIsoDateStringOrNull } from '@utils/dateHelpers'; // import to fix date issue
-import { usePlantsContext } from '@/contexts/PlantsContext';
 
 const AddPlant = () => {
   const navigate = useNavigate();
 
-  const { setPlants } = usePlantsContext();
+  const queryClient = useQueryClient();
 
   const [values, setValues] = useState({
     common_name: '',
@@ -46,9 +46,7 @@ const AddPlant = () => {
 
     const createPlant = async () => {
       try {
-        const {
-          data: { newPlant },
-        } = await instance.post(`/plant/create`, {
+        await api.post(`/plant/create`, {
           common_name: values.common_name,
           botanical_name: values.botanical_name,
           sow_at: toIsoDateStringOrNull(values.sow_at),
@@ -61,12 +59,11 @@ const AddPlant = () => {
           depth: values.depth,
           notes: values.notes,
         });
-        console.log('PLANT CREATED', newPlant);
-        setPlants((prev) => [...prev, newPlant]);
-        setValues((prev) => ({
-          ...prev,
-        }));
+
         toast.success('Plant created');
+        // Make any plants list re-fetch (e.g. queryKey ['plants'] or ['plants:mine'])
+        queryClient.invalidateQueries({ queryKey: ['plants'] });
+        queryClient.invalidateQueries({ queryKey: ['plants:mine'] });
         navigate('/plants');
       } catch (error) {
         console.log('PLANT CREATE ERROR', error.response.data.error);

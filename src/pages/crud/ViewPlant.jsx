@@ -1,51 +1,49 @@
+// src/pages/crud/ViewPlant.jsx
 import { useNavigate, useLocation } from 'react-router-dom';
-// import instance from '@/utils/axiosClient';
-import Container from '@mui/material/Container';
-import Grid from '@mui/material/Grid';
-import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
-import AnimatedPage from '@/components/AnimatedPage';
-import { Fade, Zoom } from '@mui/material';
-import Box from '@mui/material/Box';
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
-import CardMedia from '@mui/material/CardMedia';
-import { useEventsContext } from '@/contexts/EventsContext';
-import Stack from '@mui/material/Stack';
-import ButtonGroup from '@mui/material/ButtonGroup';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemText from '@mui/material/ListItemText';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import IconButton from '@mui/material/IconButton';
+import {
+  Container,
+  Grid,
+  Typography,
+  Button,
+  Fade,
+  Zoom,
+  Box,
+  Card,
+  CardContent,
+  CardMedia,
+  Stack,
+  ButtonGroup,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemIcon,
+  IconButton,
+} from '@mui/material';
 import PageviewIcon from '@mui/icons-material/Pageview';
 import ArrowBackIos from '@mui/icons-material/ArrowBackIos';
 import EventIcon from '@mui/icons-material/Event';
+import AnimatedPage from '@/components/AnimatedPage';
 import CherryTomatoes from '@/images/cherry_tomatoes.jpg';
 import moment from 'moment';
 import { useUnsplashImage } from '@/utils/unsplash';
 import Raspberries from '@/images/raspberries.jpg';
 
-const ViewPlant = () => {
-  // console.log(useLocation());
-  const { state } = useLocation();
-  // console.log('STATE', state);
+import { useAuthContext } from '@/contexts/AuthContext';
+import { useEvents } from '@/queries/useEvents';
 
-  const { events } = useEventsContext();
-  // const { id } = useParams();
-  // console.log('ID', id);
+export default function ViewPlant() {
+  const { state } = useLocation(); // plant object passed via navigate(..., { state })
   const navigate = useNavigate();
 
-  // const plant_id = state._id;
-  const filteredEvents = events.filter((event) => event.plant._id === state._id);
+  const { user } = useAuthContext();
+  const eventsQ = useEvents(user?._id);
+  const events = eventsQ.data || [];
 
-  // ViewPlant
-  const { url: imageUrl } = useUnsplashImage(state?.common_name, {
-    fallbackUrl: Raspberries,
-  });
-  // <Box component="img" src={imageUrl || Raspberries} ... />
+  // Find related events
+  const filteredEvents = events.filter((event) => event.plant?._id === state._id);
 
-  // console.log('Unsplash key:', import.meta.env.VITE_UNSPLASH_ACCESS_KEY);
+  // Unsplash fallback image
+  const { url: imageUrl } = useUnsplashImage(state?.common_name, { fallbackUrl: Raspberries });
 
   return (
     <AnimatedPage>
@@ -63,18 +61,9 @@ const ViewPlant = () => {
           <h1>Plant</h1>
 
           <Grid container spacing={2}>
-            <Grid
-              item
-              xs={12}
-              sm={6}
-              md={4}
-              sx={{
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'flex-start',
-              }}
-            >
-              <Fade in={true} timeout={2000}>
+            {/* Left image */}
+            <Grid item xs={12} sm={6} md={4} sx={{ display: 'flex', justifyContent: 'center' }}>
+              <Fade in timeout={2000}>
                 <Box
                   component="img"
                   sx={{ maxWidth: '100%', height: 'auto' }}
@@ -83,64 +72,35 @@ const ViewPlant = () => {
                 />
               </Fade>
             </Grid>
+
+            {/* Middle card */}
             <Grid
               item
               xs={12}
               sm={6}
               md={4}
-              sx={{
-                mt: 5,
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'flex-start',
-                alignContent: 'flex-start',
-              }}
+              sx={{ mt: 5, display: 'flex', flexDirection: 'column' }}
             >
-              <Box variant="container" sx={{ width: '100%' }}>
-                <Stack direction="row" sx={{ justifyContent: 'center' }} spacing={2}>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      '& > *': {
-                        m: 1,
-                      },
-                    }}
-                  >
-                    <ButtonGroup
-                      variant="outlined"
-                      color="secondary"
-                      size="small"
-                      aria-label="small button group"
-                    >
-                      <Button color="secondary" onClick={() => navigate(`/plants`)}>
-                        Plants
-                      </Button>
-                      <Button color="secondary" onClick={() => navigate('/events')}>
-                        Events
-                      </Button>
-                      <Button variant="outlined" onClick={() => navigate(`/categories`)}>
-                        Categories
-                      </Button>
-                    </ButtonGroup>
-                  </Box>
+              <Box sx={{ width: '100%' }}>
+                <Stack direction="row" justifyContent="center" spacing={2}>
+                  <ButtonGroup variant="outlined" color="secondary" size="small">
+                    <Button onClick={() => navigate('/plants')}>Plants</Button>
+                    <Button onClick={() => navigate('/events')}>Events</Button>
+                    <Button onClick={() => navigate('/categories')}>Categories</Button>
+                  </ButtonGroup>
                 </Stack>
               </Box>
-              <Zoom in={true} timeout={1500}>
+
+              <Zoom in timeout={1500}>
                 <Card sx={{ width: 345, mx: 'auto', mt: 4 }}>
                   <CardMedia
                     component="img"
                     alt={state?.common_name}
-                    height="240px"
-                    minwidth="100%"
-                    position="center"
-                    overflow="hidden"
+                    height="240"
                     image={imageUrl || Raspberries}
-                    // image={`https://source.unsplash.com/featured/?${state?.common_name}`}
                   />
                   <CardContent>
-                    <Typography gutterBottom variant="h5" component="div">
+                    <Typography gutterBottom variant="h5">
                       Name: {state.common_name}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
@@ -153,21 +113,22 @@ const ViewPlant = () => {
                       <Box component="span" fontWeight="bold">
                         Sow:
                       </Box>{' '}
-                      {moment(state.sow_at).format('D MMM') || ' ______________ '}, and at{' '}
+                      {state.sow_at ? moment(state.sow_at).format('D MMM') : ' ______________ '} at{' '}
                       <Box component="span" fontWeight="bold">
                         depth
                       </Box>{' '}
-                      of {state.depth || ' ______________ '}
+                      {state.depth || ' ______________ '}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
                       <Box component="span" fontWeight="bold">
                         Plant:
                       </Box>{' '}
-                      {moment(state.plant_at).format('D MMM') || ' ______________ '} with{' '}
+                      {state.plant_at ? moment(state.plant_at).format('D MMM') : ' ______________ '}{' '}
+                      with{' '}
                       <Box component="span" fontWeight="bold">
                         spacing
                       </Box>{' '}
-                      of {state.spacing || ' ______________ '}
+                      {state.spacing || ' ______________ '}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
                       <Box component="span" fontWeight="bold">
@@ -180,8 +141,13 @@ const ViewPlant = () => {
                       <Box component="span" fontWeight="bold">
                         Harvest from:
                       </Box>{' '}
-                      {moment(state.harvest_at).format('D MMM') || ' ______________ '} to{' '}
-                      {moment(state.harvest_to).format('D MMM') || ' ______________ '}
+                      {state.harvest_at
+                        ? moment(state.harvest_at).format('D MMM')
+                        : ' ______________ '}{' '}
+                      to{' '}
+                      {state.harvest_to
+                        ? moment(state.harvest_to).format('D MMM')
+                        : ' ______________ '}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
                       <Box component="span" fontWeight="bold">
@@ -193,21 +159,19 @@ const ViewPlant = () => {
                 </Card>
               </Zoom>
             </Grid>
+
+            {/* Right: related events */}
             <Grid item xs={12} sm={6} md={4} sx={{ mt: 5 }}>
-              <Box component="div" align="left" sx={{ width: '100%', height: 'auto', mt: 4 }}>
-                <Box size="small" color="primary" aria-label="tip" align="center">
-                  <EventIcon sx={{ color: 'secondary.main', fontSize: '36px' }} />
+              <Box align="left" sx={{ width: '100%', mt: 4 }}>
+                <Box align="center">
+                  <EventIcon sx={{ color: 'secondary.main', fontSize: 36 }} />
                 </Box>
-                <Typography
-                  variant="h3"
-                  align="center"
-                  sx={{ align: 'center', color: 'secondary.dark' }}
-                >
+                <Typography variant="h3" align="center" sx={{ color: 'secondary.dark' }}>
                   Related Events
                 </Typography>
-                <List sx={{ dense: 'true', size: 'small' }}>
+                <List dense>
                   {filteredEvents.map((event) => (
-                    <ListItem disableGutters>
+                    <ListItem key={event._id} disableGutters>
                       <ListItemIcon>
                         <IconButton
                           edge="end"
@@ -217,33 +181,31 @@ const ViewPlant = () => {
                           <PageviewIcon color="info" />
                         </IconButton>
                       </ListItemIcon>
-                      <ListItemText primary={event.event_name} secondary="" />
+                      <ListItemText primary={event.event_name} />
                     </ListItem>
                   ))}
                   {filteredEvents.length === 0 && (
                     <ListItem disableGutters>
                       <ListItemIcon>
-                        <IconButton edge="end" aria-label="View" disabled>
+                        <IconButton edge="end" disabled>
                           <PageviewIcon />
                         </IconButton>
                       </ListItemIcon>
-                      <ListItemText primary={'No related events'} secondary="" />
+                      <ListItemText primary="No related events" />
                     </ListItem>
                   )}
                 </List>
               </Box>
             </Grid>
           </Grid>
+
           <Grid item sx={{ my: 4 }}>
             <Button color="secondary" variant="outlined" size="small" onClick={() => navigate(-1)}>
-              <ArrowBackIos fontSize="small" />
-              Back
+              <ArrowBackIos fontSize="small" /> Back
             </Button>
           </Grid>
         </Grid>
       </Container>
     </AnimatedPage>
   );
-};
-
-export default ViewPlant;
+}

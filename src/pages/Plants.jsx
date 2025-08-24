@@ -147,14 +147,9 @@ export default function Plants() {
               plants: 'Plants',
               events: 'Events',
               categories: { label: 'Categories', to: '/categories' },
-              // Optional: remap verbs to nicer labels
               add: 'Add',
               edit: 'Edit',
-            }}
-            // Optional: custom labels for IDs / slugs
-            paramResolver={(seg, idx, segments) => {
-              if (looksLikeId(seg)) return 'Details'; // or 'Item'
-              return null; // fall back to default
+              view: 'View',
             }}
           />
           <h1>Plants</h1>

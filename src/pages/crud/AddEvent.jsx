@@ -18,14 +18,19 @@ import MenuItem from '@mui/material/MenuItem';
 import FormHelperText from '@mui/material/FormHelperText';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
-import { useEventsContext } from '@/contexts/EventsContext';
-import { usePlantsContext } from '@/contexts/PlantsContext';
-import { useCategoriesContext } from '@/contexts/CategoriesContext';
+import { useAuthContext } from '@/contexts/AuthContext';
+import { usePlants } from '@/queries/usePlants';
+import { useCategories } from '@/queries/useCategories';
+import { useMineList } from '@/hooks/useMineList';
 
 const AddEvent = () => {
-  const { events, setEvents } = useEventsContext();
-  const { plants } = usePlantsContext();
-  const { categories } = useCategoriesContext();
+  const { user } = useAuthContext();
+  const eventsQ = useMineList('events', 'events', user?._id);
+  const plantsQ = usePlants(user?._id);
+  const catsQ = useCategories(user?._id);
+  const events = eventsQ.data || [];
+  const plants = plantsQ.data || [];
+  const categories = catsQ.data || [];
 
   // console.log('CONTEXT EVENTS', events);
   const navigate = useNavigate();
@@ -133,12 +138,25 @@ const AddEvent = () => {
                       value={values.category_id}
                       label="Category"
                       onChange={handleValues}
+                      disabled={catsQ.isLoading || catsQ.error}
                     >
-                      {categories.map((category) => (
-                        <MenuItem key={category._id} value={category._id}>
-                          {category.category}
+                      {catsQ.isLoading && (
+                        <MenuItem disabled value="">
+                          Loading…
                         </MenuItem>
-                      ))}
+                      )}
+                      {catsQ.error && (
+                        <MenuItem disabled value="">
+                          Failed to load
+                        </MenuItem>
+                      )}
+                      {!catsQ.isLoading &&
+                        !catsQ.error &&
+                        categories.map((category) => (
+                          <MenuItem key={category._id} value={category._id}>
+                            {category.category}
+                          </MenuItem>
+                        ))}
                     </Select>
                     <FormHelperText>Required</FormHelperText>
                   </FormControl>

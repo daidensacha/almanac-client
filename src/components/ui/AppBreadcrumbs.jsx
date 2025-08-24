@@ -3,9 +3,8 @@ import * as React from 'react';
 import { Breadcrumbs, Link, Typography, Box } from '@mui/material';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 
-// simple helpers
+// helpers
 const startCase = (s = '') => s.replace(/[-_]+/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
-
 const looksLikeId = (s = '') =>
   /^[a-f0-9]{24}$/i.test(s) || /^[0-9a-f-]{36}$/i.test(s) || /^\d+$/.test(s);
 
@@ -13,16 +12,15 @@ const looksLikeId = (s = '') =>
  * AppBreadcrumbs
  *
  * Props:
- * - center: boolean (center-align the whole trail)
- * - maxItems: number (MUI Breadcrumbs prop)
- * - includeHome: boolean (prepend Home/Almanac)
+ * - center: boolean
+ * - maxItems: number
+ * - includeHome: boolean
  * - homeLabel: string
  * - homeTo: string
  * - segmentsMap: Record<string, string | { label: string, to?: string }>
- *      Map path segment -> label (and optional custom link target).
- *      e.g. { admin: 'Admin', plants: 'Plants', 'category': { label: 'Categories', to: '/categories' } }
- * - paramResolver: (segment, index, segments) => string
- *      Custom label for dynamic segments (ids, slugs).
+ * - idLabel: string (label to use for id-like segments, default "Details")
+ * - hideIds: boolean (skip id-like segments entirely)
+ * - paramResolver?: (seg, idx, segments) => string | null   // optional
  */
 export default function AppBreadcrumbs({
   center = false,
@@ -31,14 +29,16 @@ export default function AppBreadcrumbs({
   homeLabel = 'Almanac',
   homeTo = '/almanac',
   segmentsMap = {},
-  paramResolver,
+  idLabel = 'Details',
+  hideIds = false,
+  paramResolver, // optional
 }) {
   const { pathname } = useLocation();
 
-  // break /admin/almanac/edit/68ab... -> ["admin","almanac","edit","68ab..."]
+  // /admin/almanac/edit/68ab... -> ["admin","almanac","edit","68ab..."]
   const rawSegments = React.useMemo(() => pathname.split('/').filter(Boolean), [pathname]);
 
-  // Build cumulative hrefs for each breadcrumb
+  // Build cumulative hrefs
   const parts = React.useMemo(() => {
     const acc = [];
     rawSegments.forEach((seg, i) => {
@@ -48,7 +48,12 @@ export default function AppBreadcrumbs({
     return acc;
   }, [rawSegments]);
 
-  // Resolve display label for a segment
+  const toFor = (seg, defaultTo) => {
+    const mapped = segmentsMap[seg];
+    if (mapped && typeof mapped === 'object' && mapped.to) return mapped.to;
+    return defaultTo;
+  };
+
   const labelFor = (seg, idx) => {
     const mapped = segmentsMap[seg];
     if (mapped) {
@@ -59,16 +64,13 @@ export default function AppBreadcrumbs({
       const r = paramResolver(seg, idx, rawSegments);
       if (r) return r;
     }
-    if (looksLikeId(seg)) return 'Details';
+    if (looksLikeId(seg)) return idLabel;
     return startCase(seg);
   };
 
-  // Optional override for a link target from segmentsMap
-  const toFor = (seg, defaultTo) => {
-    const mapped = segmentsMap[seg];
-    if (mapped && typeof mapped === 'object' && mapped.to) return mapped.to;
-    return defaultTo;
-  };
+  const shouldRender = (seg) => !(hideIds && looksLikeId(seg));
+
+  const visibleParts = parts.filter((p) => shouldRender(p.seg));
 
   return (
     <Box sx={{ mb: 2, textAlign: center ? 'center' : 'left' }}>
@@ -79,8 +81,8 @@ export default function AppBreadcrumbs({
           </Link>
         )}
 
-        {parts.map((p, i) => {
-          const isLast = i === parts.length - 1;
+        {visibleParts.map((p, i) => {
+          const isLast = i === visibleParts.length - 1;
           const label = labelFor(p.seg, i);
           const to = toFor(p.seg, p.to);
 

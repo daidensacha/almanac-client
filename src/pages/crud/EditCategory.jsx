@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import instance from '@/utils/axiosClient';
+import api from '@/utils/axiosClient';
 import Container from '@mui/material/Container';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
@@ -9,15 +9,15 @@ import TextField from '@mui/material/TextField';
 import ArrowBackIos from '@mui/icons-material/ArrowBackIos';
 import AnimatedPage from '@/components/AnimatedPage';
 import { toast } from 'react-toastify';
-import { useCategoriesContext } from '@/contexts/CategoriesContext';
+import { useQueryClient } from '@tanstack/react-query';
 
 const EditCategory = () => {
   const { state } = useLocation();
 
-  const { setCategories } = useCategoriesContext();
   // console.log('STATE', state);
   // const { id } = useParams();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const [values, setValues] = useState({
     id: '',
@@ -44,25 +44,19 @@ const EditCategory = () => {
     setValues({ ...values, buttonText: '...Updating Category' });
 
     try {
-      const {
-        data: { updateCategory },
-      } = await instance.put(`/category/update/${id}`, {
+      await api.put(`/category/update/${id}`, {
         category: values.category,
         description: values.description,
       });
-      console.log('CATEGORY UPDATED', updateCategory);
-      setValues({ ...values, buttonText: 'Updated Category' });
-      // toast.success('Successfully updated');
-      //spread state, exclude current category, add updated category
-      setCategories((prev) => [
-        ...prev.filter((category) => category._id !== state._id),
-        updateCategory,
-      ]);
+      setValues((v) => ({ ...v, buttonText: 'Updated Category' }));
+      toast.success('Category updated');
+      // 🔄 Force categories list to re-fetch
+      queryClient.invalidateQueries({ queryKey: ['categories'] });
       navigate('/categories');
     } catch (err) {
-      console.log('CATEGORY UPDATE ERROR', err.response.data);
-      setValues({ ...values, buttonText: 'Update Category' });
-      toast.error(err.response.data.error);
+      console.log('CATEGORY UPDATE ERROR', err?.response?.data || err);
+      setValues((v) => ({ ...v, buttonText: 'Update Category' }));
+      toast.error(err?.response?.data?.error || 'Update failed');
     }
   };
 

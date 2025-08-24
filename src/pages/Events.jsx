@@ -151,6 +151,7 @@ export default function Events() {
               categories: { label: 'Categories', to: '/categories' },
               add: 'Add',
               edit: 'Edit',
+              view: 'View',
             }}
           />
 

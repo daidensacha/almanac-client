@@ -14,13 +14,13 @@ import 'react-toastify/dist/ReactToastify.min.css';
 import { Fade } from '@mui/material';
 import Pumpkin from '@/images/pumpkin.jpg';
 import CucumberSlice from '@/images/cucumber_slice.jpg';
-import { useCategoriesContext } from '@/contexts/CategoriesContext';
-// import { useAuthContext } from '@/contexts/AuthContext';
+import { useQueryClient } from '@tanstack/react-query';
+import api from '@/utils/axiosClient';
 
 const AddCategory = () => {
   const navigate = useNavigate();
 
-  const { setCategories } = useCategoriesContext();
+  const queryClient = useQueryClient();
 
   const [values, setValues] = useState({
     category: '',
@@ -33,7 +33,6 @@ const AddCategory = () => {
   };
 
   // console.log(values);
-
   // const token = getCookie('token');
 
   const handleSubmit = (event) => {
@@ -44,14 +43,8 @@ const AddCategory = () => {
     const addCategory = async () => {
       const { category, description } = values;
       try {
-        const {
-          data: { newCategory },
-        } = await instance.post('/category/create', {
-          category,
-          description,
-        });
-        console.log('CATEGORY ADDED', newCategory);
-        setCategories((prev) => [...prev, newCategory]);
+        await api.post('/category/create', { category, description });
+        queryClient.invalidateQueries({ queryKey: ['categories'], exact: false });
         setValues({
           ...values,
           category: '',

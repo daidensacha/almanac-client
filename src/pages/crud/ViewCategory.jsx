@@ -1,42 +1,47 @@
+// src/pages/crud/ViewCategory.jsx
 import { useNavigate, useLocation } from 'react-router-dom';
-// import instance from '@/utils/axiosClient';
-import { List, ListItem, ListItemText } from '@mui/material';
-import { Box, Card, CardContent, CardMedia, Container, Grid, Typography } from '@mui/material';
-import { Fade, Zoom } from '@mui/material';
-import Button from '@mui/material/Button';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import Stack from '@mui/material/Stack';
-import ButtonGroup from '@mui/material/ButtonGroup';
-import IconButton from '@mui/material/IconButton';
+import {
+  List,
+  ListItem,
+  ListItemText,
+  ListItemIcon,
+  Box,
+  Card,
+  CardContent,
+  CardMedia,
+  Container,
+  Grid,
+  Typography,
+  Fade,
+  Zoom,
+  Button,
+  Stack,
+  ButtonGroup,
+  IconButton,
+} from '@mui/material';
 import PageviewIcon from '@mui/icons-material/Pageview';
 import ArrowBackIos from '@mui/icons-material/ArrowBackIos';
 import EventIcon from '@mui/icons-material/Event';
 import AnimatedPage from '@/components/AnimatedPage';
 import Beetroot from '@/images/beetroot.jpg';
-import { useEventsContext } from '@/contexts/EventsContext';
-import { useUnsplashImage } from '@/utils/unsplash';
 import Raspberries from '@/images/raspberries.jpg';
+import { useUnsplashImage } from '@/utils/unsplash';
+import { useAuthContext } from '@/contexts/AuthContext';
+import { useEvents } from '@/queries/useEvents'; // 🔑 new hook
 
-const ViewCategory = () => {
-  console.log(useLocation());
-  // State category from previous page
+export default function ViewCategory() {
   const { state } = useLocation();
-
-  // Get all events from context
-  const { events } = useEventsContext();
-  // const { id } = useParams();
-  // console.log('ID', id);
   const navigate = useNavigate();
+  const { user } = useAuthContext();
 
-  // console.log('VIEW CATEGORY CONTEXT EVENTS', events);
-  // console.log('VIEW CATEGORY STATE', state);
+  // fetch this user’s events
+  const eventsQ = useEvents(user?._id);
+  const events = eventsQ.data || [];
 
-  // const category_id = state._id;
+  // filter by category
+  const filteredEvents = events.filter((event) => event.category?._id === state._id);
 
-  const filteredEvents = events.filter((event) => event.category._id === state._id);
-  // console.log('VIEW CATEGORY FILTERED EVENTS', filteredEvents);
-
-  // ViewCategory
+  // image helper
   const { url: imageUrl } = useUnsplashImage(state?.category);
 
   return (
@@ -54,18 +59,9 @@ const ViewCategory = () => {
         >
           <h1>Category</h1>
           <Grid container spacing={2}>
-            <Grid
-              item
-              xs={12}
-              sm={6}
-              md={4}
-              sx={{
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'flex-start',
-              }}
-            >
-              <Fade in={true} timeout={2000}>
+            {/* left column image */}
+            <Grid item xs={12} sm={6} md={4}>
+              <Fade in timeout={2000}>
                 <Box
                   component="img"
                   sx={{ maxWidth: '100%', height: 'auto' }}
@@ -74,64 +70,27 @@ const ViewCategory = () => {
                 />
               </Fade>
             </Grid>
-            <Grid
-              item
-              xs={12}
-              sm={6}
-              md={4}
-              sx={{
-                mt: 5,
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'flex-start',
-                alignContent: 'flex-start',
-              }}
-            >
-              <Box variant="container" sx={{ width: '100%' }}>
-                <Stack direction="row" sx={{ justifyContent: 'center' }} spacing={2}>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      '& > *': {
-                        m: 1,
-                      },
-                    }}
-                  >
-                    <ButtonGroup
-                      variant="outlined"
-                      color="secondary"
-                      size="small"
-                      aria-label="small button group"
-                    >
-                      <Button color="secondary" onClick={() => navigate(`/plants`)}>
-                        Plants
-                      </Button>
-                      <Button color="secondary" onClick={() => navigate('/events')}>
-                        Events
-                      </Button>
-                      <Button variant="outlined" onClick={() => navigate(`/categories`)}>
-                        Categories
-                      </Button>
-                    </ButtonGroup>
-                  </Box>
-                </Stack>
-              </Box>
-              <Zoom in={true} timeout={1500}>
+
+            {/* center info */}
+            <Grid item xs={12} sm={6} md={4} sx={{ mt: 5 }}>
+              <Stack direction="row" justifyContent="center">
+                <ButtonGroup variant="outlined" color="secondary" size="small">
+                  <Button onClick={() => navigate('/plants')}>Plants</Button>
+                  <Button onClick={() => navigate('/events')}>Events</Button>
+                  <Button onClick={() => navigate('/categories')}>Categories</Button>
+                </ButtonGroup>
+              </Stack>
+
+              <Zoom in timeout={1500}>
                 <Card sx={{ width: 345, mx: 'auto', mt: 4 }}>
                   <CardMedia
                     component="img"
                     alt={state.category}
-                    height="240px"
-                    minwidth="100%"
-                    position="center"
-                    overflow="hidden"
+                    height="240"
                     image={imageUrl || Raspberries}
-                    // image={`https://source.unsplash.com/featured/?${state.category}`}
                   />
                   <CardContent>
-                    <Typography gutterBottom variant="h5" component="div">
+                    <Typography gutterBottom variant="h5">
                       Category: {state.category}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
@@ -141,19 +100,17 @@ const ViewCategory = () => {
                 </Card>
               </Zoom>
             </Grid>
+
+            {/* right related events */}
             <Grid item xs={12} sm={6} md={4} sx={{ mt: 5 }}>
-              <Box component="div" align="left" sx={{ width: '100%', height: 'auto', mt: 4 }}>
-                <Box size="small" color="primary" aria-label="tip" align="center">
-                  <EventIcon sx={{ color: 'secondary.main', fontSize: '36px' }} />
+              <Box sx={{ mt: 4 }}>
+                <Box align="center">
+                  <EventIcon sx={{ color: 'secondary.main', fontSize: 36 }} />
                 </Box>
-                <Typography
-                  variant="h3"
-                  align="center"
-                  sx={{ align: 'center', color: 'secondary.dark' }}
-                >
+                <Typography variant="h3" align="center" sx={{ color: 'secondary.dark' }}>
                   Related Events
                 </Typography>
-                <List sx={{ dense: 'true', size: 'small' }}>
+                <List>
                   {filteredEvents.map((event) => (
                     <ListItem key={event._id} disableGutters>
                       <ListItemIcon>
@@ -165,23 +122,24 @@ const ViewCategory = () => {
                           <PageviewIcon color="info" />
                         </IconButton>
                       </ListItemIcon>
-                      <ListItemText primary={event.event_name} secondary="" />
+                      <ListItemText primary={event.event_name} />
                     </ListItem>
                   ))}
                   {filteredEvents.length === 0 && (
                     <ListItem disableGutters>
                       <ListItemIcon>
-                        <IconButton edge="end" aria-label="View" disabled>
+                        <IconButton edge="end" disabled>
                           <PageviewIcon />
                         </IconButton>
                       </ListItemIcon>
-                      <ListItemText primary={'No related events'} secondary="" />
+                      <ListItemText primary="No related events" />
                     </ListItem>
                   )}
                 </List>
               </Box>
             </Grid>
           </Grid>
+          {/* back button */}
           <Grid item sx={{ my: 4 }}>
             <Button color="secondary" variant="outlined" size="small" onClick={() => navigate(-1)}>
               <ArrowBackIos fontSize="small" />
@@ -192,6 +150,4 @@ const ViewCategory = () => {
       </Container>
     </AnimatedPage>
   );
-};
-
-export default ViewCategory;
+}

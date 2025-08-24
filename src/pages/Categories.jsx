@@ -127,29 +127,6 @@ export default function Categories() {
             alignItems: 'center',
           }}
         >
-          {/* <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 2 }}>
-            <Link component={RouterLink} underline="hover" color="inherit" to="/almanac">
-              Almanac
-            </Link>
-            <Typography color="text.primary">Categories</Typography>
-          </Breadcrumbs> */}
-          {/* <Box sx={{ width: '100%', mt: 2, mb: 1 }}>
-            <BreadcrumbsNav
-              root={{ to: '/almanac', label: 'Almanac' }}
-              labels={{
-                categories: 'Categories',
-                category: 'Category',
-                plants: 'Plants',
-                plant: 'Plant',
-                events: 'Events',
-                event: 'Event',
-                add: 'Add',
-                edit: 'Edit',
-                // you can add more overrides here any time
-              }}
-              sx={{ justifyContent: 'center', display: 'flex' }}
-            />
-          </Box> */}
           <AppBreadcrumbs
             center
             segmentsMap={{
@@ -158,14 +135,9 @@ export default function Categories() {
               plants: 'Plants',
               events: 'Events',
               categories: { label: 'Categories', to: '/categories' },
-              // Optional: remap verbs to nicer labels
               add: 'Add',
               edit: 'Edit',
-            }}
-            // Optional: custom labels for IDs / slugs
-            paramResolver={(seg, idx, segments) => {
-              if (looksLikeId(seg)) return 'Details'; // or 'Item'
-              return null; // fall back to default
+              view: 'View',
             }}
           />
 

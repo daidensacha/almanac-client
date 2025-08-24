@@ -1,64 +1,76 @@
+// src/pages/crud/EditPlant.jsx
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Container from '@mui/material/Container';
 import Grid from '@mui/material/Grid';
-import ArrowBackIos from '@mui/icons-material/ArrowBackIos';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
-import { toast } from 'react-toastify';
+import ArrowBackIos from '@mui/icons-material/ArrowBackIos';
 import AnimatedPage from '@/components/AnimatedPage';
+import { toast } from 'react-toastify';
+
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { toDateOrNull, toIsoDateStringOrNull } from '@utils/dateHelpers'; // import to fix date issue
+
+import { toDateOrNull, toIsoDateStringOrNull } from '@/utils/dateHelpers';
 import instance from '@/utils/axiosClient';
-import { usePlantsContext } from '@/contexts/PlantsContext';
+import { useAuthContext } from '@/contexts/AuthContext';
+import { useQueryClient } from '@tanstack/react-query';
 
-const EditPlant = () => {
-  const { state } = useLocation();
-  // const { id } = useParams();
-  // console.log('ID', id);
-  // console.log('STATE', state);
+export default function EditPlant() {
+  const { state } = useLocation(); // assume you navigate with { state: plant }
   const navigate = useNavigate();
+  const { user } = useAuthContext();
+  const qc = useQueryClient();
 
-  const { setPlants } = usePlantsContext();
+  // Form state (init from router state)
+  const [values, setValues] = useState(() => ({
+    _id: state?._id || '',
+    common_name: state?.common_name || '',
+    botanical_name: state?.botanical_name || '',
+    sow_at: toDateOrNull(state?.sow_at),
+    plant_at: toDateOrNull(state?.plant_at),
+    harvest_at: toDateOrNull(state?.harvest_at),
+    harvest_to: toDateOrNull(state?.harvest_to),
+    fertilise: state?.fertilise || '',
+    fertiliser_type: state?.fertiliser_type || '',
+    spacing: state?.spacing || '',
+    depth: state?.depth || '',
+    notes: state?.notes || '',
+  }));
 
-  const [values, setValues] = useState({
-    common_name: '',
-    botanical_name: '',
-    sow_at: null,
-    plant_at: null,
-    harvest_at: null,
-    harvest_to: null,
-    fertilise: '',
-    fertiliser_type: '',
-    spacing: '',
-    depth: '',
-    notes: '',
-    created_at: '',
-    // buttonText: 'Sign Up',
-  });
-
+  // If the page can be refreshed and state rehydrates later, keep in sync
   useEffect(() => {
-    setValues({ ...state });
+    if (!state) return;
+    setValues((prev) => ({
+      ...prev,
+      _id: state._id,
+      common_name: state.common_name || '',
+      botanical_name: state.botanical_name || '',
+      sow_at: toDateOrNull(state.sow_at),
+      plant_at: toDateOrNull(state.plant_at),
+      harvest_at: toDateOrNull(state.harvest_at),
+      harvest_to: toDateOrNull(state.harvest_to),
+      fertilise: state.fertilise || '',
+      fertiliser_type: state.fertiliser_type || '',
+      spacing: state.spacing || '',
+      depth: state.depth || '',
+      notes: state.notes || '',
+    }));
   }, [state]);
 
-  // console.log('VALUES', values);
-
-  // Handle form values and set to state
-  const handleValues = (event) => {
-    setValues({ ...values, [event.target.name]: event.target.value });
+  const handleValues = (e) => {
+    const { name, value } = e.target;
+    setValues((v) => ({ ...v, [name]: value }));
   };
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    setValues({ ...values });
-    // console.log('SUBMIT VALUES', values);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
     try {
-      const {
-        data: { updatedPlant },
-      } = await instance.put(`/plant/update/${state._id}`, {
+      const payload = {
         common_name: values.common_name,
         botanical_name: values.botanical_name,
         sow_at: toIsoDateStringOrNull(values.sow_at),
@@ -70,16 +82,21 @@ const EditPlant = () => {
         spacing: values.spacing,
         depth: values.depth,
         notes: values.notes,
-      });
-      console.log('PLANT UPDATED', updatedPlant);
-      //spread state, exclude current plant, add updated plant
-      setPlants((prev) => [...prev.filter((plant) => plant._id !== state._id), updatedPlant]);
-      toast.success('Plant updated');
+      };
+
+      const {
+        data: { updatedPlant },
+      } = await instance.put(`/plant/update/${values._id}`, payload);
+
+      toast.success(`Plant "${updatedPlant?.common_name || ''}" updated`);
+
+      // refresh lists that depend on plants for this user
+      qc.invalidateQueries({ queryKey: ['plants', 'mine', user?._id] });
       navigate('/plants');
-    } catch (error) {
-      // console.log(error);
-      console.log('PLANT EDIT ERROR', error.response.data.error);
-      toast.error(error.response.data.error);
+    } catch (err) {
+      const msg = err?.response?.data?.error || 'Update failed';
+      console.error('PLANT EDIT ERROR', err?.response?.data || err);
+      toast.error(msg);
     }
   };
 
@@ -97,12 +114,12 @@ const EditPlant = () => {
           }}
         >
           <h1>Edit Plant</h1>
+
           <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 3 }}>
             <LocalizationProvider dateAdapter={AdapterDateFns}>
               <Grid container spacing={2}>
                 <Grid item xs={12} sm={6}>
                   <TextField
-                    autoComplete="given-name"
                     value={values.common_name}
                     name="common_name"
                     required
@@ -121,26 +138,19 @@ const EditPlant = () => {
                     id="botanical_name"
                     label="Botanical Name"
                     name="botanical_name"
-                    autoComplete="botanical_name"
                     size="small"
                     onChange={handleValues}
                   />
                 </Grid>
+
                 <Grid item xs={12} sm={6}>
                   <DatePicker
                     label="Sow at"
-                    value={toDateOrNull(values.sow_at)}
+                    value={values.sow_at}
                     format="dd/MM/yyyy"
-                    onChange={(newValue) => {
-                      setValues({ ...values, sow_at: newValue });
-                    }}
+                    onChange={(d) => setValues((v) => ({ ...v, sow_at: d }))}
                     slotProps={{
-                      textField: {
-                        name: 'sow_at',
-                        id: 'sow_at',
-                        size: 'small',
-                        fullWidth: true,
-                      },
+                      textField: { name: 'sow_at', id: 'sow_at', size: 'small', fullWidth: true },
                     }}
                   />
                 </Grid>
@@ -151,19 +161,17 @@ const EditPlant = () => {
                     id="depth"
                     label="Sowing Depth"
                     name="depth"
-                    autoComplete="depth"
                     size="small"
                     onChange={handleValues}
                   />
                 </Grid>
+
                 <Grid item xs={12} sm={6}>
                   <DatePicker
                     label="Plant at"
-                    value={toDateOrNull(values.plant_at)}
+                    value={values.plant_at}
                     format="dd/MM/yyyy"
-                    onChange={(newValue) => {
-                      setValues({ ...values, plant_at: newValue });
-                    }}
+                    onChange={(d) => setValues((v) => ({ ...v, plant_at: d }))}
                     slotProps={{
                       textField: {
                         name: 'plant_at',
@@ -182,18 +190,16 @@ const EditPlant = () => {
                     id="spacing"
                     label="Plant Spacing"
                     size="small"
-                    autoFocus
                     onChange={handleValues}
                   />
                 </Grid>
+
                 <Grid item xs={12} sm={6}>
                   <DatePicker
                     label="Harvest at"
-                    value={toDateOrNull(values.harvest_at)}
+                    value={values.harvest_at}
                     format="dd/MM/yyyy"
-                    onChange={(newValue) => {
-                      setValues({ ...values, harvest_at: newValue });
-                    }}
+                    onChange={(d) => setValues((v) => ({ ...v, harvest_at: d }))}
                     slotProps={{
                       textField: {
                         name: 'harvest_at',
@@ -207,11 +213,9 @@ const EditPlant = () => {
                 <Grid item xs={12} sm={6}>
                   <DatePicker
                     label="Harvest to"
-                    value={toDateOrNull(values.harvest_to)}
+                    value={values.harvest_to}
                     format="dd/MM/yyyy"
-                    onChange={(newValue) => {
-                      setValues({ ...values, harvest_to: newValue });
-                    }}
+                    onChange={(d) => setValues((v) => ({ ...v, harvest_to: d }))}
                     slotProps={{
                       textField: {
                         name: 'harvest_to',
@@ -222,6 +226,7 @@ const EditPlant = () => {
                     }}
                   />
                 </Grid>
+
                 <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
@@ -230,7 +235,6 @@ const EditPlant = () => {
                     id="fertilise"
                     label="Fertilise"
                     size="small"
-                    autoFocus
                     onChange={handleValues}
                   />
                 </Grid>
@@ -241,14 +245,13 @@ const EditPlant = () => {
                     id="fertiliser_type"
                     label="Fertiliser type"
                     name="fertiliser_type"
-                    autoComplete="fertiliser_type"
                     size="small"
                     onChange={handleValues}
                   />
                 </Grid>
+
                 <Grid item xs={12}>
                   <TextField
-                    required
                     fullWidth
                     multiline
                     rows={4}
@@ -262,6 +265,7 @@ const EditPlant = () => {
                 </Grid>
               </Grid>
             </LocalizationProvider>
+
             <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
               Update Plant
             </Button>
@@ -283,6 +287,4 @@ const EditPlant = () => {
       </Container>
     </AnimatedPage>
   );
-};
-
-export default EditPlant;
+}
