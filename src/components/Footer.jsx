@@ -6,7 +6,7 @@ import Link from '@mui/material/Link';
 import { Link as RouterLink } from 'react-router-dom';
 import { Typography } from '@mui/material';
 import { useWeather } from '@/utils/useWeather';
-import { useAuthContext } from '@/contexts/AuthContext';
+// import { useAuthContext } from '@/contexts/AuthContext';
 import { useProfile } from '@/hooks/useProfile';
 
 const FooterSection = () => {

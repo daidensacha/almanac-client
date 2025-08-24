@@ -1,26 +1,18 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, Outlet } from 'react-router-dom';
-import { isAuth } from '@/utils/helpers';
+// src/pages/PrivateRoutes.jsx
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
+import { useAuthContext } from '@/contexts/AuthContext';
 
-const PrivateRoutes = () => {
-  // state
-  const [loading, setLoading] = useState(true);
-  // hooks
-  const navigate = useNavigate();
+export default function PrivateRoutes() {
+  const { user, token } = useAuthContext(); // token should be hydrated from localStorage
+  const loc = useLocation();
 
-  // check if user is logged in
-  // by making API request or from localStorage
-  useEffect(() => {
-    setLoading(true);
-    if (isAuth()) {
-      setLoading(false);
-    } else {
-      setLoading(true);
-      navigate('/signin');
-    }
-  }, [navigate]);
+  // If we already have a user, allow
+  if (user) return <Outlet />;
 
-  return !loading && <Outlet />;
-};
+  // If we at least have a token (e.g., on reload before user was re-fetched),
+  // allow so pages/contexts can load; don't block with a spinner.
+  if (token) return <Outlet />;
 
-export default PrivateRoutes;
+  // Otherwise, bounce to signin
+  return <Navigate to="/signin" replace state={{ from: loc }} />;
+}

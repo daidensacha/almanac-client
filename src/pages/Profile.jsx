@@ -1,5 +1,5 @@
 // src/pages/Profile.jsx
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import Container from '@mui/material/Container';
@@ -25,14 +25,7 @@ import DialogActions from '@mui/material/DialogActions';
 import AnimatedPage from '@/components/AnimatedPage';
 import instance from '@/utils/axiosClient';
 import climateZoneData from '@/data/climate-zone';
-import {
-  getCookie,
-  isAuth,
-  signout,
-  updateUser,
-  setLocalStorage,
-  removeLocalStorage,
-} from '@/utils/helpers';
+import { updateUser, setLocalStorage, removeLocalStorage } from '@/utils/helpers';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.min.css';
@@ -48,8 +41,8 @@ const toNumOrEmpty = (v) => {
 const hasCoords = (lat, lon) =>
   Number.isFinite(Number(lat)) &&
   Number.isFinite(Number(lon)) &&
-  Number(latitude) !== 0 &&
-  Number(longitude) !== 0;
+  Number(lat) !== 0 &&
+  Number(lon) !== 0;
 
 const GEO_OPTS_PRIMARY = { enableHighAccuracy: false, timeout: 5000, maximumAge: 120000 };
 const GEO_OPTS_RETRY = { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 };
@@ -84,12 +77,12 @@ function watchOnce(watchTimeoutMs = 6000, opts = GEO_OPTS_RETRY) {
   });
 }
 
-const Profile = () => {
+export default function Profile() {
   const navigate = useNavigate();
-  const token = getCookie('token');
 
   // global auth user
-  const { user: authUser, setUser: setAuthUser } = useAuthContext();
+  // (setUser may or may not exist in your context; we guard its usage)
+  const { user: authUser, signout, setUser: setAuthUser } = useAuthContext();
 
   // local editable profile
   const [userProfile, setUserProfile] = useState({
@@ -129,7 +122,6 @@ const Profile = () => {
   // ────────────────────────────────────────────────────────────────────────────
   // Geolocation flow
   // ────────────────────────────────────────────────────────────────────────────
-
   const successPosition = (pos) => {
     const { latitude, longitude } = pos.coords || {};
     setLocation((s) => ({
@@ -164,12 +156,9 @@ const Profile = () => {
       setLocation((s) => ({ ...s, error: true, message: 'Geolocation not supported' }));
       return;
     }
-
-    // turn on the linear progress
     setLocation((s) => ({ ...s, loading: true, error: false, message: '' }));
 
     try {
-      // quick (possibly cached)
       const pos1 = await getPosition(GEO_OPTS_PRIMARY);
       successPosition(pos1);
       return;
@@ -181,13 +170,11 @@ const Profile = () => {
     }
 
     try {
-      // fresh, high-accuracy
       const pos2 = await getPosition(GEO_OPTS_RETRY);
       successPosition(pos2);
       return;
     } catch (err2) {
       try {
-        // brief watch fallback
         const pos3 = await watchOnce(6000, GEO_OPTS_RETRY);
         successPosition(pos3);
         return;
@@ -195,7 +182,6 @@ const Profile = () => {
         errorPosition(err2);
       }
     } finally {
-      // ALWAYS clear spinner
       setLocation((s) => ({ ...s, loading: false }));
     }
   }
@@ -224,7 +210,6 @@ const Profile = () => {
         message: 'Could not fetch climate zone. Please try again.',
       }));
       toast.error('Could not fetch climate zone. Please try again.');
-      // eslint-disable-next-line no-console
       console.log(err);
     }
   };
@@ -232,7 +217,6 @@ const Profile = () => {
   // ────────────────────────────────────────────────────────────────────────────
   // Effects: compute userZone card, load profile
   // ────────────────────────────────────────────────────────────────────────────
-
   useEffect(() => {
     const sub = location.koppen_geiger_zone;
     if (checked && sub) {
@@ -253,11 +237,9 @@ const Profile = () => {
   useEffect(() => {
     (async () => {
       try {
-        const id = authUser?._id || isAuth()?._id;
+        const id = authUser?._id;
         if (!id) return;
-        const { data } = await instance.get(`/user/${id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const { data } = await instance.get(`/user/${id}`); // axiosClient carries Bearer
         const {
           role,
           firstname,
@@ -283,8 +265,12 @@ const Profile = () => {
         setChecked(!!show_location);
       } catch (err) {
         if (err.response?.status === 401) {
-          signout(() => navigate('/signin'));
-          toast.error(err.response.data.error);
+          try {
+            await signout();
+          } finally {
+            navigate('/signin', { replace: true });
+          }
+          toast.error(err.response.data?.error || 'Session expired');
         }
       }
     })();
@@ -294,9 +280,9 @@ const Profile = () => {
   // if user flips to AUTO while ON and we have no coords yet, try fetch
   useEffect(() => {
     if (checked && locMode === 'auto') {
-      const hasCoords =
+      const haveCoords =
         Number.isFinite(Number(location.latitude)) && Number.isFinite(Number(location.longitude));
-      if (!hasCoords) {
+      if (!haveCoords) {
         getCurrentLocation();
       }
     }
@@ -306,7 +292,6 @@ const Profile = () => {
   // ────────────────────────────────────────────────────────────────────────────
   // Handlers
   // ────────────────────────────────────────────────────────────────────────────
-
   const handleChecked = async (e) => {
     const on = e.target.checked;
     setChecked(on);
@@ -334,16 +319,13 @@ const Profile = () => {
     const haveCoords = hasCoords(location.latitude, location.longitude);
 
     if (!haveCoords) {
-      // No coords → force Auto and fetch
       setLocMode('auto');
       setLocation((s) => ({ ...s, loading: true, error: false, message: '' }));
-      await getCurrentLocation(); // successPosition will also call getClimateZone
+      await getCurrentLocation();
       return;
     }
 
-    // We do have coords
     if (locMode === 'manual') {
-      // Enrich zone from existing coords (no fetch of position)
       setLocation((s) => ({ ...s, loading: true, error: false, message: '' }));
       try {
         await getClimateZone(Number(location.latitude), Number(location.longitude));
@@ -351,58 +333,14 @@ const Profile = () => {
         setLocation((s) => ({ ...s, loading: false }));
       }
     } else {
-      // Auto + coords present → still do a quick position fetch to refresh if you like
       setLocation((s) => ({ ...s, loading: true, error: false, message: '' }));
       await getCurrentLocation();
     }
   };
-  // const handleChecked = async (e) => {
-  //   const on = e.target.checked;
-  //   setChecked(on);
-
-  //   if (!on) {
-  //     // UI clear; DB will be nulled on submit
-  //     setLocation((s) => ({
-  //       ...s,
-  //       loading: false,
-  //       error: false,
-  //       code: 0,
-  //       message: '',
-  //       latitude: '',
-  //       longitude: '',
-  //       koppen_geiger_zone: '',
-  //       zone_description: '',
-  //     }));
-  //     return;
-  //   }
-
-  //   // ON: try to fetch immediately if in auto, else show manual coords or prompt
-  //   if (locMode === 'auto') {
-  //     setLocation((s) => ({ ...s, loading: true, error: false, message: '' }));
-  //     await getCurrentLocation();
-  //   } else {
-  //     if (hasCoords(location.latitude, location.longitude)) {
-  //       // we have saved coords → ensure zone is filled (quick enrich)
-  //       setLoading(true);
-  //       try {
-  //         await getClimateZone(Number(location.latitude), Number(location.longitude));
-  //       } finally {
-  //         setLoading(false);
-  //       }
-  //     } else {
-  //       setLocation((s) => ({
-  //         ...s,
-  //         message: 'Enter coords and press Resolve zone',
-  //         error: false,
-  //       }));
-  //     }
-  //   }
-  // };
 
   const handleLocModeChange = async (_, next) => {
     if (!next) return;
     setLocMode(next);
-
     if (!checked) return;
 
     if (next === 'auto') {
@@ -469,17 +407,10 @@ const Profile = () => {
     if (trimmedPwd) payload.password = trimmedPwd;
 
     try {
-      // eslint-disable-next-line no-console
-      console.log('Submitting payload:', payload);
-
-      const res = await instance.patch('/user/update', payload, {
-        headers: { Authorization: `Bearer ${token}` },
-        withCredentials: true,
-      });
-
+      const res = await instance.patch('/user/update', payload, { withCredentials: true });
       updateUser(res, () => {
         setUserProfile((prev) => ({ ...prev, buttonText: 'Submit', ...res.data }));
-        setAuthUser(res.data);
+        if (typeof setAuthUser === 'function') setAuthUser(res.data);
         toast.success('Profile updated successfully');
       });
     } catch (err) {
@@ -492,7 +423,6 @@ const Profile = () => {
   // ────────────────────────────────────────────────────────────────────────────
   // Render
   // ────────────────────────────────────────────────────────────────────────────
-
   return (
     <AnimatedPage>
       <Container
@@ -587,27 +517,12 @@ const Profile = () => {
                 Climate Zone
               </Typography>
 
-              {/* <Box component="div" sx={{ mt: 2, width: '100%' }}> */}
-              {/* <FormControlLabel
-                  control={
-                    <Switch
-                      name="show_location"
-                      id="show_location"
-                      checked={checked}
-                      onChange={handleChecked}
-                    />
-                  }
-                  label={checked ? 'Remove location' : 'Show location'}
-                /> */}
-
               {location.loading && (
                 <Box sx={{ width: '100%', mt: 1 }}>
                   <LinearProgress color="secondary" />
                 </Box>
               )}
-              {/* </Box> */}
 
-              {/* Manual/Auto toggle only when consent is ON */}
               <Box
                 component="div"
                 sx={{ mt: 2, width: '100%', display: 'flex', justifyContent: 'space-between' }}
@@ -623,7 +538,7 @@ const Profile = () => {
                   }
                   label={checked ? 'Remove location' : 'Show location'}
                 />
-                {/* {checked && ( */}
+
                 <ToggleButtonGroup
                   exclusive
                   color="primary"
@@ -640,7 +555,6 @@ const Profile = () => {
                   </ToggleButton>
                 </ToggleButtonGroup>
               </Box>
-              {/* )} */}
             </Box>
 
             {/* Coordinates + zone */}
@@ -777,6 +691,4 @@ const Profile = () => {
       </Container>
     </AnimatedPage>
   );
-};
-
-export default Profile;
+}

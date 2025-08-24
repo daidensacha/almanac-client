@@ -1,6 +1,11 @@
+// src/pages/Events.jsx
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import instance from '@/utils/axiosClient';
+import { useQuery } from '@tanstack/react-query';
+import api from '@/utils/axiosClient';
+
+import AnimatedPage from '@/components/AnimatedPage';
+import AppBreadcrumbs from '@/components/ui/AppBreadcrumbs';
 import Container from '@mui/material/Container';
 import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
@@ -26,10 +31,8 @@ import TipsAndUpdatesIcon from '@mui/icons-material/TipsAndUpdates';
 import { toast } from 'react-toastify';
 import { Fade, Zoom } from '@mui/material';
 import Raspberries from '@/images/raspberries.jpg';
-import AnimatedPage from '@/components/AnimatedPage';
 import SearchBar from '@/components/ui/SearchFilter';
 import moment from 'moment';
-// import { useEventsContext } from '@/contexts/EventsContext';
 
 const modalStyle = {
   position: 'absolute',
@@ -43,90 +46,88 @@ const modalStyle = {
   p: 4,
 };
 
-const Events = () => {
+export default function Events() {
   const navigate = useNavigate();
 
-  // const { events, setEvents } = useEventsContext();
+  // 1) Query server-scoped list (only this user's non-archived events)
+  const eventsQ = useQuery({
+    queryKey: ['events:mine'],
+    queryFn: async () => {
+      const { data } = await api.get('/events'); // backend scopes by req.auth._id
+      return Array.isArray(data?.allEvents) ? data.allEvents : [];
+    },
+    refetchOnWindowFocus: false,
+  });
 
-  // console.log('EVENTS CONTEXT', events);
-
+  // 2) Local UI state
   const [open, setOpen] = useState(false);
-  // const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
-
-  const [events, setEvents] = useState([]);
-
-  useEffect(() => {
-    const getEvents = async () => {
-      try {
-        const {
-          data: { allEvents },
-        } = await instance.get(`/events`);
-        setEvents(allEvents);
-      } catch (err) {
-        console.log(err.response.data.error);
-        toast.error(err.response.data.error);
-        navigate('/events');
-      }
-    };
-    getEvents();
-  }, [navigate]);
-
-  const archiveEvent = async (id) => {
-    try {
-      const {
-        data: { archivedEvent },
-      } = await instance.patch(`/event/archive/${id}`, {
-        archived: true,
-      });
-      console.log('ARCHIVED EVENT', archivedEvent);
-      handleClose();
-      setEvents((prev) => prev.filter((event) => event._id !== id));
-    } catch (err) {
-      console.log(err.response.data.error);
-      toast.error(err.response.data.error);
-    }
-  };
-
   const [deleteCurrentEvent, setDeleteCurrentEvent] = useState(null);
-  const deleteHandler = (e, id) => {
-    setDeleteCurrentEvent(id);
-    setOpen(true);
-  };
+  const handleClose = () => setOpen(false);
 
   const [search, setSearch] = useState('');
   const [filteredEvents, setFilteredEvents] = useState([]);
 
-  // Prop variables for SearchBar
-  const placeholder = 'Search Events';
-  const helpertext = 'Search: event, plant, category or month';
-
-  // Sort Events by Name
-  const sortEvents = (a, b) => {
-    return a.event_name.localeCompare(b.event_name);
-  };
-
+  // 3) Derive filtered list when query data or search changes
   useEffect(() => {
-    setFilteredEvents(
-      events.sort(sortEvents).filter((event) => {
-        return (
-          event.event_name.toLowerCase().includes(search.toLowerCase()) ||
-          event.plant.common_name.toLowerCase().includes(search.toLowerCase()) ||
-          event.category.category.toLowerCase().includes(search.toLowerCase()) ||
-          moment(event.occurs_at).format('MMMM').toLowerCase().includes(search.toLowerCase())
-        );
-      }),
+    const source = Array.isArray(eventsQ.data) ? eventsQ.data : [];
+    const sortByName = (a, b) => (a?.event_name || '').localeCompare(b?.event_name || '');
+    const q = search.toLowerCase();
+
+    const filtered = source
+      .slice()
+      .sort(sortByName)
+      .filter((ev) => {
+        const name = ev?.event_name?.toLowerCase() || '';
+        const plant = ev?.plant?.common_name?.toLowerCase() || '';
+        const cat = ev?.category?.category?.toLowerCase() || '';
+        const month = ev?.occurs_at ? moment(ev.occurs_at).format('MMMM').toLowerCase() : '';
+        return name.includes(q) || plant.includes(q) || cat.includes(q) || month.includes(q);
+      });
+
+    setFilteredEvents(filtered);
+  }, [search, eventsQ.data]);
+
+  // 4) Loading / error states (safe for hooks)
+  if (eventsQ.isLoading) {
+    return (
+      <AnimatedPage>
+        <Container component="main" maxWidth="xl">
+          <Box sx={{ mt: 8 }}>Loading events…</Box>
+        </Container>
+      </AnimatedPage>
     );
-  }, [search, events]);
+  }
+  if (eventsQ.error) {
+    return (
+      <AnimatedPage>
+        <Container component="main" maxWidth="xl">
+          <Box sx={{ mt: 8, color: 'error.main' }}>Failed to load events</Box>
+        </Container>
+      </AnimatedPage>
+    );
+  }
 
-  const onSearchChange = (searchQuery) => {
-    setSearch(searchQuery);
+  // 5) Handlers
+  const deleteHandler = (_e, id) => {
+    setDeleteCurrentEvent(id);
+    setOpen(true);
   };
 
-  const handleClearClick = () => {
-    setSearch('');
+  const archiveEvent = async (id) => {
+    try {
+      const { data } = await api.patch(`/event/archive/${id}`, { archived: true });
+      handleClose();
+      toast.success(`${data?.archivedEvent?.event_name || 'Event'} archived`);
+      eventsQ.refetch();
+    } catch (err) {
+      toast.error(err?.response?.data?.error || 'Failed to archive event');
+    }
   };
 
+  const onSearchChange = (q) => setSearch(q);
+  const handleClearClick = () => setSearch('');
+
+  // 6) Render
   return (
     <AnimatedPage>
       <Container component="main" maxWidth="xl">
@@ -140,6 +141,19 @@ const Events = () => {
             alignItems: 'center',
           }}
         >
+          <AppBreadcrumbs
+            center
+            segmentsMap={{
+              admin: 'Admin',
+              almanac: 'Almanac',
+              plants: 'Plants',
+              events: 'Events',
+              categories: { label: 'Categories', to: '/categories' },
+              add: 'Add',
+              edit: 'Edit',
+            }}
+          />
+
           <h1>Events</h1>
 
           <Grid container spacing={2} sx={{ mt: 1 }}>
@@ -147,42 +161,27 @@ const Events = () => {
               item
               xs={12}
               md={4}
-              sx={{
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'flex-start',
-              }}
+              sx={{ display: 'flex', justifyContent: 'center', alignItems: 'flex-start' }}
             >
-              <Fade in={true} timeout={2000}>
+              <Fade in timeout={2000}>
                 <Box
                   component="img"
                   sx={{ maxWidth: '100%', height: 'auto' }}
                   alt="image"
                   src={Raspberries}
-                ></Box>
+                />
               </Fade>
             </Grid>
-            <Grid
-              item
-              xs={12}
-              md={4}
-              sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'flex-start',
-                alignContent: 'flex-start',
-              }}
-            >
-              <Box variant="container" sx={{ width: '100%' }}>
+
+            <Grid item xs={12} md={4} sx={{ display: 'flex', flexDirection: 'column' }}>
+              <Box sx={{ width: '100%' }}>
                 <Stack direction="row" sx={{ justifyContent: 'center' }} spacing={2}>
                   <Box
                     sx={{
                       display: 'flex',
                       flexDirection: 'column',
                       alignContent: 'center',
-                      '& > *': {
-                        m: 1,
-                      },
+                      '& > *': { m: 1 },
                     }}
                   >
                     <ButtonGroup
@@ -190,9 +189,8 @@ const Events = () => {
                       color="secondary"
                       size="small"
                       sx={{ mx: 'auto' }}
-                      aria-label="small button group"
                     >
-                      <Button onClick={() => navigate(`/plants`)}>Plants</Button>
+                      <Button onClick={() => navigate('/plants')}>Plants</Button>
                       <Button
                         variant="contained"
                         startIcon={<AddIcon />}
@@ -200,29 +198,26 @@ const Events = () => {
                       >
                         Event
                       </Button>
-                      <Button onClick={() => navigate(`/categories`)}>Categories</Button>
+                      <Button onClick={() => navigate('/categories')}>Categories</Button>
                     </ButtonGroup>
                   </Box>
                 </Stack>
+
                 <Box sx={{ display: 'flex', justifyContent: 'center' }}>
                   <SearchBar
-                    sx={{}}
                     found={filteredEvents}
-                    helpertext={helpertext}
-                    placeholder={placeholder}
+                    helpertext="Search: event, plant, category or month"
+                    placeholder="Search Events"
                     onSearch={onSearchChange}
                     value={search}
                     handleClearClick={handleClearClick}
                   />
                 </Box>
               </Box>
-              <Zoom in={true} timeout={1000}>
+
+              <Zoom in timeout={1000}>
                 <TableContainer sx={{ maxWidth: 650 }}>
-                  <Table
-                    sx={{ width: 'max-content', mt: 1, mx: 'auto' }}
-                    size="small"
-                    aria-label="simple table"
-                  >
+                  <Table sx={{ width: 'max-content', mt: 1, mx: 'auto' }} size="small">
                     <TableHead>
                       <TableRow>
                         <TableCell>#</TableCell>
@@ -231,47 +226,28 @@ const Events = () => {
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {filteredEvents?.map((row, index) => (
+                      {filteredEvents.map((row, index) => (
                         <TableRow
                           key={row._id}
-                          sx={{
-                            '&:last-child td, &:last-child th': { border: 0 },
-                          }}
+                          sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                         >
-                          <TableCell component="th" scope="row">
-                            {index + 1}
-                          </TableCell>
+                          <TableCell>{index + 1}</TableCell>
                           <TableCell align="left">{row.event_name}</TableCell>
                           <TableCell align="center">
-                            <Stack
-                              direction="row"
-                              align="end"
-                              spacing={2}
-                              sx={{
-                                display: 'flex',
-                                justifyContent: 'flex-end',
-                              }}
-                            >
+                            <Stack direction="row" spacing={2} sx={{ justifyContent: 'flex-end' }}>
                               <IconButton
                                 size="small"
-                                comonent="button"
                                 aria-label="view"
                                 color="info"
                                 onClick={() => navigate(`/event/${row._id}`, { state: row })}
                               >
                                 <PageviewIcon />
                               </IconButton>
-
                               <IconButton
                                 size="small"
-                                component="button"
                                 aria-label="edit"
                                 sx={{ color: 'secondary.main' }}
-                                onClick={() =>
-                                  navigate(`/event/edit/${row._id}`, {
-                                    state: row,
-                                  })
-                                }
+                                onClick={() => navigate(`/event/edit/${row._id}`, { state: row })}
                               >
                                 <EditIcon />
                               </IconButton>
@@ -279,7 +255,10 @@ const Events = () => {
                                 size="small"
                                 aria-label="delete"
                                 sx={{ color: 'grey.700' }}
-                                onClick={(e) => deleteHandler(e, row._id)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  deleteHandler(e, row._id);
+                                }}
                               >
                                 <DeleteIcon />
                               </IconButton>
@@ -288,21 +267,14 @@ const Events = () => {
                         </TableRow>
                       ))}
                     </TableBody>
-                    {/* Start modal */}
-                    <Modal
-                      open={open}
-                      onClose={handleClose}
-                      aria-labelledby="modal-modal-title"
-                      aria-describedby="modal-modal-description"
-                    >
+
+                    {/* Modal */}
+                    <Modal open={open} onClose={handleClose}>
                       <Box sx={modalStyle}>
-                        <Typography id="modal-modal-title" variant="h6" component="h2">
-                          Are you sure?
-                        </Typography>
+                        <Typography variant="h6">Are you sure?</Typography>
                         <Grid container spacing={2}>
                           <Grid item xs={12} sm={6}>
                             <Button
-                              type="button"
                               fullWidth
                               variant="contained"
                               color="secondary"
@@ -314,7 +286,6 @@ const Events = () => {
                           </Grid>
                           <Grid item xs={12} sm={6}>
                             <Button
-                              type="button"
                               fullWidth
                               variant="contained"
                               color="error"
@@ -332,36 +303,29 @@ const Events = () => {
                 </TableContainer>
               </Zoom>
             </Grid>
+
             <Grid
               item
               xs={12}
               md={4}
-              sx={{
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'flex-start',
-              }}
+              sx={{ display: 'flex', justifyContent: 'center', alignItems: 'flex-start' }}
             >
-              <Fade in={true} timeout={2000}>
-                <Box component="div" align="left" sx={{ width: '100%', height: 'auto', mt: 4 }}>
-                  <Box size="small" color="primary" aria-label="tip" align="center">
-                    <TipsAndUpdatesIcon sx={{ color: 'secondary.main', fontSize: '36px' }} />
+              <Fade in timeout={2000}>
+                <Box align="left" sx={{ width: '100%', mt: 4 }}>
+                  <Box align="center">
+                    <TipsAndUpdatesIcon sx={{ color: 'secondary.main', fontSize: 36 }} />
                   </Box>
-                  <Typography
-                    variant="h3"
-                    align="center"
-                    sx={{ align: 'center', color: 'secondary.dark' }}
-                  >
+                  <Typography variant="h3" align="center" sx={{ color: 'secondary.dark' }}>
                     Tips
                   </Typography>
-                  <List sx={{ dense: 'true', size: 'small' }}>
+                  <List dense>
                     <ListItem disableGutters>
                       <ListItemIcon>
                         <CheckIcon color="success" />
                       </ListItemIcon>
                       <ListItemText
                         primary="The event triangle"
-                        secondary="Plant - Event - Category. To create an event, you must first create a category and a plant."
+                        secondary="Plant - Event - Category. Create a category and a plant first."
                       />
                     </ListItem>
                     <ListItem disableGutters>
@@ -369,17 +333,8 @@ const Events = () => {
                         <CheckIcon color="success" />
                       </ListItemIcon>
                       <ListItemText
-                        primary="Four Required fields"
-                        secondary="Event name, category, plant, and date. Use the remaining fields to add more details as required."
-                      />
-                    </ListItem>
-                    <ListItem disableGutters>
-                      <ListItemIcon>
-                        <CheckIcon color="success" />
-                      </ListItemIcon>
-                      <ListItemText
-                        primary="Review and update"
-                        secondary="Reference, review and update your events each year to ensure they are accurate. Each year your will find it easier with your reference of past years experience."
+                        primary="Four required fields"
+                        secondary="Event name, category, plant, and date."
                       />
                     </ListItem>
                   </List>
@@ -391,6 +346,4 @@ const Events = () => {
       </Container>
     </AnimatedPage>
   );
-};
-
-export default Events;
+}

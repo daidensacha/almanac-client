@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 import './index.css';
-import AppLayout from '@/components/AppLayout';
+import AppLayout from '@/layouts/AppLayout';
 import { ThemeProvider } from '@mui/material/';
 import theme from '@/components/ui/theme';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -11,24 +11,29 @@ import EventContextProvider from '@/contexts/EventsContext';
 import PlantsContextProvider from '@/contexts/PlantsContext';
 import CategoriesContextProvider from '@/contexts/CategoriesContext';
 import AuthContextProvider from '@/contexts/AuthContext';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+const queryClient = new QueryClient();
 
 const rootEl = document.getElementById('root');
 
 createRoot(rootEl).render(
   <ThemeProvider theme={theme}>
     <CssBaseline />
-    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-      <AuthContextProvider>
-        <EventContextProvider>
-          <PlantsContextProvider>
-            <CategoriesContextProvider>
-              <AppLayout>
-                <App />
-              </AppLayout>
-            </CategoriesContextProvider>
-          </PlantsContextProvider>
-        </EventContextProvider>
-      </AuthContextProvider>
-    </BrowserRouter>
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <AuthContextProvider>
+          <EventContextProvider>
+            <PlantsContextProvider>
+              <CategoriesContextProvider>
+                <AppLayout>
+                  <App />
+                </AppLayout>
+              </CategoriesContextProvider>
+            </PlantsContextProvider>
+          </EventContextProvider>
+        </AuthContextProvider>
+      </BrowserRouter>
+    </QueryClientProvider>
   </ThemeProvider>,
 );

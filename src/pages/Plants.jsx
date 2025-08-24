@@ -1,35 +1,40 @@
+// Plants.jsx (fixed order of hooks)
+import { useState, useEffect, Fragment } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import api from '@/utils/axiosClient';
+
+import AnimatedPage from '@/components/AnimatedPage';
 import Container from '@mui/material/Container';
 import Box from '@mui/material/Box';
-import Stack from '@mui/material/Stack';
-import IconButton from '@mui/material/IconButton';
-import AddIcon from '@mui/icons-material/Add';
-import DeleteIcon from '@mui/icons-material/Delete';
-import EditIcon from '@mui/icons-material/Edit';
-import AnimatedPage from '@/components/AnimatedPage';
 import Grid from '@mui/material/Grid';
 import { Fade, Zoom } from '@mui/material';
 import { ButtonGroup, Button } from '@mui/material';
 import Typography from '@mui/material/Typography';
-import { List, ListItem, ListItemText } from '@mui/material';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import CheckIcon from '@mui/icons-material/Check';
-import TipsAndUpdatesIcon from '@mui/icons-material/TipsAndUpdates';
-import PageviewIcon from '@mui/icons-material/Pageview';
+import Stack from '@mui/material/Stack';
+import IconButton from '@mui/material/IconButton';
 import Modal from '@mui/material/Modal';
-import { useState, useEffect } from 'react';
 import Table from '@mui/material/Table';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import TableCell from '@mui/material/TableCell';
 import TableBody from '@mui/material/TableBody';
+import PageviewIcon from '@mui/icons-material/Pageview';
+import AddIcon from '@mui/icons-material/Add';
+import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
+import TipsAndUpdatesIcon from '@mui/icons-material/TipsAndUpdates';
+import CheckIcon from '@mui/icons-material/Check';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import ListItemIcon from '@mui/material/ListItemIcon';
 import { toast } from 'react-toastify';
 import instance from '@/utils/axiosClient';
-import Berries from '@/images/berries.jpg';
-// import RandomImage from '@/images/RandomImage';
 import SearchBar from '@/components/ui/SearchFilter';
-import { usePlantsContext } from '@/contexts/PlantsContext';
+import Berries from '@/images/berries.jpg';
+import AppBreadcrumbs from '@/components/ui/AppBreadcrumbs';
 
 const modalStyle = {
   position: 'absolute',
@@ -43,74 +48,84 @@ const modalStyle = {
   p: 4,
 };
 
-const Plants = () => {
+export default function Plants() {
   const navigate = useNavigate();
 
-  const { plants, setPlants } = usePlantsContext();
-  // const randomImage = RandomImage();
+  // 1) QUERY FIRST — always called
+  const plantsQ = useQuery({
+    queryKey: ['plants:mine'],
+    queryFn: async () => {
+      const { data } = await api.get('/plants'); // server scopes to req.auth._id
+      return Array.isArray(data?.allPlants) ? data.allPlants : [];
+    },
+    refetchOnWindowFocus: false,
+  });
 
+  // 2) LOCAL STATE — always called
   const [open, setOpen] = useState(false);
   const handleClose = () => setOpen(false);
-
-  const archivePlant = async (id) => {
-    try {
-      const {
-        data: { archivedPlant },
-      } = await instance.patch(`/plant/archive/${id}`, {
-        archived: true,
-      });
-
-      handleClose();
-      setPlants((prev) => prev.filter((plant) => plant._id !== id));
-      console.log('ARCHIVE PLANT SUCCESS', `${archivedPlant.archived}`);
-      toast.success(`${archivedPlant.common_name} successfully archived`);
-    } catch (err) {
-      console.log(err.response.data);
-      toast.error(err.response.data.error);
-    }
-  };
-
   const [deleteCurrentPlant, setDeleteCurrentPlant] = useState(null);
-  const deleteHandler = (e, id) => {
+
+  const [search, setSearch] = useState('');
+  const [filteredPlants, setFilteredPlants] = useState([]);
+
+  // 3) EFFECTS — always called
+  useEffect(() => {
+    const source = Array.isArray(plantsQ.data) ? plantsQ.data : [];
+    const sortPlants = (a, b) => (a?.common_name || '').localeCompare(b?.common_name || '');
+    const filtered = source
+      .slice()
+      .sort(sortPlants)
+      .filter((p) => {
+        const cn = p?.common_name?.toLowerCase() || '';
+        const bn = p?.botanical_name?.toLowerCase() || '';
+        const q = search.toLowerCase();
+        return cn.includes(q) || bn.includes(q);
+      });
+    setFilteredPlants(filtered);
+  }, [search, plantsQ.data]);
+
+  // 4) NOW conditional returns are safe
+  if (plantsQ.isLoading) {
+    return (
+      <AnimatedPage>
+        <Container component="main" maxWidth="xl">
+          <Box sx={{ mt: 8 }}>Loading plants…</Box>
+        </Container>
+      </AnimatedPage>
+    );
+  }
+  if (plantsQ.error) {
+    return (
+      <AnimatedPage>
+        <Container component="main" maxWidth="xl">
+          <Box sx={{ mt: 8, color: 'error.main' }}>Failed to load plants</Box>
+        </Container>
+      </AnimatedPage>
+    );
+  }
+
+  // Handlers
+  const deleteHandler = (_e, id) => {
     setDeleteCurrentPlant(id);
     setOpen(true);
   };
 
-  // start of search filter
-  const [search, setSearch] = useState('');
-  const [filteredPlants, setFilteredPlants] = useState([]);
-  // console.log('search', search);
-
-  // Prop variables for SearchBar
-  const placeholder = 'Search Plants';
-  const helpertext = 'Search: Common or Botanical name';
-
-  // Sort Plants by Name
-  const sortPlants = (a, b) => {
-    return a?.common_name.localeCompare(b?.common_name);
+  const archivePlant = async (id) => {
+    try {
+      const { data } = await instance.patch(`/plant/archive/${id}`, { archived: true });
+      handleClose();
+      toast.success(`${data?.archivedPlant?.common_name || 'Plant'} archived`);
+      plantsQ.refetch(); // refresh from server
+    } catch (err) {
+      toast.error(err?.response?.data?.error || 'Failed to archive plant');
+    }
   };
 
-  useEffect(() => {
-    setFilteredPlants(
-      plants?.sort(sortPlants).filter((plant) => {
-        return (
-          plant?.common_name.toLowerCase().includes(search.toLowerCase()) ||
-          plant?.botanical_name.toLowerCase().includes(search.toLowerCase())
-        );
-      }),
-    );
-  }, [search, plants]);
+  const onSearchChange = (q) => setSearch(q);
+  const handleClearClick = () => setSearch('');
 
-  // console.log('filteredPlants', filteredPlants);
-
-  const onSearchChange = (searchQuery) => {
-    setSearch(searchQuery);
-  };
-
-  const handleClearClick = () => {
-    setSearch('');
-  };
-
+  // 5) RENDER
   return (
     <AnimatedPage>
       <Container component="main" maxWidth="xl">
@@ -124,6 +139,24 @@ const Plants = () => {
             alignItems: 'center',
           }}
         >
+          <AppBreadcrumbs
+            center
+            segmentsMap={{
+              admin: 'Admin',
+              almanac: 'Almanac',
+              plants: 'Plants',
+              events: 'Events',
+              categories: { label: 'Categories', to: '/categories' },
+              // Optional: remap verbs to nicer labels
+              add: 'Add',
+              edit: 'Edit',
+            }}
+            // Optional: custom labels for IDs / slugs
+            paramResolver={(seg, idx, segments) => {
+              if (looksLikeId(seg)) return 'Details'; // or 'Item'
+              return null; // fall back to default
+            }}
+          />
           <h1>Plants</h1>
 
           <Grid container spacing={2} sx={{ mt: 1 }}>
@@ -131,43 +164,27 @@ const Plants = () => {
               item
               xs={12}
               md={4}
-              sx={{
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'flex-start',
-              }}
+              sx={{ display: 'flex', justifyContent: 'center', alignItems: 'flex-start' }}
             >
-              <Fade in={true} timeout={2000}>
+              <Fade in timeout={2000}>
                 <Box
                   component="img"
                   sx={{ maxWidth: '100%', height: 'auto' }}
                   alt="image"
                   src={Berries}
-                ></Box>
+                />
               </Fade>
             </Grid>
 
-            <Grid
-              item
-              xs={12}
-              md={4}
-              sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'flex-start',
-                alignContent: 'flex-start',
-              }}
-            >
-              <Box variant="container" sx={{ width: '100%' }}>
+            <Grid item xs={12} md={4} sx={{ display: 'flex', flexDirection: 'column' }}>
+              <Box sx={{ width: '100%' }}>
                 <Stack direction="row" sx={{ justifyContent: 'center' }} spacing={2}>
                   <Box
                     sx={{
                       display: 'flex',
                       flexDirection: 'column',
                       alignContent: 'center',
-                      '& > *': {
-                        m: 1,
-                      },
+                      '& > *': { m: 1 },
                     }}
                   >
                     <ButtonGroup
@@ -175,20 +192,19 @@ const Plants = () => {
                       color="secondary"
                       size="small"
                       sx={{ mx: 'auto' }}
-                      aria-label="small button group"
                     >
                       <Button
                         variant="contained"
                         color="secondary"
                         startIcon={<AddIcon />}
-                        onClick={() => navigate(`/plant/add`)}
+                        onClick={() => navigate('/plant/add')}
                       >
                         Plant
                       </Button>
                       <Button color="secondary" onClick={() => navigate('/events')}>
                         Events
                       </Button>
-                      <Button onClick={() => navigate(`/categories`)}>Categories</Button>
+                      <Button onClick={() => navigate('/categories')}>Categories</Button>
                     </ButtonGroup>
                   </Box>
                 </Stack>
@@ -196,21 +212,18 @@ const Plants = () => {
                   <SearchBar
                     sx={{ mx: 'auto' }}
                     found={filteredPlants}
-                    helpertext={helpertext}
-                    placeholder={placeholder}
+                    helpertext="Search: Common or Botanical name"
+                    placeholder="Search Plants"
                     onSearch={onSearchChange}
                     value={search}
                     handleClearClick={handleClearClick}
                   />
                 </Box>
               </Box>
-              <Zoom in={true} timeout={1000}>
+
+              <Zoom in timeout={1000}>
                 <TableContainer sx={{ maxWidth: 650 }}>
-                  <Table
-                    sx={{ width: 'max-content', mt: 1, mx: 'auto' }}
-                    size="small"
-                    aria-label="simple table"
-                  >
+                  <Table sx={{ width: 'max-content', mt: 1, mx: 'auto' }} size="small">
                     <TableHead>
                       <TableRow>
                         <TableCell>#</TableCell>
@@ -219,30 +232,17 @@ const Plants = () => {
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {filteredPlants?.map((row, index) => (
+                      {filteredPlants.map((row, index) => (
                         <TableRow
                           key={row._id}
-                          sx={{
-                            '&:last-child td, &:last-child th': { border: 0 },
-                          }}
+                          sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                         >
-                          <TableCell component="th" scope="row">
-                            {index + 1}
-                          </TableCell>
+                          <TableCell>{index + 1}</TableCell>
                           <TableCell align="left">{row.common_name}</TableCell>
                           <TableCell align="center">
-                            <Stack
-                              direction="row"
-                              align="end"
-                              spacing={2}
-                              sx={{
-                                display: 'flex',
-                                justifyContent: 'flex-end',
-                              }}
-                            >
+                            <Stack direction="row" spacing={2} sx={{ justifyContent: 'flex-end' }}>
                               <IconButton
                                 size="small"
-                                comonent="button"
                                 aria-label="view"
                                 color="info"
                                 onClick={() => navigate(`/plant/${row._id}`, { state: row })}
@@ -251,14 +251,9 @@ const Plants = () => {
                               </IconButton>
                               <IconButton
                                 size="small"
-                                component="button"
                                 aria-label="edit"
                                 sx={{ color: 'secondary.main' }}
-                                onClick={() =>
-                                  navigate(`/plant/edit/${row._id}`, {
-                                    state: row,
-                                  })
-                                }
+                                onClick={() => navigate(`/plant/edit/${row._id}`, { state: row })}
                               >
                                 <EditIcon />
                               </IconButton>
@@ -275,21 +270,14 @@ const Plants = () => {
                         </TableRow>
                       ))}
                     </TableBody>
-                    {/* Start modal */}
-                    <Modal
-                      open={open}
-                      onClose={handleClose}
-                      aria-labelledby="modal-modal-title"
-                      aria-describedby="modal-modal-description"
-                    >
+
+                    {/* Modal */}
+                    <Modal open={open} onClose={handleClose}>
                       <Box sx={modalStyle}>
-                        <Typography id="modal-modal-title" variant="h6" component="h2">
-                          Are you sure?
-                        </Typography>
+                        <Typography variant="h6">Are you sure?</Typography>
                         <Grid container spacing={2}>
                           <Grid item xs={12} sm={6}>
                             <Button
-                              type="button"
                               fullWidth
                               variant="contained"
                               color="secondary"
@@ -301,7 +289,6 @@ const Plants = () => {
                           </Grid>
                           <Grid item xs={12} sm={6}>
                             <Button
-                              type="button"
                               fullWidth
                               variant="contained"
                               color="error"
@@ -319,36 +306,29 @@ const Plants = () => {
                 </TableContainer>
               </Zoom>
             </Grid>
+
             <Grid
               item
               xs={12}
               md={4}
-              sx={{
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'flex-start',
-              }}
+              sx={{ display: 'flex', justifyContent: 'center', alignItems: 'flex-start' }}
             >
-              <Fade in={true} timeout={2000}>
-                <Box component="div" align="left" sx={{ width: '100%', height: 'auto', mt: 4 }}>
-                  <Box size="small" color="primary" aria-label="tip" align="center">
-                    <TipsAndUpdatesIcon sx={{ color: 'secondary.main', fontSize: '36px' }} />
+              <Fade in timeout={2000}>
+                <Box align="left" sx={{ width: '100%', mt: 4 }}>
+                  <Box align="center">
+                    <TipsAndUpdatesIcon sx={{ color: 'secondary.main', fontSize: 36 }} />
                   </Box>
-                  <Typography
-                    variant="h3"
-                    align="center"
-                    sx={{ align: 'center', color: 'secondary.dark' }}
-                  >
+                  <Typography variant="h3" align="center" sx={{ color: 'secondary.dark' }}>
                     Tips
                   </Typography>
-                  <List sx={{ dense: 'true', size: 'small' }}>
+                  <List dense>
                     <ListItem disableGutters>
                       <ListItemIcon>
                         <CheckIcon color="success" />
                       </ListItemIcon>
                       <ListItemText
                         primary="Your plant reference"
-                        secondary="The starting point is here, with as little or as much info as is useful. Tou can add, update and remove plants."
+                        secondary="Start simple; add details over time. You can add, update and archive plants."
                       />
                     </ListItem>
                     <ListItem disableGutters>
@@ -357,16 +337,7 @@ const Plants = () => {
                       </ListItemIcon>
                       <ListItemText
                         primary="Update plant information"
-                        secondary="Add watering and fertilizing schedules, add pests and diseases, add notes and more."
-                      />
-                    </ListItem>
-                    <ListItem disableGutters>
-                      <ListItemIcon>
-                        <CheckIcon color="success" />
-                      </ListItemIcon>
-                      <ListItemText
-                        primary="Refine with experience"
-                        secondary="As you gain experience, you can refine your plant information. Add more details, add more notes."
+                        secondary="Watering and fertilizing schedules, pests, diseases, and notes."
                       />
                     </ListItem>
                   </List>
@@ -374,11 +345,9 @@ const Plants = () => {
               </Fade>
             </Grid>
           </Grid>
-          <Box my={1}></Box>
+          <Box my={1} />
         </Box>
       </Container>
     </AnimatedPage>
   );
-};
-
-export default Plants;
+}

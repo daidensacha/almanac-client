@@ -3,9 +3,11 @@ import { Container, Divider, Grid } from '@mui/material';
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
-import { useEventsContext } from '@/contexts/EventsContext';
-import { usePlantsContext } from '@/contexts/PlantsContext';
-import { useCategoriesContext } from '@/contexts/CategoriesContext';
+// import { useEventsContext } from '@/contexts/EventsContext';
+// import { usePlantsContext } from '@/contexts/PlantsContext';
+// import { useCategoriesContext } from '@/contexts/CategoriesContext';
+import { useAuthContext } from '@/contexts/AuthContext';
+import { useMineList } from '@/hooks/useMineList';
 import AnimatedPage from '@/components/AnimatedPage';
 import IconButton from '@mui/material/IconButton';
 import PageviewIcon from '@mui/icons-material/Pageview';
@@ -15,9 +17,19 @@ import moment from 'moment';
 const Almanac = () => {
   const navigate = useNavigate();
 
-  const { events } = useEventsContext();
-  const { plants } = usePlantsContext();
-  const { categories } = useCategoriesContext();
+  // const { events } = useEventsContext();
+  // const { plants } = usePlantsContext();
+  // const { categories } = useCategoriesContext();
+  const { user } = useAuthContext();
+  const userId = user?._id;
+
+  const eventsQ = useMineList('events', 'events', userId);
+  const plantsQ = useMineList('plants', 'plants', userId);
+  const catsQ = useMineList('categories', 'categories', userId);
+
+  const events = eventsQ.data || [];
+  const plants = plantsQ.data || [];
+  const categories = catsQ.data || [];
 
   const monthNames = [
     'January',
@@ -48,6 +60,11 @@ const Almanac = () => {
           }}
         >
           <h1>Almanac</h1>
+          {(eventsQ.isLoading || plantsQ.isLoading || catsQ.isLoading) && (
+            <Typography variant="body2" sx={{ opacity: 0.7, mb: 1 }}>
+              Loading your almanac…
+            </Typography>
+          )}
           <Box
             sx={{
               display: 'flex',
@@ -144,7 +161,7 @@ const Almanac = () => {
                               >
                                 <IconButton
                                   size="small"
-                                  comonent="button"
+                                  component="button"
                                   aria-label="view"
                                   color="info"
                                   onClick={() =>

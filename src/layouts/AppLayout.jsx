@@ -1,5 +1,5 @@
 import { Box } from '@mui/material';
-import Footer from './Footer';
+// import Footer from '../components/Footer';
 
 export default function AppLayout({ children }) {
   return (
@@ -16,7 +16,7 @@ export default function AppLayout({ children }) {
       </Box>
 
       {/* Footer */}
-      <Footer />
+      {/* <Footer /> */}
     </Box>
   );
 }

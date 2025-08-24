@@ -1,6 +1,5 @@
 import AnimatedPage from '@/components/AnimatedPage';
 import Avatar from '@mui/material/Avatar';
-// import Button from '@mui/material/Button';
 import LoadingButton from '@mui/lab/LoadingButton';
 import TextField from '@mui/material/TextField';
 import Link from '@mui/material/Link';
@@ -12,15 +11,14 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { Link as RouterLink, Navigate, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import api from '@/utils/axiosClient';
-import { authenticate, isAuth } from '@/utils/helpers';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.min.css';
-import { useAuthContext } from '@/contexts/AuthContext';
+import { useAuthContext } from '@/contexts/AuthContext'; // ensure this path matches your project
 
 const Signin = () => {
   const navigate = useNavigate();
-  const { setUser } = useAuthContext();
+  // Use the context method (rename to signin for consistency)
+  const { user, signin } = useAuthContext();
 
   const [loading, setLoading] = useState(false);
   const [values, setValues] = useState({
@@ -31,46 +29,34 @@ const Signin = () => {
 
   const { email, password, buttonText } = values;
 
-  // Handle form values and set to state
   const handleValues = (event) => {
     setValues({ ...values, [event.target.name]: event.target.value });
   };
 
-  // Handle form submit
   const handleSubmit = async (event) => {
     event.preventDefault();
     setLoading(true);
-    setValues({ ...values, buttonText: '... Signing In' });
-    const response = await api
-      .post('/signin', { email, password })
-      .then((response) => {
-        console.log('SIGNIN SUCCESS', response);
-        authenticate(response, () => {
-          setValues({
-            ...values,
-            email: '',
-            password: '',
-            buttonText: 'Signed In',
-          });
-          toast.success(`Hey ${response.data.user.firstname}, Welcome!`);
-          setUser(true);
-          setLoading(false);
-          navigate('/', { replace: true });
-        });
-      })
-      .catch((error) => {
-        console.log('SIGNIN ERROR', error.response.data);
-        setLoading(false);
-        setValues({ ...values, buttonText: 'Sign In' });
-        toast.error(error.response.data.error);
-      });
+    setValues((v) => ({ ...v, buttonText: '... Signing In' }));
+
+    try {
+      const { user } = await signin(email, password); // <-- centralizes API + token setup
+      setValues({ email: '', password: '', buttonText: 'Signed In' });
+      toast.success(`Hey ${user.firstname}, Welcome!`);
+      navigate('/', { replace: true });
+    } catch (err) {
+      const msg = err?.message || 'Signin failed';
+      console.error('SIGNIN ERROR', msg, err);
+      toast.error(msg);
+      setValues((v) => ({ ...v, buttonText: 'Sign In' }));
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <AnimatedPage>
       <Container component="main" maxWidth="xs">
-        {/* <ToastContainer /> */}
-        {isAuth() && <Navigate replace to="/" />}
+        {user && <Navigate replace to="/" />}
         <Box
           sx={{
             marginTop: 8,

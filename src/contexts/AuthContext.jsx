@@ -1,31 +1,97 @@
 // src/contexts/AuthContext.jsx
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import { isAuth } from '@/utils/helpers';
+import api from '@/utils/axiosClient';
+import { signout as helperSignout } from '@/utils/helpers';
 
-export const AuthContext = createContext(null);
-export const useAuthContext = () => useContext(AuthContext);
+const AuthContext = createContext(null);
+AuthContext.displayName = 'AuthContext';
 
-const readUser = () => {
-  try {
-    return JSON.parse(localStorage.getItem('user')) || null;
-  } catch {
-    return null;
-  }
-};
+export function useAuthContext() {
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error('useAuthContext must be used within <AuthProvider>');
+  return ctx;
+}
 
-export default function AuthContextProvider({ children }) {
-  const [user, setUser] = useState(() => readUser() || isAuth() || null);
+export default function AuthProvider({ children }) {
+  // hydrate from localStorage so reloads stay logged in
+  const [token, setToken] = useState(() => {
+    try {
+      return localStorage.getItem('token') || null;
+    } catch {
+      return null;
+    }
+  });
+  const [user, setUser] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('user') || 'null');
+    } catch {
+      return null;
+    }
+  });
 
+  // keep axios Authorization in sync
   useEffect(() => {
-    const refresh = () => setUser(readUser() || isAuth() || null);
-    window.addEventListener('auth:user-updated', refresh);
-    window.addEventListener('storage', refresh);
+    if (token) {
+      try {
+        localStorage.setItem('token', token);
+      } catch {}
+      api.defaults.headers.common.Authorization = `Bearer ${token}`;
+    } else {
+      try {
+        localStorage.removeItem('token');
+      } catch {}
+      delete api.defaults.headers.common.Authorization;
+    }
+  }, [token]);
+
+  // listen for “global” auth events fired by helpers
+  useEffect(() => {
+    function onSignedOut() {
+      setUser(null);
+      setToken(null);
+      delete api.defaults.headers.common.Authorization;
+    }
+    function onUserUpdated() {
+      try {
+        const u = JSON.parse(localStorage.getItem('user') || 'null');
+        setUser(u);
+      } catch {
+        setUser(null);
+      }
+    }
+    window.addEventListener('auth:signedout', onSignedOut);
+    window.addEventListener('auth:user-updated', onUserUpdated);
     return () => {
-      window.removeEventListener('auth:user-updated', refresh);
-      window.removeEventListener('storage', refresh);
+      window.removeEventListener('auth:signedout', onSignedOut);
+      window.removeEventListener('auth:user-updated', onUserUpdated);
     };
   }, []);
 
-  const value = useMemo(() => ({ user, setUser }), [user]);
+  // central signin: expects server to return { token, user }
+  async function signin(email, password) {
+    const res = await api.post('/signin', { email, password });
+    const { token: t, user: u } = res.data || {};
+    if (!t || !u) throw new Error('Malformed signin response');
+
+    // persist for the rest of the app that still reads localStorage
+    try {
+      localStorage.setItem('user', JSON.stringify(u));
+    } catch {}
+    setUser(u);
+    setToken(t);
+    return { user: u };
+  }
+
+  // central signout: delegate to helper (clears cookies/localStorage) and clear context state
+  function signout() {
+    try {
+      helperSignout();
+    } catch {}
+    setUser(null);
+    setToken(null);
+    delete api.defaults.headers.common.Authorization;
+  }
+
+  const value = useMemo(() => ({ user, token, signin, signout }), [user, token]);
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

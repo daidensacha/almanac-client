@@ -1,15 +1,18 @@
+// src/utils/axiosClient.js
 import axios from 'axios';
-import Cookies from 'js-cookie';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API, // e.g. http://localhost:8000/api
-  timeout: 8000,
-  withCredentials: true, // keep if your server uses cookies/sessions
+  withCredentials: true, // fine to keep on; header auth will carry the token
 });
 
+// Read token from localStorage and attach Authorization automatically
 api.interceptors.request.use((config) => {
-  const token = Cookies.get('token');
-  if (token) config.headers.Authorization = `Bearer ${token}`;
+  const t = localStorage.getItem('token');
+  if (t && !config.headers?.Authorization) {
+    config.headers = config.headers || {};
+    config.headers.Authorization = `Bearer ${t}`;
+  }
   return config;
 });
 

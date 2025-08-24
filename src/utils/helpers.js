@@ -39,64 +39,27 @@ export const removeLocalStorage = (key) => {
 
 // ---------------- Auth helpers ----------------
 
-// Called on signin success
-export const authenticate = (response, next) => {
-  console.log('AUTHENTICATE HELPER ON SIGNIN RESPONSE', response);
-  setCookie('token', response.data.token);
-  setLocalStorage('user', response.data.user);
-  next();
-};
-
-// Returns authenticated user object or false
-export const isAuth = () => {
-  if (typeof window !== 'undefined') {
-    const cookieChecked = getCookie('token');
-    if (cookieChecked && localStorage.getItem('user')) {
-      return JSON.parse(localStorage.getItem('user'));
-    }
-  }
-  return false;
-};
-
-// Clear everything
+// Clear everything (signout)
 export const signout = (next) => {
   removeCookie('token');
   removeLocalStorage('user');
+  try {
+    localStorage.removeItem('token');
+  } catch {}
+  // notify the app that a logout happened
+  window.dispatchEvent(new Event('auth:signedout'));
   next && next();
 };
 
 // Update user in localStorage (after profile update)
-// export const updateUser = (response, next) => {
-//   console.log('UPDATE USER IN LOCALSTORAGE HELPERS', response);
-//   if (typeof window !== 'undefined') {
-//     let auth = JSON.parse(localStorage.getItem('user'));
-//     auth = response.data;
-//     localStorage.setItem('user', JSON.stringify(auth));
-//   }
-//   next();
-// };
-
-// utils/helpers.js
 export const updateUser = (response, next) => {
   console.log('UPDATE USER IN LOCALSTORAGE HELPERS', response);
   if (typeof window !== 'undefined') {
     localStorage.setItem('user', JSON.stringify(response.data));
-    window.dispatchEvent(new Event('auth:user-updated')); // <-- important
+    window.dispatchEvent(new Event('auth:user-updated')); // notify listeners
   }
-  next();
+  if (next) next();
 };
-
-// THIS IS THE STABLE FUNCTION
-
-// export const updateUser = (response, next, setUser) => {
-//   console.log('UPDATE USER IN LOCALSTORAGE HELPERS', response);
-//   if (typeof window !== 'undefined') {
-//     const auth = response.data;
-//     localStorage.setItem('user', JSON.stringify(auth));
-//     if (setUser) setUser(auth); // update context state if provided
-//   }
-//   if (next) next();
-// };
 
 // Handy: get Authorization header for API calls
 export const getAuthHeader = () => {
