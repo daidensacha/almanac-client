@@ -27,7 +27,7 @@ import AdminRoute from '@/components/auth/AdminRoute'; // your admin gate
 import Profile from '@/pages/Profile';
 import Almanac from '@/pages/Almanac';
 import HealthCheck from '@/pages/HealthCheck';
-import OpenMeteoLab from '@/pages/admin/OpenMeteolab';
+import OpenMeteoLab from '@/pages/admin/OpenMeteoLab';
 
 // admin section
 import AdminLayout from '@/layouts/AdminLayout'; // must render <Outlet/>
