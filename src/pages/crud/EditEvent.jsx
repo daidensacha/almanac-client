@@ -1,87 +1,73 @@
 // src/pages/crud/EditEvent.jsx
 import { useState, useEffect, useMemo } from 'react';
-import { useNavigate, useLocation, useParams } from 'react-router-dom';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import Container from '@mui/material/Container';
-import Grid from '@mui/material/Grid';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
+import { useNavigate, useLocation } from 'react-router-dom';
+import {
+  Container,
+  Grid,
+  Box,
+  Button,
+  TextField,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  FormHelperText,
+} from '@mui/material';
 import ArrowBackIos from '@mui/icons-material/ArrowBackIos';
-import { toast } from 'react-toastify';
 import AnimatedPage from '@/components/AnimatedPage';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import FormHelperText from '@mui/material/FormHelperText';
-import Select from '@mui/material/Select';
+import { toast } from 'react-toastify';
 
-import { toDateOrNull, toIsoDateStringOrNull } from '@utils/dateHelpers';
 import instance from '@/utils/axiosClient';
-import api from '@/utils/axiosClient';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useCategories } from '@/queries/useCategories';
 import { usePlants } from '@/queries/usePlants';
+import { toDateOrNull, toIsoDateStringOrNull } from '@/utils/dateHelpers';
+import { useQueryClient } from '@tanstack/react-query';
 
 export default function EditEvent() {
+  const { state } = useLocation(); // we navigate here with the full event in `state`
   const navigate = useNavigate();
-  const { state } = useLocation(); // may be undefined on hard refresh
-  const { id: paramId } = useParams(); // used for deep-link / refresh
-  const queryClient = useQueryClient();
+  const qc = useQueryClient();
   const { user } = useAuthContext();
 
-  // 1) Options for selects
+  // Load select options
   const catsQ = useCategories(user?._id);
   const plantsQ = usePlants(user?._id);
   const categories = catsQ.data || [];
   const plants = plantsQ.data || [];
 
-  // 2) If no location.state (hard refresh), fetch by id
-  const eventByIdQ = useQuery({
-    queryKey: ['event', paramId],
-    enabled: !!paramId && !state,
-    queryFn: async () => {
-      const { data } = await api.get(`/event/${paramId}`);
-      return data?.event;
-    },
-    refetchOnWindowFocus: false,
-  });
+  // Local form state (normalize dates & select ids)
+  const [values, setValues] = useState(() => ({
+    ...state,
+    event_name: state?.event_name || '',
+    description: state?.description || '',
+    occurs_at: toDateOrNull(state?.occurs_at),
+    occurs_to: toDateOrNull(state?.occurs_to),
+    repeat_cycle: state?.repeat_cycle || '',
+    repeat_frequency: state?.repeat_frequency || '',
+    notes: state?.notes || '',
+    category_id: state?.category?._id ?? state?.category_id ?? '',
+    plant_id: state?.plant?._id ?? state?.plant_id ?? '',
+  }));
 
-  const eventData = state || eventByIdQ.data;
-
-  // 3) Local form state (initialized conservatively so we never reference undefined)
-  const [values, setValues] = useState({
-    _id: state?._id || paramId || '',
-    event_name: '',
-    description: '',
-    occurs_at: null,
-    occurs_to: null,
-    repeat_cycle: '',
-    repeat_frequency: '',
-    notes: '',
-    category_id: '',
-    plant_id: '',
-  });
-
-  // 4) Sync when eventData arrives/changes
+  // keep in sync if user navigates here from a different row without unmount
   useEffect(() => {
-    if (!eventData) return;
+    if (!state) return;
     setValues((prev) => ({
       ...prev,
-      ...eventData,
-      _id: eventData._id || prev._id,
-      occurs_at: toDateOrNull(eventData.occurs_at),
-      occurs_to: toDateOrNull(eventData.occurs_to),
-      category_id: eventData.category?._id ?? eventData.category_id ?? '',
-      plant_id: eventData.plant?._id ?? eventData.plant_id ?? '',
+      ...state,
+      occurs_at: toDateOrNull(state?.occurs_at),
+      occurs_to: toDateOrNull(state?.occurs_to),
+      category_id: state?.category?._id ?? state?.category_id ?? '',
+      plant_id: state?.plant?._id ?? state?.plant_id ?? '',
     }));
-  }, [eventData]);
+  }, [state]);
 
-  // 5) While fetching options (or deep-link data), show minimal placeholders
-  if (catsQ.isLoading || plantsQ.isLoading || (!state && eventByIdQ.isLoading)) {
+  // While options are loading show a tiny loader (prevents out-of-range warnings)
+  if (catsQ.isLoading || plantsQ.isLoading) {
     return (
       <AnimatedPage>
         <Container component="main" maxWidth="xs">
@@ -94,28 +80,18 @@ export default function EditEvent() {
     return (
       <AnimatedPage>
         <Container component="main" maxWidth="xs">
-          <Box sx={{ mt: 8, color: 'error.main' }}>Failed to load categories/plants.</Box>
-        </Container>
-      </AnimatedPage>
-    );
-  }
-  if (!eventData) {
-    return (
-      <AnimatedPage>
-        <Container component="main" maxWidth="xs">
-          <Box sx={{ mt: 8, color: 'error.main' }}>Event not found.</Box>
+          <Box sx={{ mt: 8, color: 'error.main' }}>Failed to load options.</Box>
         </Container>
       </AnimatedPage>
     );
   }
 
-  // 6) Guard select values to avoid MUI out-of-range warnings
+  // Only allow select values that exist in options (prevents MUI “out-of-range”)
   const catIds = useMemo(() => new Set(categories.map((c) => c._id)), [categories]);
   const plantIds = useMemo(() => new Set(plants.map((p) => p._id)), [plants]);
   const safeCategoryId = catIds.has(values.category_id) ? values.category_id : '';
   const safePlantId = plantIds.has(values.plant_id) ? values.plant_id : '';
 
-  // 7) Handlers
   const handleValues = (e) => {
     const { name, value } = e.target;
     setValues((v) => ({ ...v, [name]: value }));
@@ -145,26 +121,25 @@ export default function EditEvent() {
         plant: safePlantId,
       });
 
-      // ensure lists refresh
-      queryClient.invalidateQueries({ queryKey: ['events'] });
-      queryClient.invalidateQueries({ queryKey: ['events', 'mine'] });
-      navigate('/events');
+      // refresh lists that might show this event
+      qc.invalidateQueries({ queryKey: ['events'], exact: false });
+      qc.invalidateQueries({ queryKey: ['events', 'mine'], exact: false });
+
       toast.success(`Event "${updatedEvent.event_name}" updated successfully`);
+      navigate('/events');
     } catch (err) {
-      // show something instead of crashing
       console.error(err?.response?.data || err);
       toast.error(err?.response?.data?.error || 'Update failed');
     }
   };
 
-  // 8) Render
   return (
     <AnimatedPage>
       <Container component="main" maxWidth="xs">
         <Box
           sx={{
-            mt: 8,
-            mb: 4,
+            marginTop: 8,
+            marginBottom: 4,
             minHeight: 'calc(100vh - 375px)',
             display: 'flex',
             flexDirection: 'column',
@@ -313,7 +288,7 @@ export default function EditEvent() {
                       onChange={handleValues}
                     >
                       <MenuItem value="">
-                        <em>''</em>
+                        <em>None</em>
                       </MenuItem>
                       <MenuItem value="Day">Day</MenuItem>
                       <MenuItem value="Week">Week</MenuItem>

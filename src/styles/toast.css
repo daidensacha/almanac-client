@@ -1,0 +1,62 @@
+/* toast.css */
+.Toastify__toast-container {
+  top: 4.5rem !important; /* adjust down below your navbar */
+}
+
+/* Success – green left stripe */
+.Toastify__toast--success {
+  background: #fff !important;
+  color: #2e7d32 !important;
+  border-left: 6px solid #4caf50;
+}
+
+/* Error – red left stripe */
+.Toastify__toast--error {
+  background: #fff !important;
+  color: #c62828 !important;
+  border-left: 6px solid #f44336;
+}
+
+/* Warning – amber left stripe */
+.Toastify__toast--warning {
+  background: #fff !important;
+  color: #ef6c00 !important;
+  border-left: 6px solid #ff9800;
+}
+
+/* Info – blue left stripe */
+.Toastify__toast--info {
+  background: #fff !important;
+  color: #1565c0 !important;
+  border-left: 6px solid #2196f3;
+}
+
+/* src/styles/toast.css */
+
+.toast-fade-in {
+  animation: fadeIn 600ms ease forwards;
+}
+.toast-fade-out {
+  animation: fadeOut 400ms ease forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}

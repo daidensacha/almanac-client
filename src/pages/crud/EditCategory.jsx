@@ -1,23 +1,19 @@
+// src/pages/crud/EditCategory.jsx
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import api from '@/utils/axiosClient';
-import Container from '@mui/material/Container';
-import Box from '@mui/material/Box';
-import Grid from '@mui/material/Grid';
-import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
+import { Container, Box, Grid, Button, TextField } from '@mui/material';
 import ArrowBackIos from '@mui/icons-material/ArrowBackIos';
 import AnimatedPage from '@/components/AnimatedPage';
 import { toast } from 'react-toastify';
+import api from '@/utils/axiosClient';
+import { useAuthContext } from '@/contexts/AuthContext';
 import { useQueryClient } from '@tanstack/react-query';
 
-const EditCategory = () => {
-  const { state } = useLocation();
-
-  // console.log('STATE', state);
-  // const { id } = useParams();
+export default function EditCategory() {
+  const { state } = useLocation(); // category object
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
+  const qc = useQueryClient();
+  const { user } = useAuthContext();
 
   const [values, setValues] = useState({
     id: '',
@@ -26,37 +22,33 @@ const EditCategory = () => {
     buttonText: 'Update Category',
   });
 
-  const handleValue = (event) => {
-    setValues({ ...values, [event.target.name]: event.target.value });
-  };
-
-  // console.log('VALUES', values);
-  const id = state._id;
-  const { category, description } = state;
-
   useEffect(() => {
-    setValues((prev) => ({ ...prev, id, category, description }));
-  }, [id, navigate, category, description]);
+    if (!state) return;
+    setValues((v) => ({
+      ...v,
+      id: state._id,
+      category: state.category || '',
+      description: state.description || '',
+    }));
+  }, [state]);
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    // console.table(values);
-    setValues({ ...values, buttonText: '...Updating Category' });
+  const handleValue = (e) => setValues((v) => ({ ...v, [e.target.name]: e.target.value }));
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setValues((v) => ({ ...v, buttonText: '...Updating Category' }));
     try {
-      await api.put(`/category/update/${id}`, {
+      await api.put(`/category/update/${values.id}`, {
         category: values.category,
         description: values.description,
       });
-      setValues((v) => ({ ...v, buttonText: 'Updated Category' }));
       toast.success('Category updated');
-      // 🔄 Force categories list to re-fetch
-      queryClient.invalidateQueries({ queryKey: ['categories'] });
+      // refresh categories list
+      qc.invalidateQueries({ queryKey: ['categories', 'mine', user?._id], exact: false });
       navigate('/categories');
     } catch (err) {
-      console.log('CATEGORY UPDATE ERROR', err?.response?.data || err);
-      setValues((v) => ({ ...v, buttonText: 'Update Category' }));
       toast.error(err?.response?.data?.error || 'Update failed');
+      setValues((v) => ({ ...v, buttonText: 'Update Category' }));
     }
   };
 
@@ -65,8 +57,8 @@ const EditCategory = () => {
       <Container component="main" maxWidth="xs">
         <Box
           sx={{
-            marginTop: 8,
-            marginBottom: 4,
+            mt: 8,
+            mb: 4,
             minHeight: 'calc(100vh - 375px)',
             display: 'flex',
             flexDirection: 'column',
@@ -74,8 +66,7 @@ const EditCategory = () => {
           }}
         >
           <h1>Edit Category</h1>
-
-          <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
+          <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1, width: '100%' }}>
             <Grid container spacing={2}>
               <Grid item xs={12}>
                 <TextField
@@ -111,6 +102,7 @@ const EditCategory = () => {
                 </Button>
               </Grid>
             </Grid>
+
             <Grid container justifyContent="flex-end">
               <Grid item>
                 <Button
@@ -119,8 +111,7 @@ const EditCategory = () => {
                   size="small"
                   onClick={() => navigate(-1)}
                 >
-                  <ArrowBackIos fontSize="small" />
-                  Back
+                  <ArrowBackIos fontSize="small" /> Back
                 </Button>
               </Grid>
             </Grid>
@@ -129,6 +120,4 @@ const EditCategory = () => {
       </Container>
     </AnimatedPage>
   );
-};
-
-export default EditCategory;
+}

@@ -9,6 +9,8 @@ import theme from '@/components/ui/theme';
 import CssBaseline from '@mui/material/CssBaseline';
 import AuthContextProvider from '@/contexts/AuthContext';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import 'react-toastify/dist/ReactToastify.css';
+import '@/styles/toast.css';
 
 const queryClient = new QueryClient();
 

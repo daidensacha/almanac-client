@@ -1,18 +1,18 @@
-// src/layouts/AppShell.jsx
 import { Outlet, useLocation } from 'react-router-dom';
-import ResponsiveAppBar from '@/components/ui/Navbar';
-import { ToastContainer } from 'react-toastify';
+// import ResponsiveAppBar from '@/components/ui/Navbar';
+// import AppToasts from '@/components/ui/AppToasts';
 import Footer from '@/components/Footer';
 
 export default function AppShell() {
   const { pathname } = useLocation();
   const isAdmin = pathname.startsWith('/admin');
+
   return (
     <>
-      <ResponsiveAppBar sx={{ bgcolor: 'primary.light' }} />
-      <ToastContainer />
+      {/* <ResponsiveAppBar sx={{ bgcolor: 'primary.light' }} />
+      <AppToasts /> one global container */}
       <Outlet />
-      {!isAdmin && <Footer />} {/* hide footer on admin */}
+      {!isAdmin && <Footer />}
     </>
   );
 }

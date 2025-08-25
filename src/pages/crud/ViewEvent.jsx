@@ -29,17 +29,55 @@ import Broccoli from '@/images/broccoli.jpg';
 import Raspberries from '@/images/raspberries.jpg';
 import { useUnsplashImage } from '@/utils/unsplash';
 
+import { useAuthContext } from '@/contexts/AuthContext';
+import { usePlants } from '@/queries/usePlants';
+import { useCategories } from '@/queries/useCategories';
+
 export default function ViewEvent() {
-  const { state } = useLocation(); // event object passed via navigate(..., { state })
+  const { state } = useLocation(); // expecting full event object via navigate(..., { state })
   const navigate = useNavigate();
 
-  const filteredPlants = state?.plant ? [state.plant] : [];
-  const filteredCategories = state?.category ? [state.category] : [];
+  // If someone hit /events/:id directly without state, keep it graceful.
+  if (!state?._id) {
+    return (
+      <AnimatedPage>
+        <Container component="main" maxWidth="md">
+          <Box sx={{ mt: 10, textAlign: 'center' }}>
+            <Typography variant="h6" sx={{ mb: 2 }}>
+              No event data available.
+            </Typography>
+            <Button variant="outlined" onClick={() => navigate('/events')}>
+              Back to Events
+            </Button>
+          </Box>
+        </Container>
+      </AnimatedPage>
+    );
+  }
+
+  const { user } = useAuthContext();
+  const plantsQ = usePlants(user?._id);
+  const catsQ = useCategories(user?._id);
+
+  const plants = plantsQ.data || [];
+  const categories = catsQ.data || [];
+
+  const eventPlantId = state?.plant?._id;
+  const eventCategoryId = state?.category?._id;
+
+  const relatedPlant = eventPlantId ? plants.find((p) => p._id === eventPlantId) : null;
+  const relatedCategory = eventCategoryId
+    ? categories.find((c) => c._id === eventCategoryId)
+    : null;
 
   // Image for the plant name (fallback provided)
   const { url: imageUrl } = useUnsplashImage(state?.plant?.common_name, {
     fallbackUrl: Raspberries,
   });
+
+  // While options load, we can still render the main card; related lists show placeholders
+  const plantsLoading = plantsQ.isLoading || plantsQ.error;
+  const catsLoading = catsQ.isLoading || catsQ.error;
 
   return (
     <AnimatedPage>
@@ -191,21 +229,26 @@ export default function ViewEvent() {
                   Related Plant
                 </Typography>
                 <List dense>
-                  {filteredPlants.map((plant) => (
-                    <ListItem key={plant._id} disableGutters>
+                  {plantsLoading ? (
+                    <ListItem disableGutters>
+                      <ListItemText primary="Loading…" />
+                    </ListItem>
+                  ) : relatedPlant ? (
+                    <ListItem key={relatedPlant._id} disableGutters>
                       <ListItemIcon>
                         <IconButton
                           edge="end"
                           aria-label="View"
-                          onClick={() => navigate(`/plant/${plant._id}`, { state: plant })}
+                          onClick={() =>
+                            navigate(`/plant/${relatedPlant._id}`, { state: relatedPlant })
+                          }
                         >
                           <PageviewIcon color="info" />
                         </IconButton>
                       </ListItemIcon>
-                      <ListItemText primary={plant.common_name} />
+                      <ListItemText primary={relatedPlant.common_name} />
                     </ListItem>
-                  ))}
-                  {filteredPlants.length === 0 && (
+                  ) : (
                     <ListItem disableGutters>
                       <ListItemIcon>
                         <IconButton edge="end" disabled>
@@ -226,21 +269,26 @@ export default function ViewEvent() {
                   Related Category
                 </Typography>
                 <List dense>
-                  {filteredCategories.map((category) => (
-                    <ListItem key={category._id} disableGutters>
+                  {catsLoading ? (
+                    <ListItem disableGutters>
+                      <ListItemText primary="Loading…" />
+                    </ListItem>
+                  ) : relatedCategory ? (
+                    <ListItem key={relatedCategory._id} disableGutters>
                       <ListItemIcon>
                         <IconButton
                           edge="end"
                           aria-label="View"
-                          onClick={() => navigate(`/category/${category._id}`, { state: category })}
+                          onClick={() =>
+                            navigate(`/category/${relatedCategory._id}`, { state: relatedCategory })
+                          }
                         >
                           <PageviewIcon color="info" />
                         </IconButton>
                       </ListItemIcon>
-                      <ListItemText primary={category.category} />
+                      <ListItemText primary={relatedCategory.category} />
                     </ListItem>
-                  ))}
-                  {filteredCategories.length === 0 && (
+                  ) : (
                     <ListItem disableGutters>
                       <ListItemIcon>
                         <IconButton edge="end" disabled>

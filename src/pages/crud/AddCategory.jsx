@@ -1,26 +1,20 @@
+// src/pages/crud/AddCategory.jsx
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Container from '@mui/material/Container';
-import Grid from '@mui/material/Grid';
-import instance from '@/utils/axiosClient';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
+import { Container, Grid, Box, Button, TextField, Fade } from '@mui/material';
 import ArrowBackIos from '@mui/icons-material/ArrowBackIos';
 import AnimatedPage from '@/components/AnimatedPage';
-import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.min.css';
-// import { getCookie } from '@/utils/helpers';
-import { Fade } from '@mui/material';
 import Pumpkin from '@/images/pumpkin.jpg';
 import CucumberSlice from '@/images/cucumber_slice.jpg';
-import { useQueryClient } from '@tanstack/react-query';
+import { toast } from 'react-toastify';
 import api from '@/utils/axiosClient';
+import { useAuthContext } from '@/contexts/AuthContext';
+import { useQueryClient } from '@tanstack/react-query';
 
-const AddCategory = () => {
+export default function AddCategory() {
   const navigate = useNavigate();
-
-  const queryClient = useQueryClient();
+  const qc = useQueryClient();
+  const { user } = useAuthContext();
 
   const [values, setValues] = useState({
     category: '',
@@ -28,38 +22,24 @@ const AddCategory = () => {
     buttonText: 'Add Category',
   });
 
-  const handleValues = (event) => {
-    setValues({ ...values, [event.target.name]: event.target.value });
-  };
+  const handleValues = (e) => setValues((v) => ({ ...v, [e.target.name]: e.target.value }));
 
-  // console.log(values);
-  // const token = getCookie('token');
-
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    console.table(values);
-    setValues({ ...values, buttonText: '...Adding Category' });
-
-    const addCategory = async () => {
-      const { category, description } = values;
-      try {
-        await api.post('/category/create', { category, description });
-        queryClient.invalidateQueries({ queryKey: ['categories'], exact: false });
-        setValues({
-          ...values,
-          category: '',
-          description: '',
-          buttonText: 'Added Category',
-        });
-        toast.success('Category created');
-        navigate('/categories');
-      } catch (error) {
-        console.log('CATEGORY ADD ERROR', error.response.data);
-        setValues({ ...values, buttonText: 'Add Category' });
-        toast.error(error.response.data.error);
-      }
-    };
-    addCategory();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setValues((v) => ({ ...v, buttonText: '...Adding Category' }));
+    try {
+      const { data } = await api.post('/category/create', {
+        category: values.category,
+        description: values.description,
+      });
+      toast.success('Category created');
+      // refresh categories list
+      qc.invalidateQueries({ queryKey: ['categories', 'mine', user?._id], exact: false });
+      navigate('/categories');
+    } catch (err) {
+      toast.error(err?.response?.data?.error || 'Create failed');
+      setValues((v) => ({ ...v, buttonText: 'Add Category' }));
+    }
   };
 
   return (
@@ -67,8 +47,8 @@ const AddCategory = () => {
       <Container component="main" maxWidth="xl">
         <Box
           sx={{
-            marginTop: 8,
-            marginBottom: 4,
+            mt: 8,
+            mb: 4,
             minHeight: 'calc(100vh - 375px)',
             display: 'flex',
             flexDirection: 'column',
@@ -78,26 +58,28 @@ const AddCategory = () => {
           <h1>Add Category</h1>
           <Grid container spacing={2}>
             <Grid item xs={12} sm={4}>
-              <Fade in={true} timeout={2000}>
+              <Fade in timeout={2000}>
                 <Box
                   component="img"
                   sx={{ maxWidth: '100%', height: 'auto' }}
                   alt="image"
                   src={Pumpkin}
-                ></Box>
+                />
               </Fade>
             </Grid>
+
             <Grid
               item
               xs={12}
               sm={4}
-              sx={{
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'flex-start',
-              }}
+              sx={{ display: 'flex', justifyContent: 'center', alignItems: 'flex-start' }}
             >
-              <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
+              <Box
+                component="form"
+                onSubmit={handleSubmit}
+                noValidate
+                sx={{ mt: 1, width: '100%' }}
+              >
                 <TextField
                   margin="normal"
                   required
@@ -126,7 +108,7 @@ const AddCategory = () => {
                   {values.buttonText}
                 </Button>
                 <Grid container>
-                  <Grid item xs></Grid>
+                  <Grid item xs />
                   <Grid item>
                     <Button
                       color="secondary"
@@ -134,21 +116,21 @@ const AddCategory = () => {
                       size="small"
                       onClick={() => navigate(-1)}
                     >
-                      <ArrowBackIos fontSize="small" />
-                      Back
+                      <ArrowBackIos fontSize="small" /> Back
                     </Button>
                   </Grid>
                 </Grid>
               </Box>
             </Grid>
+
             <Grid item xs={12} sm={4}>
-              <Fade in={true} timeout={2000}>
+              <Fade in timeout={2000}>
                 <Box
                   component="img"
                   sx={{ maxWidth: '100%', height: 'auto' }}
                   alt="image"
                   src={CucumberSlice}
-                ></Box>
+                />
               </Fade>
             </Grid>
           </Grid>
@@ -156,6 +138,4 @@ const AddCategory = () => {
       </Container>
     </AnimatedPage>
   );
-};
-
-export default AddCategory;
+}
