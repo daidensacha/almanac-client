@@ -100,19 +100,7 @@ src/
 
 ## Development Workflow
 
-- **Protected branch:** `main` — always deployable.
-- **Feature branches:** `feature/<short-name>`
-- **Fix branches:** `fix/<short-name>`
-- **Conventional commits:** `feat:`, `fix:`, `chore:`, `docs:`, `refactor:`…
-
-Example:
-
-```bash
-git checkout -b feature/year-view
-# work...
-git commit -m "feat(calendar): add compact year view grid"
-git push -u origin feature/year-view
-```
+See [Branching & Deploy Playbook](docs/branching-deploy-playbook.md) and [CONTRIBUTING](CONTRIBUTING.md).[text](../almanac-server/CONTRIBUTING.md)
 
 ---
 
