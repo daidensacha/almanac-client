@@ -8,15 +8,20 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import ArrowBackIos from '@mui/icons-material/ArrowBackIos';
-import AnimatedPage from '@/components/AnimatedPage';
-import { toast } from 'react-toastify';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import AnimatedPage from '@/components/AnimatedPage'; //
+import { toast } from 'react-toastify'; //
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'; //
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'; //
+import { DatePicker } from '@mui/x-date-pickers/DatePicker'; //
 import { toDateOrNull, toIsoDateStringOrNull } from '@utils/dateHelpers';
+import api from '@/utils/axiosClient';
+import { useQueryClient } from '@tanstack/react-query';
+import { serializePlant } from '@/utils/normalizers';
+import { keys as plantKeys } from '@/queries/usePlants';
 
 export default function AddPlant() {
   const navigate = useNavigate();
+  const qc = useQueryClient();
 
   const [values, setValues] = useState({
     common_name: '',
@@ -30,6 +35,7 @@ export default function AddPlant() {
     spacing: '',
     depth: '',
     notes: '',
+    buttonText: 'Add Plant',
   });
 
   const handleValues = (e) => {
@@ -39,24 +45,23 @@ export default function AddPlant() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setValues((v) => ({ ...v, buttonText: '...Adding Plant' }));
+
     try {
-      await instance.post('/plant/create', {
-        common_name: values.common_name,
-        botanical_name: values.botanical_name,
-        sow_at: toIsoDateStringOrNull(values.sow_at),
-        plant_at: toIsoDateStringOrNull(values.plant_at),
-        harvest_at: toIsoDateStringOrNull(values.harvest_at),
-        harvest_to: toIsoDateStringOrNull(values.harvest_to),
-        fertilise: values.fertilise,
-        fertiliser_type: values.fertiliser_type,
-        spacing: values.spacing,
-        depth: values.depth,
-        notes: values.notes,
-      });
-      toast.success('Plant created');
+      const payload = serializePlant(values); // keeps empty strings if you typed them
+      const { data } = await api.post('/plant/create', payload);
+      // console.log('[CreatePlant] created:', data);
+      toast.success(`Plant "${data?.common_name || payload.common_name}" created`);
+
+      // refresh plants lists
+      qc.invalidateQueries({ queryKey: plantKeys.all, exact: false });
+      qc.invalidateQueries({ queryKey: plantKeys.list(false), exact: false });
+
       navigate('/plants');
     } catch (err) {
       toast.error(err?.response?.data?.error || 'Create failed');
+    } finally {
+      setValues((v) => ({ ...v, buttonText: 'Add Plant' }));
     }
   };
 

@@ -7,7 +7,10 @@ import AnimatedPage from '@/components/AnimatedPage';
 import { toast } from 'react-toastify';
 import api from '@/utils/axiosClient';
 import { useAuthContext } from '@/contexts/AuthContext';
+import { debugLog } from '@/utils/debugLog';
 import { useQueryClient } from '@tanstack/react-query';
+import { serializeCategory } from '@/utils/normalizers';
+import { keys as categoryKeys } from '@/queries/useCategories';
 
 export default function EditCategory() {
   const { state } = useLocation(); // category object
@@ -17,40 +20,70 @@ export default function EditCategory() {
 
   const [values, setValues] = useState({
     id: '',
-    category: '',
+    category_name: '',
     description: '',
     buttonText: 'Update Category',
   });
+
+  const handleValues = (e) => setValues((v) => ({ ...v, [e.target.name]: e.target.value }));
 
   useEffect(() => {
     if (!state) return;
     setValues((v) => ({
       ...v,
-      id: state._id,
-      category: state.category || '',
-      description: state.description || '',
+      _id: state._id, // ✅ consistent with backend
+      category_name: state?.category_name || '',
+      description: state?.description || '',
     }));
   }, [state]);
-
-  const handleValue = (e) => setValues((v) => ({ ...v, [e.target.name]: e.target.value }));
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setValues((v) => ({ ...v, buttonText: '...Updating Category' }));
+
     try {
-      await api.put(`/category/update/${values.id}`, {
-        category: values.category,
-        description: values.description,
-      });
+      const payload = serializeCategory(values);
+      const { data } = await api.put(`/category/update/${values._id}`, payload);
+      console.log('[UpdateCategory] response data:', data);
+
       toast.success('Category updated');
-      // refresh categories list
-      qc.invalidateQueries({ queryKey: ['categories', 'mine', user?._id], exact: false });
+      qc.invalidateQueries({ queryKey: ['categories'], exact: false });
       navigate('/categories');
     } catch (err) {
       toast.error(err?.response?.data?.error || 'Update failed');
+    } finally {
       setValues((v) => ({ ...v, buttonText: 'Update Category' }));
     }
   };
+  // useEffect(() => {
+  //   if (!state) return;
+  //   setValues((v) => ({
+  //     ...v,
+  //     _id: state._id,
+  //     category_name: state?.category_name || '',
+  //     description: state?.description || '',
+  //   }));
+  // }, [state]);
+
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   setValues((v) => ({ ...v, buttonText: '...Updating Category' }));
+
+  //   try {
+  //     const payload = serializeCategory(values);
+
+  //     // ✅ single update request with normalized payload
+  //     const { data } = await api.put(`/category/update/${values._id}`, payload);
+  //     debugLog('[UpdateCategory] response data:', data);
+  //     toast.success('Category updated');
+  //     qc.invalidateQueries({ queryKey: ['categories'], exact: false }); // refresh
+  //     navigate('/categories');
+  //   } catch (err) {
+  //     toast.error(err?.response?.data?.error || 'Update failed');
+  //   } finally {
+  //     setValues((v) => ({ ...v, buttonText: 'Update Category' }));
+  //   }
+  // };
 
   return (
     <AnimatedPage>
@@ -73,12 +106,12 @@ export default function EditCategory() {
                   margin="normal"
                   required
                   fullWidth
-                  value={values.category}
-                  id="category"
+                  value={values.category_name}
+                  id="category_name"
                   label="New Category"
-                  name="category"
+                  name="category_name"
                   size="small"
-                  onChange={handleValue}
+                  onChange={handleValues}
                   autoFocus
                 />
               </Grid>
@@ -93,7 +126,7 @@ export default function EditCategory() {
                   label="Description"
                   id="description"
                   size="small"
-                  onChange={handleValue}
+                  onChange={handleValues}
                 />
               </Grid>
               <Grid item xs={12}>

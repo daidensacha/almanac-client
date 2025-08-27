@@ -1,8 +1,10 @@
 // src/pages/Categories.jsx
 import { useState, useEffect, Fragment } from 'react';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/utils/axiosClient';
+import { useCategories, keys as categoryKeys } from '@/queries/useCategories';
+import { useAuthContext } from '@/contexts/AuthContext';
 
 import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Link from '@mui/material/Link';
@@ -48,16 +50,10 @@ import AppBreadcrumbs from '@/components/ui/AppBreadcrumbs';
 export default function Categories() {
   const navigate = useNavigate();
   const qc = useQueryClient();
+  const { user } = useAuthContext();
 
-  // --- data hooks (always called) ---
-  const catsQ = useQuery({
-    queryKey: ['categories:mine'],
-    queryFn: async () => {
-      const { data } = await api.get('/categories'); // { allCategories: [...] }
-      return Array.isArray(data?.allCategories) ? data.allCategories : [];
-    },
-    refetchOnWindowFocus: false,
-  });
+  const catsQ = useCategories(false, { enabled: true, retry: false });
+  const categories = catsQ.data || [];
 
   const archiveMutation = useMutation({
     mutationFn: async (id) => {
@@ -66,7 +62,8 @@ export default function Categories() {
     },
     onSuccess: () => {
       toast.success('Category archived');
-      qc.invalidateQueries({ queryKey: ['categories:mine'] });
+      // invalidate all flavors of categories (list + archived flag)
+      qc.invalidateQueries({ queryKey: categoryKeys.all, exact: false }); // or categoryKeys.list(false)
       handleClose();
     },
     onError: (err) => {
@@ -93,8 +90,12 @@ export default function Categories() {
     const source = Array.isArray(catsQ.data) ? catsQ.data : [];
     const filtered = source
       .slice()
-      .sort((a, b) => (a.category || '').localeCompare(b.category || ''))
-      .filter((c) => c.category?.toLowerCase().includes(search.toLowerCase()));
+      .sort((a, b) =>
+        (a.category_name || a.category || '').localeCompare(b.category_name || b.category || ''),
+      )
+      .filter((c) =>
+        (c.category_name || c.category || '').toLowerCase().includes(search.toLowerCase()),
+      );
     setFilteredCategories(filtered);
   }, [search, catsQ.data]);
 
@@ -113,6 +114,27 @@ export default function Categories() {
     boxShadow: 24,
     p: 4,
   };
+
+  // ⤵️ right after hooks/state/effects
+  if (catsQ.isLoading) {
+    return (
+      <AnimatedPage>
+        <Container component="main" maxWidth="xl">
+          <Box sx={{ mt: 8 }}>Loading categories…</Box>
+        </Container>
+      </AnimatedPage>
+    );
+  }
+
+  if (catsQ.error) {
+    return (
+      <AnimatedPage>
+        <Container component="main" maxWidth="xl">
+          <Box sx={{ mt: 8, color: 'error.main' }}>Failed to load categories</Box>
+        </Container>
+      </AnimatedPage>
+    );
+  }
 
   return (
     <AnimatedPage>
@@ -236,7 +258,7 @@ export default function Categories() {
                               </IconButton>
                             </TableCell>
                             <TableCell>{idx + 1}</TableCell>
-                            <TableCell align="left">{row.category}</TableCell>
+                            <TableCell align="left">{row.category_name || row.category}</TableCell>
                             <TableCell align="center">
                               <Stack
                                 direction="row"

@@ -1,4 +1,5 @@
 // src/utils/dateHelpers.js (or inline)
+import dayjs from 'dayjs';
 import { parseISO, parse, isValid } from 'date-fns';
 
 export function toDateOrNull(v) {
@@ -39,3 +40,43 @@ export const ago = (ts) => {
   if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
   return `${Math.floor(diff / 3600)}h ago`;
 };
+
+//
+// day.js helpers
+//
+
+const asThisYear = (d, year = dayjs().year()) => (d ? dayjs(d).year(year) : null);
+
+// Return the active window for the current year, handling wrap (e.g. Sep→Mar)
+export function projectYearWindow(occurs_at, occurs_to, year = dayjs().year()) {
+  const start = asThisYear(occurs_at, year);
+  const end = asThisYear(occurs_to, year);
+  if (!start || !end) return { start, end, wraps: false };
+
+  // if end < start, it wraps into next year
+  if (end.isBefore(start, 'day')) {
+    return { start, end: end.add(1, 'year'), wraps: true };
+  }
+  return { start, end, wraps: false };
+}
+
+// Useful labels
+export function formatRangeThisYear(occurs_at, occurs_to, year = dayjs().year()) {
+  const { start, end } = projectYearWindow(occurs_at, occurs_to, year);
+  const fmt = (d) => (d ? d.format('D MMM') : '—');
+  return `${fmt(start)} to ${fmt(end)}`;
+}
+
+// Is "today" inside this year's window?
+export function isInSeason(occurs_at, occurs_to, ref = dayjs()) {
+  const { start, end } = projectYearWindow(occurs_at, occurs_to, ref.year());
+  if (!start || !end) return false;
+  return ref.isAfter(start.subtract(1, 'day')) && ref.isBefore(end.add(1, 'day'));
+}
+
+export function recurrenceText({ repeat_cycle, repeat_frequency }) {
+  if (!repeat_cycle || !repeat_frequency) return 'Repeats yearly';
+  const n = Number(repeat_frequency);
+  const unit = repeat_cycle.toLowerCase();
+  return n === 1 ? `Every ${unit}` : `Every ${n} ${unit}s`;
+}

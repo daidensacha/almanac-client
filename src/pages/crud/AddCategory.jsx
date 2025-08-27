@@ -7,34 +7,38 @@ import AnimatedPage from '@/components/AnimatedPage';
 import Pumpkin from '@/images/pumpkin.jpg';
 import CucumberSlice from '@/images/cucumber_slice.jpg';
 import { toast } from 'react-toastify';
-import api from '@/utils/axiosClient';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useQueryClient } from '@tanstack/react-query';
+import { serializeCategory } from '@/utils/normalizers';
+import { keys as categoryKeys } from '@/queries/useCategories';
+import api from '@/utils/axiosClient';
 
 export default function AddCategory() {
-  const navigate = useNavigate();
   const qc = useQueryClient();
+  const navigate = useNavigate();
   const { user } = useAuthContext();
 
   const [values, setValues] = useState({
-    category: '',
+    category_name: '',
     description: '',
     buttonText: 'Add Category',
   });
 
-  const handleValues = (e) => setValues((v) => ({ ...v, [e.target.name]: e.target.value }));
+  const handleValues = (e) => {
+    const { name, value } = e.target;
+    setValues((v) => ({ ...v, [name]: value }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setValues((v) => ({ ...v, buttonText: '...Adding Category' }));
     try {
-      const { data } = await api.post('/category/create', {
-        category: values.category,
-        description: values.description,
-      });
+      const payload = serializeCategory(values);
+      const { data } = await api.post('/category/create', payload);
+      // console.log('[AddCategory] created:', data);
       toast.success('Category created');
       // refresh categories list
-      qc.invalidateQueries({ queryKey: ['categories', 'mine', user?._id], exact: false });
+      qc.invalidateQueries({ queryKey: categoryKeys.all, exact: false });
       navigate('/categories');
     } catch (err) {
       toast.error(err?.response?.data?.error || 'Create failed');
@@ -84,10 +88,10 @@ export default function AddCategory() {
                   margin="normal"
                   required
                   fullWidth
-                  value={values.category}
-                  id="category"
+                  value={values.category_name}
+                  id="category_name"
                   label="New Category"
-                  name="category"
+                  name="category_name"
                   size="small"
                   onChange={handleValues}
                   autoFocus

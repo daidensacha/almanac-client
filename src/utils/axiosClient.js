@@ -2,11 +2,11 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API, // e.g. http://localhost:8000/api
-  withCredentials: true, // fine to keep on; header auth will carry the token
+  baseURL: import.meta.env.VITE_API,
+  withCredentials: true,
 });
 
-// Read token from localStorage and attach Authorization automatically
+// ✅ attach token on every request
 api.interceptors.request.use((config) => {
   const t = localStorage.getItem('token');
   if (t && !config.headers?.Authorization) {
@@ -15,5 +15,13 @@ api.interceptors.request.use((config) => {
   }
   return config;
 });
+
+api.interceptors.response.use(
+  (res) => res,
+  (err) => {
+    console.error('API error:', err.response?.data || err.message);
+    return Promise.reject(err);
+  },
+);
 
 export default api;

@@ -1,5 +1,6 @@
 // src/pages/crud/ViewEvent.jsx
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, useParams } from 'react-router-dom';
+import { useEffect } from 'react';
 import {
   Container,
   Grid,
@@ -24,60 +25,138 @@ import PageviewIcon from '@mui/icons-material/Pageview';
 import ArrowBackIos from '@mui/icons-material/ArrowBackIos';
 import { FaLeaf } from 'react-icons/fa';
 import AnimatedPage from '@/components/AnimatedPage';
-import moment from 'moment';
+import dayjs from 'dayjs';
 import Broccoli from '@/images/broccoli.jpg';
 import Raspberries from '@/images/raspberries.jpg';
 import { useUnsplashImage } from '@/utils/unsplash';
 
-import { useAuthContext } from '@/contexts/AuthContext';
 import { usePlants } from '@/queries/usePlants';
 import { useCategories } from '@/queries/useCategories';
+import { useEvent } from '@/queries/useEvents';
+import { useAuthContext } from '@/contexts/AuthContext';
+import { useQueryClient } from '@tanstack/react-query';
+import { serializeCategory } from '@/utils/normalizers';
+import { keys as categoryKeys } from '@/queries/useCategories';
+import { isInSeason, formatRangeThisYear, recurrenceText } from '@utils/dateHelpers';
 
 export default function ViewEvent() {
-  const { state } = useLocation(); // expecting full event object via navigate(..., { state })
+  const { state } = useLocation(); // optional event object passed by navigate
+  const { id } = useParams(); // /event/:id
   const navigate = useNavigate();
+  const { user } = useAuthContext();
 
-  // If someone hit /events/:id directly without state, keep it graceful.
-  if (!state?._id) {
+  // Fallback fetch if no state provided
+  // const eventQ = useEvent(id, { enabled: !state?._id, retry: false });
+
+  // Only fetch when there's no event in state, AND we have an id
+  const shouldFetch = !state?._id && !!id;
+  // const eventQ = useEvent(id, { enabled: shouldFetch, retry: false });
+  // const eventQ = useEvent(id, {
+  //   enabled: !!id,
+  //   initialData: state?._id ? state : undefined,
+  //   refetchOnMount: 'always', // <- forces queryFn to run
+  //   staleTime: 0, // treat cache as stale
+  //   retry: false,
+  // });
+
+  // // Event source: either state or fetched
+  // const ev = state?._id ? state : eventQ.data?.event ?? eventQ.data;
+
+  const eventQ = useEvent(id, {
+    enabled: !!id,
+    retry: false,
+    initialData: state?._id ? state : undefined, // paint instantly
+    refetchOnMount: 'always',
+    staleTime: 0,
+  });
+
+  // ✅ Prefer fetched/normalized data; fallback to state only if needed
+  const ev = eventQ.data ?? state;
+
+  // ...inside ViewEvent component, after computing `ev`
+  useEffect(() => {
+    console.log('[ViewEvent] handoff →', {
+      from: eventQ.data ? 'query(data)' : state?._id ? 'state' : 'none',
+      plant: (eventQ.data ?? state)?.plant,
+    });
+  }, [eventQ.data, state]);
+
+  console.log('[ViewEvent] ev:', ev);
+  // Loading / error only when fetching
+  if (!state?._id && eventQ.isLoading) {
+    return (
+      <AnimatedPage>
+        <Container component="main" maxWidth="md">
+          <Box sx={{ mt: 10, textAlign: 'center' }}>Loading event…</Box>
+        </Container>
+      </AnimatedPage>
+    );
+  }
+  if (!state?._id && eventQ.error) {
+    return (
+      <AnimatedPage>
+        <Container component="main" maxWidth="md">
+          <Box sx={{ mt: 10, textAlign: 'center', color: 'error.main' }}>
+            Failed to load event.
+            <Box sx={{ mt: 2 }}>
+              <Button variant="outlined" onClick={() => navigate('/events')}>
+                Back to Events
+              </Button>
+            </Box>
+          </Box>
+        </Container>
+      </AnimatedPage>
+    );
+  }
+  if (!ev?._id) {
     return (
       <AnimatedPage>
         <Container component="main" maxWidth="md">
           <Box sx={{ mt: 10, textAlign: 'center' }}>
-            <Typography variant="h6" sx={{ mb: 2 }}>
-              No event data available.
-            </Typography>
-            <Button variant="outlined" onClick={() => navigate('/events')}>
-              Back to Events
-            </Button>
+            No event data available.
+            <Box sx={{ mt: 2 }}>
+              <Button variant="outlined" onClick={() => navigate('/events')}>
+                Back to Events
+              </Button>
+            </Box>
           </Box>
         </Container>
       </AnimatedPage>
     );
   }
 
-  const { user } = useAuthContext();
-  const plantsQ = usePlants(user?._id);
-  const catsQ = useCategories(user?._id);
+  // Related lists
+  const plantsQ = usePlants(false, { enabled: true });
+  const catsQ = useCategories(false, { enabled: true });
 
   const plants = plantsQ.data || [];
   const categories = catsQ.data || [];
 
-  const eventPlantId = state?.plant?._id;
-  const eventCategoryId = state?.category?._id;
+  // Normalized IDs
+  const plantId = ev?.plant?._id ?? ev?.plant_id ?? null;
+  const categoryId = ev?.category?._id ?? ev?.category_id ?? null;
 
-  const relatedPlant = eventPlantId ? plants.find((p) => p._id === eventPlantId) : null;
-  const relatedCategory = eventCategoryId
-    ? categories.find((c) => c._id === eventCategoryId)
+  // Try to find in options, fall back to embedded object
+  const relatedPlant = plantId
+    ? plants.find((p) => String(p._id) === String(plantId)) ?? ev.plant ?? null
+    : null;
+  const relatedCategory = categoryId
+    ? categories.find((c) => String(c._id) === String(categoryId)) ?? ev.category ?? null
     : null;
 
-  // Image for the plant name (fallback provided)
-  const { url: imageUrl } = useUnsplashImage(state?.plant?.common_name, {
-    fallbackUrl: Raspberries,
-  });
+  const { url: imageUrl } = useUnsplashImage(ev.plant?.common_name, { fallbackUrl: Raspberries });
 
-  // While options load, we can still render the main card; related lists show placeholders
   const plantsLoading = plantsQ.isLoading || plantsQ.error;
   const catsLoading = catsQ.isLoading || catsQ.error;
+
+  const p = ev.plant || {};
+  const inSeason = isInSeason(ev.occurs_at, ev.occurs_to);
+  const occurs = formatRangeThisYear(ev.occurs_at, ev.occurs_to);
+  const recur = recurrenceText(ev);
+
+  console.log('inSeason:', inSeason);
+  console.log('occurs:', occurs);
+  console.log('recur:', recur);
 
   return (
     <AnimatedPage>
@@ -95,14 +174,8 @@ export default function ViewEvent() {
           <h1>Event</h1>
 
           <Grid container spacing={2}>
-            {/* Left image panel */}
-            <Grid
-              item
-              xs={12}
-              sm={6}
-              md={4}
-              sx={{ display: 'flex', justifyContent: 'center', alignItems: 'flex-start' }}
-            >
+            {/* Left image */}
+            <Grid item xs={12} sm={6} md={4} sx={{ display: 'flex', justifyContent: 'center' }}>
               <Fade in timeout={2000}>
                 <Box
                   component="img"
@@ -113,7 +186,7 @@ export default function ViewEvent() {
               </Fade>
             </Grid>
 
-            {/* Center: event card */}
+            {/* Event card */}
             <Grid
               item
               xs={12}
@@ -140,36 +213,35 @@ export default function ViewEvent() {
                 <Card sx={{ width: 345, mx: 'auto', mt: 4 }}>
                   <CardMedia
                     component="img"
-                    alt={state?.plant?.common_name}
+                    alt={ev?.plant?.common_name || 'Plant image'}
                     height="240"
                     image={imageUrl || Raspberries}
                   />
+
                   <CardContent>
-                    <Typography gutterBottom variant="h5">
-                      Name: {state?.event_name}
+                    <Typography gutterBottom variant="h5" component="div">
+                      Name: {ev.event_name}
                     </Typography>
 
                     <Typography variant="body2" color="text.secondary">
                       <Box component="span" fontWeight="bold">
                         Description:
                       </Box>{' '}
-                      {state?.description}
+                      {ev.description || ' ______________ '}
                     </Typography>
 
                     <Typography variant="body2" color="text.secondary">
                       <Box component="span" fontWeight="bold">
                         Occurs:
                       </Box>{' '}
-                      {state?.occurs_at
-                        ? moment(state.occurs_at).format('D MMM')
-                        : ' ______________ '}
-                      {state?.occurs_to && (
+                      {ev.occurs_at ? dayjs(ev.occurs_at).format('D MMM') : ' ______________ '}
+                      {ev.occurs_to && (
                         <>
                           {' '}
                           <Box component="span" fontWeight="bold">
                             to
                           </Box>{' '}
-                          {moment(state.occurs_to).format('D MMM')}
+                          {dayjs(ev.occurs_to).format('D MMM')}
                         </>
                       )}
                     </Typography>
@@ -178,49 +250,73 @@ export default function ViewEvent() {
                       <Box component="span" fontWeight="bold">
                         Plant:
                       </Box>{' '}
-                      {(state?.plant?.plant_at && moment(state.plant.plant_at).format('D MMM')) ||
-                        ' ______________ '}{' '}
-                      with{' '}
+                      {ev.plant?.plant_at
+                        ? dayjs(ev.plant?.plant_at).format('D MMM')
+                        : ' ______________ '}
+                      {' with '}
                       <Box component="span" fontWeight="bold">
                         spacing
                       </Box>{' '}
-                      {state?.plant?.spacing || ' ______________ '}
+                      {ev.plant?.spacing || ' ______________ '}
                     </Typography>
 
                     <Typography variant="body2" color="text.secondary">
                       <Box component="span" fontWeight="bold">
                         Fertilise:
                       </Box>{' '}
-                      {state?.plant?.fertilise || ' ______________ '} with{' '}
-                      {state?.plant?.fertiliser_type || ' ______________ '} fertiliser.
+                      {ev.plant?.fertilise || ' ______________ '} with{' '}
+                      {ev.plant?.fertiliser_type || ' ______________ '} fertiliser.
                     </Typography>
 
                     <Typography variant="body2" color="text.secondary">
                       <Box component="span" fontWeight="bold">
                         Harvest from:
                       </Box>{' '}
-                      {(state?.plant?.harvest_at &&
-                        moment(state.plant.harvest_at).format('D MMM')) ||
-                        ' ______________ '}{' '}
-                      to{' '}
-                      {(state?.plant?.harvest_to &&
-                        moment(state.plant.harvest_to).format('D MMM')) ||
-                        ' ______________ '}
+                      {ev.plant?.harvest_at
+                        ? dayjs(ev.plant?.harvest_at).format('D MMM')
+                        : ' ______________ '}
+                      {' to '}
+                      {ev.plant?.harvest_to
+                        ? dayjs(ev.plant?.harvest_to).format('D MMM')
+                        : ' ______________ '}
                     </Typography>
 
                     <Typography variant="body2" color="text.secondary">
                       <Box component="span" fontWeight="bold">
                         Notes:
                       </Box>{' '}
-                      {state?.notes || ' ______________ '}
+                      {ev.notes || ' ______________ '}
                     </Typography>
                   </CardContent>
                 </Card>
               </Zoom>
+              {/* <CardContent>
+                    <Typography gutterBottom variant="h5">
+                      Name: {ev.event_name}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      <b>Description:</b> {ev.description}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      <b>Occurs:</b> {ev.occurs_at ? dayjs(ev.occurs_at).format('D MMM') : ' __ '}
+                      {ev.occurs_to && (
+                        <>
+                          {' '}
+                          <b>to</b> {dayjs(ev.occurs_to).format('D MMM')}
+                        </>
+                      )}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      <b>Notes:</b> {ev.notes || ' __ '}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Zoom> */}
             </Grid>
 
-            {/* Right: related plant & category */}
+            {/* Related plant & category */}
             <Grid item xs={12} sm={6} md={4} sx={{ mt: 5 }}>
+              {/* Plant */}
               <Box align="left" sx={{ width: '100%', mt: 4 }}>
                 <Box fontSize={36} color="secondary.dark" align="center">
                   <FaLeaf />
@@ -230,17 +326,17 @@ export default function ViewEvent() {
                 </Typography>
                 <List dense>
                   {plantsLoading ? (
-                    <ListItem disableGutters>
+                    <ListItem>
                       <ListItemText primary="Loading…" />
                     </ListItem>
                   ) : relatedPlant ? (
-                    <ListItem key={relatedPlant._id} disableGutters>
+                    <ListItem key={relatedPlant._id}>
                       <ListItemIcon>
                         <IconButton
                           edge="end"
                           aria-label="View"
                           onClick={() =>
-                            navigate(`/plant/${relatedPlant._id}`, { state: relatedPlant })
+                            navigate(`/plant/${String(relatedPlant._id)}`, { state: relatedPlant })
                           }
                         >
                           <PageviewIcon color="info" />
@@ -249,9 +345,13 @@ export default function ViewEvent() {
                       <ListItemText primary={relatedPlant.common_name} />
                     </ListItem>
                   ) : (
-                    <ListItem disableGutters>
+                    <ListItem>
                       <ListItemIcon>
-                        <IconButton edge="end" disabled>
+                        <IconButton
+                          edge="end"
+                          disabled={!plantId}
+                          onClick={() => plantId && navigate(`/plant/${relatedPlant._id}`)}
+                        >
                           <PageviewIcon />
                         </IconButton>
                       </ListItemIcon>
@@ -261,6 +361,7 @@ export default function ViewEvent() {
                 </List>
               </Box>
 
+              {/* Category */}
               <Box align="left" sx={{ width: '100%', mt: 4 }}>
                 <Box fontSize={36} color="secondary.dark" align="center">
                   <CategoryIcon sx={{ color: 'secondary.main', fontSize: 40 }} />
@@ -270,28 +371,37 @@ export default function ViewEvent() {
                 </Typography>
                 <List dense>
                   {catsLoading ? (
-                    <ListItem disableGutters>
+                    <ListItem>
                       <ListItemText primary="Loading…" />
                     </ListItem>
-                  ) : relatedCategory ? (
-                    <ListItem key={relatedCategory._id} disableGutters>
+                  ) : // {filteredCategories.map(category => should be a mapping function here
+                  relatedCategory ? (
+                    <ListItem key={relatedCategory._id}>
                       <ListItemIcon>
                         <IconButton
                           edge="end"
                           aria-label="View"
                           onClick={() =>
-                            navigate(`/category/${relatedCategory._id}`, { state: relatedCategory })
+                            navigate(`/category/${relatedCategory._id}`, {
+                              state: relatedCategory.category_name,
+                            })
                           }
                         >
                           <PageviewIcon color="info" />
                         </IconButton>
                       </ListItemIcon>
-                      <ListItemText primary={relatedCategory.category} />
+                      <ListItemText
+                        primary={relatedCategory.category_name || relatedCategory.category}
+                      />
                     </ListItem>
                   ) : (
-                    <ListItem disableGutters>
+                    <ListItem>
                       <ListItemIcon>
-                        <IconButton edge="end" disabled>
+                        <IconButton
+                          edge="end"
+                          disabled={!categoryId}
+                          onClick={() => categoryId && navigate(`/category/${String(categoryId)}`)}
+                        >
                           <PageviewIcon />
                         </IconButton>
                       </ListItemIcon>
@@ -300,13 +410,14 @@ export default function ViewEvent() {
                   )}
                 </List>
               </Box>
+
+              {/* End category box */}
             </Grid>
           </Grid>
 
           <Grid item sx={{ my: 4 }}>
             <Button color="secondary" variant="outlined" size="small" onClick={() => navigate(-1)}>
-              <ArrowBackIos fontSize="small" />
-              Back
+              <ArrowBackIos fontSize="small" /> Back
             </Button>
           </Grid>
         </Grid>

@@ -7,13 +7,16 @@ const unwrap = (data) =>
     ? data
     : data?.allPlants ?? data?.allCategories ?? data?.allEvents ?? data?.items ?? data?.data ?? [];
 
-export function useMineList(path, key, userId, extraParams = {}) {
+export function useMineList(path, key, enabledOrUser, extraParams = {}) {
+  // allow 3rd arg to be either a boolean "enabled" or a userId
+  const enabled = typeof enabledOrUser === 'boolean' ? enabledOrUser : !!enabledOrUser;
+
   return useQuery({
-    queryKey: [key, 'mine', userId, extraParams],
-    enabled: !!userId, // don’t fire until we know the user id
+    queryKey: [key, 'mine', extraParams],
+    enabled,
     queryFn: async () => {
       const { data } = await api.get(`/${path}`, {
-        params: { created_by: userId, archived: false, ...extraParams },
+        params: { archived: false, ...extraParams },
       });
       return unwrap(data);
     },

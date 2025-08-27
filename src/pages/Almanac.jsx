@@ -9,21 +9,28 @@ import AnimatedPage from '@/components/AnimatedPage';
 import IconButton from '@mui/material/IconButton';
 import PageviewIcon from '@mui/icons-material/Pageview';
 import { ButtonGroup, Button } from '@mui/material';
-import moment from 'moment';
+import dayjs from '@/utils/dayjsConfig';
+import advancedFormat from 'dayjs/plugin/advancedFormat';
+import { useEvents } from '@/queries/useEvents';
+import { usePlants } from '@/queries/usePlants';
+import { useCategories } from '@/queries/useCategories';
+
+// const { user } = useAuthContext();
 
 const Almanac = () => {
   const navigate = useNavigate();
 
   const { user } = useAuthContext();
+  // const guard = !!user && !loading;
   const userId = user?._id;
 
-  const eventsQ = useMineList('events', 'events', userId);
-  const plantsQ = useMineList('plants', 'plants', userId);
-  const catsQ = useMineList('categories', 'categories', userId);
+  const eventsQ = useEvents(false, { enabled: !!user, retry: false });
+  const plantsQ = usePlants(false, { enabled: !!user, retry: false });
+  const catsQ = useCategories(false, { enabled: !!user, retry: false });
 
-  const events = eventsQ.data || [];
-  const plants = plantsQ.data || [];
-  const categories = catsQ.data || [];
+  const events = eventsQ.data ?? [];
+  const plants = plantsQ.data ?? [];
+  const categories = catsQ.data ?? [];
 
   const monthNames = [
     'January',
@@ -97,7 +104,7 @@ const Almanac = () => {
                   gutterBottom
                   component="div"
                 >
-                  {moment().format('ddd, Do MMMM YYYY')}
+                  {dayjs().format('ddd Do MMMM YYYY')}
                 </Typography>
                 <Typography variant="h6" gutterBottom component="div">
                   Events ({events.length} total)
@@ -121,12 +128,12 @@ const Almanac = () => {
                   const nextMonth = new Date();
                   nextMonth.setMonth(nextMonth.getMonth() + 1);
                   // console.log('EVENT', event);
-                  // console.log('NEXT MONTH', moment(nextMonth).month());
-                  // console.log('CHECK MONTH', moment(event.occurs_at).month());
+                  // console.log('NEXT MONTH', dayjs(nextMonth).month());
+                  // console.log('CHECK MONTH', dayjs(event.occurs_at).month());
                   return (
-                    moment(event.occurs_at).month() === moment(nextMonth).month() && (
+                    dayjs(event.occurs_at).month() === dayjs(nextMonth).month() && (
                       <Typography key={index} variant="body1" gutterBottom component="div">
-                        {`${moment(event.occurs_at).format('MMM DD')} - ${event.event_name}`}
+                        {`${dayjs(event.occurs_at).format('MMM DD')} - ${event.event_name}`}
                       </Typography>
                     )
                   );
@@ -147,7 +154,7 @@ const Almanac = () => {
                         </Typography>
                         {events?.map(
                           (event) =>
-                            moment(event.occurs_at).format('MMMM') === month && (
+                            dayjs(event.occurs_at).format('MMMM') === month && (
                               <Typography
                                 key={event._id}
                                 variant="body1"
@@ -166,7 +173,7 @@ const Almanac = () => {
                                 >
                                   <PageviewIcon />
                                 </IconButton>
-                                {moment(event.occurs_at).format('D MMM')} - {event.event_name}
+                                {dayjs(event.occurs_at).format('D MMM')} - {event.event_name}
                               </Typography>
                             ),
                         )}

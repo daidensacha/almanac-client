@@ -28,28 +28,25 @@ import Raspberries from '@/images/raspberries.jpg';
 import { useUnsplashImage } from '@/utils/unsplash';
 
 import { useAuthContext } from '@/contexts/AuthContext';
-import { useCategories } from '@/queries/useCategories';
 import { useEvents } from '@/queries/useEvents';
 
 export default function ViewCategory() {
-  const { state } = useLocation(); // expected: a category object
+  const { state } = useLocation(); // expected: category object
   const navigate = useNavigate();
   const { user } = useAuthContext();
 
-  const catsQ = useCategories(user?._id);
   const evtsQ = useEvents(user?._id);
-
-  const categories = catsQ.data || [];
   const events = evtsQ.data || [];
 
-  // Prefer the state object; if someone hit this URL directly, try to find the category by id
   const category = state || null;
 
-  const relatedEvents = category
-    ? events.filter((e) => (e?.category?._id || e?.category) === category._id)
-    : [];
+  const relatedEvents = events.filter(
+    (e) => String(e?.category?._id || e?.category) === String(category?._id),
+  );
 
-  const { url: imageUrl } = useUnsplashImage(category?.category, { fallbackUrl: Raspberries });
+  const { url: imageUrl } = useUnsplashImage(category?.category_name, {
+    fallbackUrl: Raspberries,
+  });
 
   return (
     <AnimatedPage>
@@ -79,6 +76,7 @@ export default function ViewCategory() {
               </Fade>
             </Grid>
 
+            {/* center info card */}
             <Grid
               item
               xs={12}
@@ -105,13 +103,13 @@ export default function ViewCategory() {
                 <Card sx={{ width: 345, mx: 'auto', mt: 4 }}>
                   <CardMedia
                     component="img"
-                    alt={category?.category}
+                    alt={category?.category_name}
                     height="240"
                     image={imageUrl || Raspberries}
                   />
                   <CardContent>
                     <Typography gutterBottom variant="h5">
-                      Category: {category?.category}
+                      Category: {category?.category_name}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
                       Description: {category?.description || '—'}
@@ -121,9 +119,10 @@ export default function ViewCategory() {
               </Zoom>
             </Grid>
 
+            {/* right related events */}
             <Grid item xs={12} sm={6} md={4} sx={{ mt: 5 }}>
               <Box sx={{ width: '100%', mt: 4 }}>
-                <Box size="small" color="primary" aria-label="tip" align="center">
+                <Box align="center">
                   <EventIcon sx={{ color: 'secondary.main', fontSize: 36 }} />
                 </Box>
                 <Typography variant="h4" align="center" sx={{ color: 'secondary.dark' }}>
@@ -136,7 +135,7 @@ export default function ViewCategory() {
                         <IconButton
                           edge="end"
                           aria-label="View"
-                          onClick={() => navigate(`/events/${evt._id}`, { state: evt })}
+                          onClick={() => navigate(`/event/${evt._id}`, { state: evt })}
                         >
                           <PageviewIcon color="info" />
                         </IconButton>
@@ -173,56 +172,66 @@ export default function ViewCategory() {
 // // src/pages/crud/ViewCategory.jsx
 // import { useNavigate, useLocation } from 'react-router-dom';
 // import {
-//   List,
-//   ListItem,
-//   ListItemText,
-//   ListItemIcon,
+//   Container,
+//   Grid,
+//   Typography,
+//   Button,
+//   Fade,
+//   Zoom,
 //   Box,
 //   Card,
 //   CardContent,
 //   CardMedia,
-//   Container,
-//   Grid,
-//   Typography,
-//   Fade,
-//   Zoom,
-//   Button,
+//   List,
+//   ListItem,
+//   ListItemText,
+//   ListItemIcon,
+//   IconButton,
 //   Stack,
 //   ButtonGroup,
-//   IconButton,
 // } from '@mui/material';
+// import Beetroot from '@/images/beetroot.jpg';
 // import PageviewIcon from '@mui/icons-material/Pageview';
 // import ArrowBackIos from '@mui/icons-material/ArrowBackIos';
 // import EventIcon from '@mui/icons-material/Event';
 // import AnimatedPage from '@/components/AnimatedPage';
-// import Beetroot from '@/images/beetroot.jpg';
 // import Raspberries from '@/images/raspberries.jpg';
 // import { useUnsplashImage } from '@/utils/unsplash';
+
 // import { useAuthContext } from '@/contexts/AuthContext';
-// import { useEvents } from '@/queries/useEvents'; // 🔑 new hook
+// import { useCategories } from '@/queries/useCategories';
+// import { useEvents } from '@/queries/useEvents';
+// import { useQueryClient } from '@tanstack/react-query';
+// import { serializeCategory } from '@/utils/normalizers';
+// import { keys as categoryKeys } from '@/queries/useCategories';
 
 // export default function ViewCategory() {
-//   const { state } = useLocation();
+//   const { state } = useLocation(); // expected: a category object
 //   const navigate = useNavigate();
 //   const { user } = useAuthContext();
 
-//   // fetch this user’s events
-//   const eventsQ = useEvents(user?._id);
-//   const events = eventsQ.data || [];
+//   const catsQ = useCategories(user?._id);
+//   const evtsQ = useEvents(user?._id);
 
-//   // filter by category
-//   const filteredEvents = events.filter((event) => event.category?._id === state._id);
+//   const categories = catsQ.data || [];
+//   const events = evtsQ.data || [];
 
-//   // image helper
-//   const { url: imageUrl } = useUnsplashImage(state?.category);
+//   // Prefer the state object; if someone hit this URL directly, try to find the category by id
+//   const category = state || null;
+
+//   const relatedEvents = events.filter(
+//   (e) => String(e?.category?._id || e?.category) === String(category?._id)
+// );
+
+//   const { url: imageUrl } = useUnsplashImage(category?.category, { fallbackUrl: Raspberries });
 
 //   return (
 //     <AnimatedPage>
 //       <Container component="main" maxWidth="xl">
 //         <Grid
 //           sx={{
-//             marginTop: 8,
-//             marginBottom: 4,
+//             mt: 8,
+//             mb: 4,
 //             minHeight: 'calc(100vh - 375px)',
 //             display: 'flex',
 //             flexDirection: 'column',
@@ -230,6 +239,7 @@ export default function ViewCategory() {
 //           }}
 //         >
 //           <h1>Category</h1>
+
 //           <Grid container spacing={2}>
 //             {/* left column image */}
 //             <Grid item xs={12} sm={6} md={4}>
@@ -243,61 +253,72 @@ export default function ViewCategory() {
 //               </Fade>
 //             </Grid>
 
-//             {/* center info */}
-//             <Grid item xs={12} sm={6} md={4} sx={{ mt: 5 }}>
-//               <Stack direction="row" justifyContent="center">
-//                 <ButtonGroup variant="outlined" color="secondary" size="small">
-//                   <Button onClick={() => navigate('/plants')}>Plants</Button>
-//                   <Button onClick={() => navigate('/events')}>Events</Button>
-//                   <Button onClick={() => navigate('/categories')}>Categories</Button>
-//                 </ButtonGroup>
-//               </Stack>
+//             <Grid
+//               item
+//               xs={12}
+//               sm={6}
+//               md={4}
+//               sx={{ mt: 5, display: 'flex', flexDirection: 'column' }}
+//             >
+//               <Box sx={{ width: '100%' }}>
+//                 <Stack direction="row" justifyContent="center" spacing={2}>
+//                   <ButtonGroup
+//                     variant="outlined"
+//                     color="secondary"
+//                     size="small"
+//                     sx={{ mx: 'auto' }}
+//                   >
+//                     <Button onClick={() => navigate('/plants')}>Plants</Button>
+//                     <Button onClick={() => navigate('/events')}>Events</Button>
+//                     <Button onClick={() => navigate('/categories')}>Categories</Button>
+//                   </ButtonGroup>
+//                 </Stack>
+//               </Box>
 
 //               <Zoom in timeout={1500}>
 //                 <Card sx={{ width: 345, mx: 'auto', mt: 4 }}>
 //                   <CardMedia
 //                     component="img"
-//                     alt={state.category}
+//                     alt={category?.category_name}
 //                     height="240"
 //                     image={imageUrl || Raspberries}
 //                   />
 //                   <CardContent>
 //                     <Typography gutterBottom variant="h5">
-//                       Category: {state.category}
+//                       Category: {category?.category_name}
 //                     </Typography>
 //                     <Typography variant="body2" color="text.secondary">
-//                       Description: {state.description}
+//                       Description: {category?.description || '—'}
 //                     </Typography>
 //                   </CardContent>
 //                 </Card>
 //               </Zoom>
 //             </Grid>
 
-//             {/* right related events */}
 //             <Grid item xs={12} sm={6} md={4} sx={{ mt: 5 }}>
-//               <Box sx={{ mt: 4 }}>
-//                 <Box align="center">
+//               <Box sx={{ width: '100%', mt: 4 }}>
+//                 <Box size="small" color="primary" aria-label="tip" align="center">
 //                   <EventIcon sx={{ color: 'secondary.main', fontSize: 36 }} />
 //                 </Box>
-//                 <Typography variant="h3" align="center" sx={{ color: 'secondary.dark' }}>
+//                 <Typography variant="h4" align="center" sx={{ color: 'secondary.dark' }}>
 //                   Related Events
 //                 </Typography>
-//                 <List>
-//                   {filteredEvents.map((event) => (
-//                     <ListItem key={event._id} disableGutters>
+//                 <List dense>
+//                   {relatedEvents.map((evt) => (
+//                     <ListItem key={evt._id} disableGutters>
 //                       <ListItemIcon>
 //                         <IconButton
 //                           edge="end"
 //                           aria-label="View"
-//                           onClick={() => navigate(`/event/${event._id}`, { state: event })}
+//                           onClick={() => navigate(`/events/${evt._id}`, { state: evt })}
 //                         >
 //                           <PageviewIcon color="info" />
 //                         </IconButton>
 //                       </ListItemIcon>
-//                       <ListItemText primary={event.event_name} />
+//                       <ListItemText primary={evt.event_name} />
 //                     </ListItem>
 //                   ))}
-//                   {filteredEvents.length === 0 && (
+//                   {relatedEvents.length === 0 && (
 //                     <ListItem disableGutters>
 //                       <ListItemIcon>
 //                         <IconButton edge="end" disabled>
@@ -311,11 +332,10 @@ export default function ViewCategory() {
 //               </Box>
 //             </Grid>
 //           </Grid>
-//           {/* back button */}
+
 //           <Grid item sx={{ my: 4 }}>
 //             <Button color="secondary" variant="outlined" size="small" onClick={() => navigate(-1)}>
-//               <ArrowBackIos fontSize="small" />
-//               Back
+//               <ArrowBackIos fontSize="small" /> Back
 //             </Button>
 //           </Grid>
 //         </Grid>
@@ -323,3 +343,157 @@ export default function ViewCategory() {
 //     </AnimatedPage>
 //   );
 // }
+
+// // // src/pages/crud/ViewCategory.jsx
+// // import { useNavigate, useLocation } from 'react-router-dom';
+// // import {
+// //   List,
+// //   ListItem,
+// //   ListItemText,
+// //   ListItemIcon,
+// //   Box,
+// //   Card,
+// //   CardContent,
+// //   CardMedia,
+// //   Container,
+// //   Grid,
+// //   Typography,
+// //   Fade,
+// //   Zoom,
+// //   Button,
+// //   Stack,
+// //   ButtonGroup,
+// //   IconButton,
+// // } from '@mui/material';
+// // import PageviewIcon from '@mui/icons-material/Pageview';
+// // import ArrowBackIos from '@mui/icons-material/ArrowBackIos';
+// // import EventIcon from '@mui/icons-material/Event';
+// // import AnimatedPage from '@/components/AnimatedPage';
+// // import Beetroot from '@/images/beetroot.jpg';
+// // import Raspberries from '@/images/raspberries.jpg';
+// // import { useUnsplashImage } from '@/utils/unsplash';
+// // import { useAuthContext } from '@/contexts/AuthContext';
+// // import { useEvents } from '@/queries/useEvents'; // 🔑 new hook
+
+// // export default function ViewCategory() {
+// //   const { state } = useLocation();
+// //   const navigate = useNavigate();
+// //   const { user } = useAuthContext();
+
+// //   // fetch this user’s events
+// //   const eventsQ = useEvents(user?._id);
+// //   const events = eventsQ.data || [];
+
+// //   // filter by category
+// //   const filteredEvents = events.filter((event) => event.category?._id === state._id);
+
+// //   // image helper
+// //   const { url: imageUrl } = useUnsplashImage(state?.category);
+
+// //   return (
+// //     <AnimatedPage>
+// //       <Container component="main" maxWidth="xl">
+// //         <Grid
+// //           sx={{
+// //             marginTop: 8,
+// //             marginBottom: 4,
+// //             minHeight: 'calc(100vh - 375px)',
+// //             display: 'flex',
+// //             flexDirection: 'column',
+// //             alignItems: 'center',
+// //           }}
+// //         >
+// //           <h1>Category</h1>
+// //           <Grid container spacing={2}>
+// //             {/* left column image */}
+// //             <Grid item xs={12} sm={6} md={4}>
+// //               <Fade in timeout={2000}>
+// //                 <Box
+// //                   component="img"
+// //                   sx={{ maxWidth: '100%', height: 'auto' }}
+// //                   alt="image"
+// //                   src={Beetroot}
+// //                 />
+// //               </Fade>
+// //             </Grid>
+
+// //             {/* center info */}
+// //             <Grid item xs={12} sm={6} md={4} sx={{ mt: 5 }}>
+// //               <Stack direction="row" justifyContent="center">
+// //                 <ButtonGroup variant="outlined" color="secondary" size="small">
+// //                   <Button onClick={() => navigate('/plants')}>Plants</Button>
+// //                   <Button onClick={() => navigate('/events')}>Events</Button>
+// //                   <Button onClick={() => navigate('/categories')}>Categories</Button>
+// //                 </ButtonGroup>
+// //               </Stack>
+
+// //               <Zoom in timeout={1500}>
+// //                 <Card sx={{ width: 345, mx: 'auto', mt: 4 }}>
+// //                   <CardMedia
+// //                     component="img"
+// //                     alt={state.category}
+// //                     height="240"
+// //                     image={imageUrl || Raspberries}
+// //                   />
+// //                   <CardContent>
+// //                     <Typography gutterBottom variant="h5">
+// //                       Category: {state.category}
+// //                     </Typography>
+// //                     <Typography variant="body2" color="text.secondary">
+// //                       Description: {state.description}
+// //                     </Typography>
+// //                   </CardContent>
+// //                 </Card>
+// //               </Zoom>
+// //             </Grid>
+
+// //             {/* right related events */}
+// //             <Grid item xs={12} sm={6} md={4} sx={{ mt: 5 }}>
+// //               <Box sx={{ mt: 4 }}>
+// //                 <Box align="center">
+// //                   <EventIcon sx={{ color: 'secondary.main', fontSize: 36 }} />
+// //                 </Box>
+// //                 <Typography variant="h3" align="center" sx={{ color: 'secondary.dark' }}>
+// //                   Related Events
+// //                 </Typography>
+// //                 <List>
+// //                   {filteredEvents.map((event) => (
+// //                     <ListItem key={event._id} disableGutters>
+// //                       <ListItemIcon>
+// //                         <IconButton
+// //                           edge="end"
+// //                           aria-label="View"
+// //                           onClick={() => navigate(`/event/${event._id}`, { state: event })}
+// //                         >
+// //                           <PageviewIcon color="info" />
+// //                         </IconButton>
+// //                       </ListItemIcon>
+// //                       <ListItemText primary={event.event_name} />
+// //                     </ListItem>
+// //                   ))}
+// //                   {filteredEvents.length === 0 && (
+// //                     <ListItem disableGutters>
+// //                       <ListItemIcon>
+// //                         <IconButton edge="end" disabled>
+// //                           <PageviewIcon />
+// //                         </IconButton>
+// //                       </ListItemIcon>
+// //                       <ListItemText primary="No related events" />
+// //                     </ListItem>
+// //                   )}
+// //                 </List>
+// //               </Box>
+// //             </Grid>
+// //           </Grid>
+// //           {/* back button */}
+// //           <Grid item sx={{ my: 4 }}>
+// //             <Button color="secondary" variant="outlined" size="small" onClick={() => navigate(-1)}>
+// //               <ArrowBackIos fontSize="small" />
+// //               Back
+// //             </Button>
+// //           </Grid>
+// //         </Grid>
+// //       </Container>
+// //     </AnimatedPage>
+// //   );
+// // }

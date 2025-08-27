@@ -1,8 +1,7 @@
 // Plants.jsx (fixed order of hooks)
 import { useState, useEffect, Fragment } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import api from '@/utils/axiosClient';
+import { usePlants } from '@/queries/usePlants';
 
 import AnimatedPage from '@/components/AnimatedPage';
 import Container from '@mui/material/Container';
@@ -31,10 +30,12 @@ import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import { toast } from 'react-toastify';
-import instance from '@/utils/axiosClient';
 import SearchBar from '@/components/ui/SearchFilter';
 import Berries from '@/images/berries.jpg';
 import AppBreadcrumbs from '@/components/ui/AppBreadcrumbs';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { keys as plantKeys } from '@/queries/usePlants';
+import api from '@/utils/axiosClient';
 
 const modalStyle = {
   position: 'absolute',
@@ -50,16 +51,9 @@ const modalStyle = {
 
 export default function Plants() {
   const navigate = useNavigate();
-
-  // 1) QUERY FIRST — always called
-  const plantsQ = useQuery({
-    queryKey: ['plants:mine'],
-    queryFn: async () => {
-      const { data } = await api.get('/plants'); // server scopes to req.auth._id
-      return Array.isArray(data?.allPlants) ? data.allPlants : [];
-    },
-    refetchOnWindowFocus: false,
-  });
+  const qc = useQueryClient();
+  // ✅ scoped to logged-in user
+  const plantsQ = usePlants(false, { retry: false });
 
   // 2) LOCAL STATE — always called
   const [open, setOpen] = useState(false);
@@ -69,21 +63,45 @@ export default function Plants() {
   const [search, setSearch] = useState('');
   const [filteredPlants, setFilteredPlants] = useState([]);
 
-  // 3) EFFECTS — always called
   useEffect(() => {
     const source = Array.isArray(plantsQ.data) ? plantsQ.data : [];
-    const sortPlants = (a, b) => (a?.common_name || '').localeCompare(b?.common_name || '');
+    const sortPlants = (a, b) => (a.common_name || '').localeCompare(b.common_name || '');
+    const q = (search || '').toLowerCase();
     const filtered = source
       .slice()
       .sort(sortPlants)
       .filter((p) => {
-        const cn = p?.common_name?.toLowerCase() || '';
-        const bn = p?.botanical_name?.toLowerCase() || '';
-        const q = search.toLowerCase();
+        const cn = (p.common_name || '').toLowerCase();
+        const bn = (p.botanical_name || '').toLowerCase();
         return cn.includes(q) || bn.includes(q);
       });
     setFilteredPlants(filtered);
   }, [search, plantsQ.data]);
+
+  // Handlers
+  const deleteHandler = (_e, id) => {
+    setDeleteCurrentPlant(id);
+    setOpen(true);
+  };
+
+  const archiveMutation = useMutation({
+    mutationFn: async (id) => {
+      const { data } = await api.patch(`/plant/archive/${id}`, { archived: true });
+      return data; // the updated (archived) plant doc
+    },
+    onSuccess: (data) => {
+      toast.success(`${data?.common_name || 'Plant'} archived`);
+      // invalidate all plants queries; let RQ refetch as needed
+      qc.invalidateQueries({ queryKey: plantKeys.all, exact: false });
+      handleClose();
+    },
+    onError: (err) => {
+      toast.error(err?.response?.data?.error || 'Failed to archive plant');
+    },
+  });
+
+  const onSearchChange = (q) => setSearch(q);
+  const handleClearClick = () => setSearch('');
 
   // 4) NOW conditional returns are safe
   if (plantsQ.isLoading) {
@@ -104,26 +122,6 @@ export default function Plants() {
       </AnimatedPage>
     );
   }
-
-  // Handlers
-  const deleteHandler = (_e, id) => {
-    setDeleteCurrentPlant(id);
-    setOpen(true);
-  };
-
-  const archivePlant = async (id) => {
-    try {
-      const { data } = await instance.patch(`/plant/archive/${id}`, { archived: true });
-      handleClose();
-      toast.success(`${data?.archivedPlant?.common_name || 'Plant'} archived`);
-      plantsQ.refetch(); // refresh from server
-    } catch (err) {
-      toast.error(err?.response?.data?.error || 'Failed to archive plant');
-    }
-  };
-
-  const onSearchChange = (q) => setSearch(q);
-  const handleClearClick = () => setSearch('');
 
   // 5) RENDER
   return (
@@ -288,9 +286,10 @@ export default function Plants() {
                               variant="contained"
                               color="error"
                               sx={{ mt: 3, mb: 2 }}
-                              onClick={() => archivePlant(deleteCurrentPlant)}
+                              onClick={() => archiveMutation.mutate(deleteCurrentPlant)}
+                              disabled={archiveMutation.isPending}
                             >
-                              Delete
+                              {archiveMutation.isPending ? 'Deleting…' : 'Delete'}
                             </Button>
                           </Grid>
                         </Grid>

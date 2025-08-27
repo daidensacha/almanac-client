@@ -1,53 +1,96 @@
 // src/queries/useCategories.js
-import { useMineList } from '@/hooks/useMineList';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/utils/axiosClient';
+import { normalizeCategory, serializeCategory } from '@/utils/normalizers';
 
-export function useCategories(userId, extraParams = {}) {
-  return useMineList('categories', 'categories', userId, extraParams);
-}
+// -------- Keys
+export const keys = {
+  all: ['categories'],
+  list: (archived) => ['categories', 'list', archived],
+  one: (id) => ['categories', 'one', id],
+};
 
-export function useCreateCategory() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: async (payload) => {
-      const { data } = await api.post('/category/create', payload);
-      return data?.newCategory ?? data;
+export function useCategories(archived = false, options = {}) {
+  return useQuery({
+    queryKey: keys.list(archived),
+    queryFn: async () => {
+      const { data } = await api.get('/categories', { params: { archived } });
+
+      if (import.meta?.env?.MODE !== 'production') {
+        console.log('[useCategories] raw response:', data);
+      }
+
+      // backend returns { ok, categories } (legacy: allCategories)
+      const raw = data?.categories ?? data?.allCategories ?? [];
+      return raw.map(normalizeCategory);
     },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['categories'], exact: false });
-    },
+    ...options,
   });
 }
 
-export function useUpdateCategory() {
+// -------- Get one (if you need standalone fetch)
+export function useCategory(id, options = {}) {
+  return useQuery({
+    queryKey: keys.one(id),
+    enabled: !!id,
+    queryFn: async () => {
+      const { data } = await api.get(`/category/${id}`);
+      return normalizeCategory(data);
+    },
+    ...options,
+  });
+}
+
+// -------- Create
+export function useCreateCategory(options = {}) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, payload }) => {
+    mutationFn: async (values) => {
+      const payload = serializeCategory(values);
+      const { data } = await api.post('/category/create', payload);
+      return normalizeCategory(data);
+    },
+    onSuccess: (_data, _vars) => {
+      qc.invalidateQueries({ queryKey: keys.all, exact: false });
+    },
+    ...options,
+  });
+}
+
+// -------- Update
+export function useUpdateCategory(options = {}) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, values }) => {
+      const payload = serializeCategory(values);
       const { data } = await api.put(`/category/update/${id}`, payload);
-      return data?.updateCategory ?? data?.updatedCategory ?? data;
+      return normalizeCategory(data);
     },
     onSuccess: (data) => {
-      qc.invalidateQueries({ queryKey: ['categories'], exact: false });
-      if (data?._id) qc.invalidateQueries({ queryKey: ['category', data._id], exact: true });
+      qc.invalidateQueries({ queryKey: keys.one(data._id) });
+      qc.invalidateQueries({ queryKey: keys.all, exact: false });
     },
+    ...options,
   });
 }
 
-export function useArchiveCategory() {
+// -------- Archive / Unarchive
+export function useArchiveCategory(options = {}) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, archived = true }) => {
       const { data } = await api.patch(`/category/archive/${id}`, { archived });
-      return data?.archivedCategory ?? data;
+      return normalizeCategory(data);
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['categories'], exact: false });
+      qc.invalidateQueries({ queryKey: keys.all, exact: false });
     },
+    ...options,
   });
 }
 
-export function useDeleteCategory() {
+// -------- Delete
+export function useDeleteCategory(options = {}) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (id) => {
@@ -55,7 +98,8 @@ export function useDeleteCategory() {
       return data;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['categories'], exact: false });
+      qc.invalidateQueries({ queryKey: keys.all, exact: false });
     },
+    ...options,
   });
 }

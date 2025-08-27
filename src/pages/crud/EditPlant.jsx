@@ -10,12 +10,17 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 
-import instance from '@/utils/axiosClient';
-import { toDateOrNull, toIsoDateStringOrNull } from '@/utils/dateHelpers';
+import { toDateOrNull } from '@/utils/dateHelpers';
+import api from '@/utils/axiosClient';
+import { useQueryClient } from '@tanstack/react-query';
+import { serializePlant } from '@/utils/normalizers';
+import { keys as plantKeys } from '@/queries/usePlants';
 
 export default function EditPlant() {
   const { state } = useLocation(); // expect full plant object from navigate(..., { state })
   const navigate = useNavigate();
+
+  const qc = useQueryClient();
 
   // Normalize incoming state once into local form state
   const [values, setValues] = useState(() => ({
@@ -61,33 +66,38 @@ export default function EditPlant() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!values.common_name.trim()) {
+    if (!values.common_name?.trim()) {
       toast.error('Common name is required');
       return;
     }
 
+    // Optional: if you show button text on this page
+    // setValues(v => ({ ...v, buttonText: '...Updating Plant' }));
+
     try {
-      const {
-        data: { updatedPlant },
-      } = await instance.put(`/plant/update/${values._id}`, {
-        common_name: values.common_name,
-        botanical_name: values.botanical_name,
-        sow_at: toIsoDateStringOrNull(values.sow_at),
-        plant_at: toIsoDateStringOrNull(values.plant_at),
-        harvest_at: toIsoDateStringOrNull(values.harvest_at),
-        harvest_to: toIsoDateStringOrNull(values.harvest_to),
-        fertilise: values.fertilise,
-        fertiliser_type: values.fertiliser_type,
-        spacing: values.spacing,
-        depth: values.depth,
-        notes: values.notes,
+      // Build payload with proper ISO dates & trimmed fields
+      const payload = serializePlant({
+        ...values,
+        // if your serializer expects Date objects, it will handle them (or convert here)
+        // sow_at, plant_at, harvest_at, harvest_to are already Date or null in `values`
       });
 
-      toast.success(`Plant "${updatedPlant.common_name}" updated`);
+      const { data } = await api.put(`/plant/update/${values._id}`, payload);
+      // console.log('[EditPlant] update response:', data);
+      // console.log('PlantValues', values);
+      // console.log('PlantData:', data);
+      toast.success(`Plant "${data?.common_name || values.common_name}" updated`);
+
+      // Invalidate any plant lists/detail that might show stale data
+      qc.invalidateQueries({ queryKey: plantKeys.all, exact: false });
+      qc.invalidateQueries({ queryKey: plantKeys.list(false), exact: false });
+
       navigate('/plants');
     } catch (err) {
       console.error(err?.response?.data || err);
       toast.error(err?.response?.data?.error || 'Update failed');
+    } finally {
+      // setValues(v => ({ ...v, buttonText: 'Update Plant' }));
     }
   };
 

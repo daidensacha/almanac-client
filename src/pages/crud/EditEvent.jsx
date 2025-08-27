@@ -20,53 +20,69 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { toast } from 'react-toastify';
 
-import instance from '@/utils/axiosClient';
-import { useAuthContext } from '@/contexts/AuthContext';
+import api from '@/utils/axiosClient';
 import { useCategories } from '@/queries/useCategories';
 import { usePlants } from '@/queries/usePlants';
-import { toDateOrNull, toIsoDateStringOrNull } from '@/utils/dateHelpers';
 import { useQueryClient } from '@tanstack/react-query';
+import { keys as eventKeys } from '@/queries/useEvents';
+import { toDateOrNull } from '@/utils/dateHelpers';
+import { serializeEvent } from '@/utils/normalizers';
 
 export default function EditEvent() {
-  const { state } = useLocation(); // we navigate here with the full event in `state`
+  const { state } = useLocation(); // expected: full event object
   const navigate = useNavigate();
   const qc = useQueryClient();
-  const { user } = useAuthContext();
 
-  // Load select options
-  const catsQ = useCategories(user?._id);
-  const plantsQ = usePlants(user?._id);
+  // Load select options (non-archived)
+  const catsQ = useCategories(false, { retry: false });
+  const plantsQ = usePlants(false, { retry: false });
   const categories = catsQ.data || [];
   const plants = plantsQ.data || [];
 
-  // Local form state (normalize dates & select ids)
+  const normalizeId = (val) => {
+    if (!val) return '';
+    if (typeof val === 'object') return String(val._id || '');
+    return String(val);
+  };
+
   const [values, setValues] = useState(() => ({
-    ...state,
+    _id: state?._id || '',
     event_name: state?.event_name || '',
     description: state?.description || '',
     occurs_at: toDateOrNull(state?.occurs_at),
     occurs_to: toDateOrNull(state?.occurs_to),
     repeat_cycle: state?.repeat_cycle || '',
-    repeat_frequency: state?.repeat_frequency || '',
+    repeat_frequency: state?.repeat_frequency ?? '',
     notes: state?.notes || '',
-    category_id: state?.category?._id ?? state?.category_id ?? '',
-    plant_id: state?.plant?._id ?? state?.plant_id ?? '',
+    // always strings for Selects
+    category_id: normalizeId(state?.category_id ?? state?.category),
+    plant_id: normalizeId(state?.plant_id ?? state?.plant),
   }));
 
-  // keep in sync if user navigates here from a different row without unmount
   useEffect(() => {
     if (!state) return;
-    setValues((prev) => ({
-      ...prev,
-      ...state,
+    setValues((v) => ({
+      ...v,
+      _id: state?._id || '',
+      event_name: state?.event_name || '',
+      description: state?.description || '',
       occurs_at: toDateOrNull(state?.occurs_at),
       occurs_to: toDateOrNull(state?.occurs_to),
-      category_id: state?.category?._id ?? state?.category_id ?? '',
-      plant_id: state?.plant?._id ?? state?.plant_id ?? '',
+      repeat_cycle: state?.repeat_cycle || '',
+      repeat_frequency: state?.repeat_frequency ?? '',
+      notes: state?.notes || '',
+      category_id: normalizeId(state?.category_id ?? state?.category),
+      plant_id: normalizeId(state?.plant_id ?? state?.plant),
     }));
   }, [state]);
 
-  // While options are loading show a tiny loader (prevents out-of-range warnings)
+  // Prevent MUI "out-of-range" on initial render
+  const catIds = useMemo(() => new Set(categories.map((c) => String(c._id))), [categories]);
+  const plantIds = useMemo(() => new Set(plants.map((p) => String(p._id))), [plants]);
+  const safeCategoryId = catIds.has(values.category_id) ? values.category_id : '';
+  const safePlantId = plantIds.has(values.plant_id) ? values.plant_id : '';
+
+  // Loading / error for options (keeps the form clean)
   if (catsQ.isLoading || plantsQ.isLoading) {
     return (
       <AnimatedPage>
@@ -86,13 +102,7 @@ export default function EditEvent() {
     );
   }
 
-  // Only allow select values that exist in options (prevents MUI “out-of-range”)
-  const catIds = useMemo(() => new Set(categories.map((c) => c._id)), [categories]);
-  const plantIds = useMemo(() => new Set(plants.map((p) => p._id)), [plants]);
-  const safeCategoryId = catIds.has(values.category_id) ? values.category_id : '';
-  const safePlantId = plantIds.has(values.plant_id) ? values.plant_id : '';
-
-  const handleValues = (e) => {
+  const onChange = (e) => {
     const { name, value } = e.target;
     setValues((v) => ({ ...v, [name]: value }));
   };
@@ -100,52 +110,31 @@ export default function EditEvent() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const occursAtIso = toIsoDateStringOrNull(values.occurs_at);
     if (!values.event_name?.trim()) return toast.error('Event name is required');
-    if (!occursAtIso) return toast.error('Occurs at is required');
+    if (!values.occurs_at) return toast.error('Occurs at is required');
     if (!safeCategoryId) return toast.error('Category is required');
     if (!safePlantId) return toast.error('Plant is required');
 
     try {
-      const {
-        data: { updatedEvent },
-      } = await instance.put(`/event/update/${values._id}`, {
-        event_name: values.event_name,
-        description: values.description,
-        occurs_at: occursAtIso,
-        occurs_to: toIsoDateStringOrNull(values.occurs_to),
-        repeat_cycle: values.repeat_cycle,
-        repeat_frequency: values.repeat_frequency,
-        notes: values.notes,
-        category: safeCategoryId,
-        plant: safePlantId,
-      });
+      const payload = serializeEvent(values);
 
-      // refresh lists that might show this event
-      qc.invalidateQueries({ queryKey: ['events'], exact: false });
-      qc.invalidateQueries({ queryKey: ['events', 'mine'], exact: false });
+      const { data } = await api.put(`/event/update/${values._id}`, payload);
+      toast.success(`Event "${data?.event_name || values.event_name}" updated`);
 
-      toast.success(`Event "${updatedEvent.event_name}" updated successfully`);
+      // Refresh event lists/detail
+      qc.invalidateQueries({ queryKey: eventKeys.all, exact: false });
+
       navigate('/events');
     } catch (err) {
+      // eslint-disable-next-line no-console
       console.error(err?.response?.data || err);
       toast.error(err?.response?.data?.error || 'Update failed');
     }
   };
-
   return (
     <AnimatedPage>
       <Container component="main" maxWidth="xs">
-        <Box
-          sx={{
-            marginTop: 8,
-            marginBottom: 4,
-            minHeight: 'calc(100vh - 375px)',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-          }}
-        >
+        <Box sx={{ mt: 8, mb: 4, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <h1>Edit Event</h1>
 
           <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 3 }}>
@@ -158,11 +147,9 @@ export default function EditEvent() {
                     required
                     helperText="Required"
                     fullWidth
-                    id="event_name"
                     label="Event Name"
                     size="small"
-                    autoFocus
-                    onChange={handleValues}
+                    onChange={onChange}
                   />
                 </Grid>
 
@@ -170,34 +157,34 @@ export default function EditEvent() {
                   <TextField
                     fullWidth
                     value={values.description || ''}
-                    id="description"
-                    label="Description"
                     name="description"
+                    label="Description"
                     size="small"
-                    onChange={handleValues}
+                    onChange={onChange}
                   />
                 </Grid>
 
                 <Grid item xs={12} sm={6}>
                   <FormControl required fullWidth size="small">
                     <InputLabel id="category_id">Category</InputLabel>
+
                     <Select
-                      labelId="category_id"
-                      id="category_id"
                       name="category_id"
-                      value={safeCategoryId}
+                      value={values.category_id}
                       label="Category"
-                      onChange={handleValues}
+                      // onChange={handleValues}
+                      onChange={onChange}
                     >
                       <MenuItem value="">
                         <em>None</em>
                       </MenuItem>
                       {categories.map((c) => (
-                        <MenuItem key={c._id} value={c._id}>
-                          {c.category}
+                        <MenuItem key={c._id} value={String(c._id)}>
+                          {c.category_name}
                         </MenuItem>
                       ))}
                     </Select>
+
                     <FormHelperText>Required</FormHelperText>
                   </FormControl>
                 </Grid>
@@ -205,23 +192,24 @@ export default function EditEvent() {
                 <Grid item xs={12} sm={6}>
                   <FormControl required fullWidth size="small">
                     <InputLabel id="plant_id">Plant</InputLabel>
+
                     <Select
-                      labelId="plant_id"
-                      id="plant_id"
                       name="plant_id"
-                      value={safePlantId}
+                      value={values.plant_id}
                       label="Plant"
-                      onChange={handleValues}
+                      // onChange={handleValues}
+                      onChange={onChange}
                     >
                       <MenuItem value="">
                         <em>None</em>
                       </MenuItem>
                       {plants.map((p) => (
-                        <MenuItem key={p._id} value={p._id}>
+                        <MenuItem key={p._id} value={String(p._id)}>
                           {p.common_name}
                         </MenuItem>
                       ))}
                     </Select>
+
                     <FormHelperText>Required</FormHelperText>
                   </FormControl>
                 </Grid>
@@ -272,7 +260,7 @@ export default function EditEvent() {
                     id="repeat_frequency"
                     label="Repeats Every"
                     size="small"
-                    onChange={handleValues}
+                    onChange={onChange}
                   />
                 </Grid>
 
@@ -285,7 +273,7 @@ export default function EditEvent() {
                       name="repeat_cycle"
                       value={values.repeat_cycle || ''}
                       label="Unit of time"
-                      onChange={handleValues}
+                      onChange={onChange}
                     >
                       <MenuItem value="">
                         <em>None</em>
@@ -308,7 +296,7 @@ export default function EditEvent() {
                     label="Notes"
                     id="notes"
                     size="small"
-                    onChange={handleValues}
+                    onChange={onChange}
                   />
                 </Grid>
               </Grid>

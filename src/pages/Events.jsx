@@ -1,7 +1,6 @@
 // src/pages/Events.jsx
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
 import api from '@/utils/axiosClient';
 
 import AnimatedPage from '@/components/AnimatedPage';
@@ -32,7 +31,15 @@ import { toast } from 'react-toastify';
 import { Fade, Zoom } from '@mui/material';
 import Raspberries from '@/images/raspberries.jpg';
 import SearchBar from '@/components/ui/SearchFilter';
-import moment from 'moment';
+import dayjs from 'dayjs';
+import { normalizeEvent } from '@/utils/normalizers';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useEvents, keys as eventKeys } from '@/queries/useEvents';
+
+export const keys = {
+  all: ['events'],
+  list: (archived) => ['events', 'list', archived],
+};
 
 const modalStyle = {
   position: 'absolute',
@@ -48,16 +55,7 @@ const modalStyle = {
 
 export default function Events() {
   const navigate = useNavigate();
-
-  // 1) Query server-scoped list (only this user's non-archived events)
-  const eventsQ = useQuery({
-    queryKey: ['events:mine'],
-    queryFn: async () => {
-      const { data } = await api.get('/events'); // backend scopes by req.auth._id
-      return Array.isArray(data?.allEvents) ? data.allEvents : [];
-    },
-    refetchOnWindowFocus: false,
-  });
+  const eventsQ = useEvents(false, { retry: false });
 
   // 2) Local UI state
   const [open, setOpen] = useState(false);
@@ -78,14 +76,33 @@ export default function Events() {
       .sort(sortByName)
       .filter((ev) => {
         const name = ev?.event_name?.toLowerCase() || '';
-        const plant = ev?.plant?.common_name?.toLowerCase() || '';
-        const cat = ev?.category?.category?.toLowerCase() || '';
-        const month = ev?.occurs_at ? moment(ev.occurs_at).format('MMMM').toLowerCase() : '';
+        const plant =
+          (typeof ev?.plant === 'object' ? ev?.plant?.common_name : '')?.toLowerCase() || '';
+        const cat =
+          (typeof ev?.category === 'object' ? ev?.category?.category_name : '')?.toLowerCase() ||
+          '';
+        const month = ev?.occurs_at ? dayjs(ev.occurs_at).format('MMMM').toLowerCase() : '';
         return name.includes(q) || plant.includes(q) || cat.includes(q) || month.includes(q);
       });
 
     setFilteredEvents(filtered);
   }, [search, eventsQ.data]);
+
+  const qc = useQueryClient();
+  const archiveMutation = useMutation({
+    mutationFn: async (id) => {
+      const { data } = await api.patch(`/event/archive/${id}`, { archived: true });
+      return data; // updated event doc
+    },
+    onSuccess: (data) => {
+      toast.success(`${data?.event_name || data?.archivedEvent?.event_name || 'Event'} archived`);
+      qc.invalidateQueries({ queryKey: eventKeys.all, exact: false });
+      handleClose();
+    },
+    onError: (err) => {
+      toast.error(err?.response?.data?.error || 'Failed to archive event');
+    },
+  });
 
   // 4) Loading / error states (safe for hooks)
   if (eventsQ.isLoading) {
@@ -111,17 +128,6 @@ export default function Events() {
   const deleteHandler = (_e, id) => {
     setDeleteCurrentEvent(id);
     setOpen(true);
-  };
-
-  const archiveEvent = async (id) => {
-    try {
-      const { data } = await api.patch(`/event/archive/${id}`, { archived: true });
-      handleClose();
-      toast.success(`${data?.archivedEvent?.event_name || 'Event'} archived`);
-      eventsQ.refetch();
-    } catch (err) {
-      toast.error(err?.response?.data?.error || 'Failed to archive event');
-    }
   };
 
   const onSearchChange = (q) => setSearch(q);
@@ -291,7 +297,7 @@ export default function Events() {
                               variant="contained"
                               color="error"
                               sx={{ mt: 3, mb: 2 }}
-                              onClick={() => archiveEvent(deleteCurrentEvent)}
+                              onClick={() => archiveMutation.mutate(deleteCurrentEvent)}
                             >
                               Delete
                             </Button>

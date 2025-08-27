@@ -25,6 +25,8 @@ import { useAuthContext } from '@/contexts/AuthContext';
 import { useCategories } from '@/queries/useCategories';
 import { usePlants } from '@/queries/usePlants';
 import { useQueryClient } from '@tanstack/react-query';
+import { serializeEvent } from '@/utils/normalizers';
+import { keys as eventKeys } from '@/queries/useEvents';
 
 export default function AddEvent() {
   const navigate = useNavigate();
@@ -77,20 +79,16 @@ export default function AddEvent() {
     if (!safePlantId) return toast.error('Plant is required');
 
     try {
-      await api.post('/event/create', {
-        event_name: values.event_name,
-        description: values.description,
-        occurs_at: occursAtIso,
-        occurs_to: toIsoDateStringOrNull(values.occurs_to),
-        repeat_cycle: values.repeat_cycle,
-        repeat_frequency: values.repeat_frequency,
-        notes: values.notes,
-        category: safeCategoryId,
-        plant: safePlantId,
+      // Option A: build payload explicitly (matches controller)
+      const payload = serializeEvent({
+        ...values,
+        category_id: safeCategoryId,
+        plant_id: safePlantId,
       });
+      await api.post('/event/create', payload);
 
-      // refresh any events lists
-      qc.invalidateQueries({ queryKey: ['events'], exact: false });
+      // refresh events everywhere
+      qc.invalidateQueries({ queryKey: eventKeys.all, exact: false });
 
       toast.success('Event created');
       navigate('/events');
@@ -160,7 +158,7 @@ export default function AddEvent() {
                       </MenuItem>
                       {categories.map((c) => (
                         <MenuItem key={c._id} value={String(c._id)}>
-                          {c.category}
+                          {c.category_name}
                         </MenuItem>
                       ))}
                     </Select>

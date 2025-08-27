@@ -1,10 +1,39 @@
 // src/queries/usePlants.js
-import { useMineList } from '@/hooks/useMineList';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/utils/axiosClient';
+import { normalizePlant } from '@/utils/normalizers';
 
-export function usePlants(userId, extraParams = {}) {
-  return useMineList('plants', 'plants', userId, extraParams);
+export const keys = {
+  all: ['plants'],
+  list: (archived) => ['plants', 'list', archived],
+  one: (id) => ['plants', 'one', id],
+};
+
+export function usePlants(archived = false, options = {}) {
+  return useQuery({
+    queryKey: keys.list(archived),
+    queryFn: async () => {
+      const { data } = await api.get('/plants', { params: { archived } });
+      const list = data?.plants ?? data?.allPlants ?? [];
+      if (import.meta.env.DEV) console.log('[usePlants] raw:', data);
+      return list.map(normalizePlant);
+    },
+    staleTime: 60_000,
+    refetchOnWindowFocus: false,
+    ...options,
+  });
+}
+
+export function usePlant(id, options = {}) {
+  return useQuery({
+    queryKey: keys.one(id),
+    enabled: !!id && (options.enabled ?? true),
+    queryFn: async () => {
+      const { data } = await api.get(`/plant/${id}`);
+      return data?.plant ?? null;
+    },
+    ...options,
+  });
 }
 
 export function useCreatePlant() {
@@ -12,7 +41,7 @@ export function useCreatePlant() {
   return useMutation({
     mutationFn: async (payload) => {
       const { data } = await api.post('/plant/create', payload);
-      return data?.newPlant ?? data;
+      return data?.plant ?? data?.newPlant ?? null;
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['plants'], exact: false });
@@ -23,13 +52,13 @@ export function useCreatePlant() {
 export function useUpdatePlant() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, payload }) => {
+    mutationFn: async ({ id, ...payload }) => {
       const { data } = await api.put(`/plant/update/${id}`, payload);
-      return data?.updatedPlant ?? data;
+      return data?.plant ?? data?.updatedPlant ?? null;
     },
-    onSuccess: (data) => {
+    onSuccess: (doc) => {
+      if (doc?._id) qc.invalidateQueries({ queryKey: ['plant', doc._id] });
       qc.invalidateQueries({ queryKey: ['plants'], exact: false });
-      if (data?._id) qc.invalidateQueries({ queryKey: ['plant', data._id], exact: true });
     },
   });
 }
@@ -39,7 +68,7 @@ export function useArchivePlant() {
   return useMutation({
     mutationFn: async ({ id, archived = true }) => {
       const { data } = await api.patch(`/plant/archive/${id}`, { archived });
-      return data?.archivedPlant ?? data;
+      return data?.plant ?? null;
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['plants'], exact: false });

@@ -23,7 +23,7 @@ import PageviewIcon from '@mui/icons-material/Pageview';
 import ArrowBackIos from '@mui/icons-material/ArrowBackIos';
 import EventIcon from '@mui/icons-material/Event';
 import AnimatedPage from '@/components/AnimatedPage';
-import moment from 'moment';
+import dayjs from 'dayjs';
 
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useEvents } from '@/queries/useEvents';
@@ -31,19 +31,46 @@ import { useUnsplashImage } from '@/utils/unsplash';
 
 import CherryTomatoes from '@/images/cherry_tomatoes.jpg';
 import Raspberries from '@/images/raspberries.jpg';
+import api from '@/utils/axiosClient';
+import { useQueryClient } from '@tanstack/react-query';
+import { serializePlant } from '@/utils/normalizers';
+import { keys as plantKeys } from '@/queries/usePlants';
 
 export default function ViewPlant() {
   const { state } = useLocation(); // plant object passed via navigate(..., { state })
   const navigate = useNavigate();
-
   const { user } = useAuthContext();
-  const eventsQ = useEvents(user?._id);
+
+  // If someone hit this URL directly without state, keep it graceful
+  if (!state?._id) {
+    return (
+      <AnimatedPage>
+        <Container component="main" maxWidth="md">
+          <Box sx={{ mt: 10, textAlign: 'center' }}>
+            <Typography variant="h6" sx={{ mb: 2 }}>
+              No plant data available.
+            </Typography>
+            <Button variant="outlined" onClick={() => navigate('/plants')}>
+              Back to Plants
+            </Button>
+          </Box>
+        </Container>
+      </AnimatedPage>
+    );
+  }
+
+  const eventsQ = useEvents(false, { enabled: !!user, retry: false });
   const events = eventsQ.data || [];
 
-  const plantId = state?._id;
-  const relatedEvents = plantId ? events.filter((e) => e?.plant?._id === plantId) : [];
+  const plantId = String(state?._id || '');
+  const relatedEvents = events.filter(
+    (e) => String(e?.plant?._id || e?.plant_id || e?.plant) === plantId,
+  );
 
-  const { url: imageUrl } = useUnsplashImage(state?.common_name, { fallbackUrl: Raspberries });
+  console.log('relatedEvents:', relatedEvents);
+
+  // Unsplash image for the plant (fallback provided)
+  const { url: imageUrl } = useUnsplashImage(state.common_name, { fallbackUrl: Raspberries });
 
   return (
     <AnimatedPage>
@@ -120,8 +147,7 @@ export default function ViewPlant() {
                       <Box component="span" fontWeight="bold">
                         Sow:
                       </Box>{' '}
-                      {(state?.sow_at && moment(state.sow_at).format('D MMM')) ||
-                        ' ______________ '}
+                      {(state?.sow_at && dayjs(state.sow_at).format('D MMM')) || ' ______________ '}
                       , at{' '}
                       <Box component="span" fontWeight="bold">
                         depth
@@ -133,7 +159,7 @@ export default function ViewPlant() {
                       <Box component="span" fontWeight="bold">
                         Plant:
                       </Box>{' '}
-                      {(state?.plant_at && moment(state.plant_at).format('D MMM')) ||
+                      {(state?.plant_at && dayjs(state.plant_at).format('D MMM')) ||
                         ' ______________ '}{' '}
                       with{' '}
                       <Box component="span" fontWeight="bold">
@@ -154,10 +180,10 @@ export default function ViewPlant() {
                       <Box component="span" fontWeight="bold">
                         Harvest from:
                       </Box>{' '}
-                      {(state?.harvest_at && moment(state.harvest_at).format('D MMM')) ||
+                      {(state?.harvest_at && dayjs(state.harvest_at).format('D MMM')) ||
                         ' ______________ '}{' '}
                       to{' '}
-                      {(state?.harvest_to && moment(state.harvest_to).format('D MMM')) ||
+                      {(state?.harvest_to && dayjs(state.harvest_to).format('D MMM')) ||
                         ' ______________ '}
                     </Typography>
 
@@ -251,7 +277,7 @@ export default function ViewPlant() {
 // import EventIcon from '@mui/icons-material/Event';
 // import AnimatedPage from '@/components/AnimatedPage';
 // import CherryTomatoes from '@/images/cherry_tomatoes.jpg';
-// import moment from 'moment';
+// import dayjs from 'dayjs';
 // import { useUnsplashImage } from '@/utils/unsplash';
 // import Raspberries from '@/images/raspberries.jpg';
 
@@ -340,7 +366,7 @@ export default function ViewPlant() {
 //                       <Box component="span" fontWeight="bold">
 //                         Sow:
 //                       </Box>{' '}
-//                       {state.sow_at ? moment(state.sow_at).format('D MMM') : ' ______________ '} at{' '}
+//                       {state.sow_at ? dayjs(state.sow_at).format('D MMM') : ' ______________ '} at{' '}
 //                       <Box component="span" fontWeight="bold">
 //                         depth
 //                       </Box>{' '}
@@ -350,7 +376,7 @@ export default function ViewPlant() {
 //                       <Box component="span" fontWeight="bold">
 //                         Plant:
 //                       </Box>{' '}
-//                       {state.plant_at ? moment(state.plant_at).format('D MMM') : ' ______________ '}{' '}
+//                       {state.plant_at ? dayjs(state.plant_at).format('D MMM') : ' ______________ '}{' '}
 //                       with{' '}
 //                       <Box component="span" fontWeight="bold">
 //                         spacing
@@ -369,11 +395,11 @@ export default function ViewPlant() {
 //                         Harvest from:
 //                       </Box>{' '}
 //                       {state.harvest_at
-//                         ? moment(state.harvest_at).format('D MMM')
+//                         ? dayjs(state.harvest_at).format('D MMM')
 //                         : ' ______________ '}{' '}
 //                       to{' '}
 //                       {state.harvest_to
-//                         ? moment(state.harvest_to).format('D MMM')
+//                         ? dayjs(state.harvest_to).format('D MMM')
 //                         : ' ______________ '}
 //                     </Typography>
 //                     <Typography variant="body2" color="text.secondary">
