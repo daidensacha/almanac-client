@@ -22,7 +22,7 @@ export function useEvents(archived = false, options = {}) {
         ? data.data.events
         : [];
 
-      console.log('[useEvents] parsed events length:', arr.length);
+      // console.log('[useEvents] parsed events length:', arr.length);
       return arr.map(normalizeEvent);
     },
     staleTime: 30_000,
@@ -30,37 +30,6 @@ export function useEvents(archived = false, options = {}) {
   });
 }
 
-// export function useEvents(archived = false, options = {}) {
-//   return useQuery({
-//     queryKey: keys.list(archived),
-//     queryFn: async () => {
-//       const { data } = await api.get('/events', { params: { archived } });
-//       return data?.events ?? data?.allEvents ?? [];
-//     },
-//     ...options,
-//   });
-// }
-
-// useEvent.js
-// export function useEvent(id, options = {}) {
-//   return useQuery({
-//     queryKey: ['event', id],
-//     enabled: !!id,
-//     queryFn: async () => {
-//       const { data } = await api.get(`/event/${id}`);
-//       // Log the exact shape the hook sees:
-//       console.log('[useEvent] AXIOS data:', data);
-//       const raw = data?.data ?? data?.event ?? data;
-//       console.log('[useEvent] RAW event:', raw);
-//       console.log('[useEvent] RAW plant:', raw?.plant);
-//       return raw;
-//     },
-//     // Temporarily disable select to compare raw vs normalized:
-//     // select: (raw) => normalizeEvent(raw),
-//     ...options,
-//   });
-// }
-// useEvent.js
 export function useEvent(id, options = {}) {
   return useQuery({
     queryKey: ['event', id],

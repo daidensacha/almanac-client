@@ -1,6 +1,6 @@
 // src/pages/Events.jsx
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import api from '@/utils/axiosClient';
 
 import AnimatedPage from '@/components/AnimatedPage';
@@ -55,6 +55,7 @@ const modalStyle = {
 
 export default function Events() {
   const navigate = useNavigate();
+  const location = useLocation();
   const eventsQ = useEvents(false, { retry: false });
 
   // 2) Local UI state
@@ -246,7 +247,11 @@ export default function Events() {
                                 size="small"
                                 aria-label="view"
                                 color="info"
-                                onClick={() => navigate(`/event/${row._id}`, { state: row })}
+                                onClick={() =>
+                                  navigate(`/event/${row._id}`, {
+                                    state: { ...row, from: location.pathname },
+                                  })
+                                }
                               >
                                 <PageviewIcon />
                               </IconButton>
@@ -254,7 +259,11 @@ export default function Events() {
                                 size="small"
                                 aria-label="edit"
                                 sx={{ color: 'secondary.main' }}
-                                onClick={() => navigate(`/event/edit/${row._id}`, { state: row })}
+                                onClick={() =>
+                                  navigate(`/event/edit/${row._id}`, {
+                                    state: { ...row, from: location.pathname },
+                                  })
+                                }
                               >
                                 <EditIcon />
                               </IconButton>

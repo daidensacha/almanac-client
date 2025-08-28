@@ -17,7 +17,7 @@ export function useCategories(archived = false, options = {}) {
       const { data } = await api.get('/categories', { params: { archived } });
 
       if (import.meta?.env?.MODE !== 'production') {
-        console.log('[useCategories] raw response:', data);
+        // console.log('[useCategories] raw response:', data);
       }
 
       // backend returns { ok, categories } (legacy: allCategories)

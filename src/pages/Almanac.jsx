@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Container, Divider, Grid } from '@mui/material';
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
@@ -14,11 +14,14 @@ import advancedFormat from 'dayjs/plugin/advancedFormat';
 import { useEvents } from '@/queries/useEvents';
 import { usePlants } from '@/queries/usePlants';
 import { useCategories } from '@/queries/useCategories';
+import AlmanacHeader from '@/components/AlmanacHeader';
+import AlmanacSidebar from '@/components/AlmanacSidebar';
 
 // const { user } = useAuthContext();
 
 const Almanac = () => {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const { user } = useAuthContext();
   // const guard = !!user && !loading;
@@ -49,96 +52,26 @@ const Almanac = () => {
 
   return (
     <AnimatedPage>
-      <Container component="main" maxWidth="xl">
+      <AlmanacHeader title="Almanac" />
+      <Container component="main" maxWidth="xl" sx={{ mt: 0, pb: 4 }}>
         <Box
           sx={{
-            marginTop: 8,
-            marginBottom: 4,
-            minHeight: 'calc(100vh - 375px)',
+            // marginTop: 8,
+            // marginBottom: 4,
+            // minHeight: 'calc(100vh - 375px)',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
           }}
         >
-          <h1>Almanac</h1>
-          {(eventsQ.isLoading || plantsQ.isLoading || catsQ.isLoading) && (
-            <Typography variant="body2" sx={{ opacity: 0.7, mb: 1 }}>
-              Loading your almanac…
-            </Typography>
-          )}
-          <Box
-            sx={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              '& > *': {
-                m: 1,
-              },
-            }}
-          >
-            <ButtonGroup
-              variant="outlined"
-              color="secondary"
-              size="small"
-              aria-label="small button group"
-            >
-              <Button onClick={() => navigate(`/plants`)}>Plants</Button>
-              <Button onClick={() => navigate(`/events`)}>Events</Button>
-              <Button onClick={() => navigate(`/categories`)}>Categories</Button>
-            </ButtonGroup>
-          </Box>
           <Grid container spacing={2} sx={{ mt: 4 }}>
             <Grid item xs={12} sm={3}>
-              <Paper
-                elevation={3}
-                sx={{
-                  p: 2,
-                  backgroundColor: 'grey.800',
-                  height: '100%',
-                  color: 'grey.300',
-                }}
-              >
-                <Typography
-                  variant="h5"
-                  sx={{ color: 'primary.light' }}
-                  gutterBottom
-                  component="div"
-                >
-                  {dayjs().format('ddd Do MMMM YYYY')}
-                </Typography>
-                <Typography variant="h6" gutterBottom component="div">
-                  Events ({events.length} total)
-                </Typography>
-                <Typography variant="h6" gutterBottom component="div">
-                  Plants ({plants.length} total)
-                </Typography>
-                <Typography variant="h6" gutterBottom component="div">
-                  Categories ({categories.length} total)
-                </Typography>
-                <Divider sx={{ backgroundColor: 'secondary.contrastText', my: 2 }} />
-                <Typography
-                  variant="h5"
-                  sx={{ color: 'primary.light' }}
-                  gutterBottom
-                  component="div"
-                >
-                  Coming Events
-                </Typography>
-                {events?.map((event, index) => {
-                  const nextMonth = new Date();
-                  nextMonth.setMonth(nextMonth.getMonth() + 1);
-                  // console.log('EVENT', event);
-                  // console.log('NEXT MONTH', dayjs(nextMonth).month());
-                  // console.log('CHECK MONTH', dayjs(event.occurs_at).month());
-                  return (
-                    dayjs(event.occurs_at).month() === dayjs(nextMonth).month() && (
-                      <Typography key={index} variant="body1" gutterBottom component="div">
-                        {`${dayjs(event.occurs_at).format('MMM DD')} - ${event.event_name}`}
-                      </Typography>
-                    )
-                  );
-                })}
-              </Paper>
+              <AlmanacSidebar
+                events={events}
+                plants={plants}
+                categories={categories}
+                onOpen={(ev) => navigate(`/event/${ev._id}`, { state: ev })}
+              />
             </Grid>
             <Grid item xs={12} sm={9}>
               <Grid container spacing={2}>
@@ -167,7 +100,7 @@ const Almanac = () => {
                                   color="info"
                                   onClick={() =>
                                     navigate(`/event/${event._id}`, {
-                                      state: event,
+                                      state: { ...event, from: location.pathname },
                                     })
                                   }
                                 >

@@ -107,6 +107,14 @@ export default function EditEvent() {
     setValues((v) => ({ ...v, [name]: value }));
   };
 
+  const smartBack = () => {
+    if (state?.from) {
+      return navigate(state.from, { replace: true });
+    }
+    // fallback: back in history (works from both Calendar and Events)
+    return navigate(-1);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -124,13 +132,15 @@ export default function EditEvent() {
       // Refresh event lists/detail
       qc.invalidateQueries({ queryKey: eventKeys.all, exact: false });
 
-      navigate('/events');
+      // navigate('/events');
+      navigate(-1);
     } catch (err) {
       // eslint-disable-next-line no-console
       console.error(err?.response?.data || err);
       toast.error(err?.response?.data?.error || 'Update failed');
     }
   };
+
   return (
     <AnimatedPage>
       <Container component="main" maxWidth="xs">
