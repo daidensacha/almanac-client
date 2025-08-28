@@ -22,9 +22,9 @@ createRoot(rootEl).render(
       <CssBaseline />
       <QueryClientProvider client={queryClient}>
         <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-          <AppLayout>
-            <App />
-          </AppLayout>
+          {/* <AppLayout> */}
+          <App />
+          {/* </AppLayout> */}
         </BrowserRouter>
       </QueryClientProvider>
     </ThemeProvider>

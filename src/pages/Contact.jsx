@@ -29,7 +29,7 @@ const Contact = () => {
         <Box
           sx={{
             marginTop: 8,
-            minHeight: 'calc(100vh - 345px)',
+            // minHeight: 'calc(100vh - 345px)',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',

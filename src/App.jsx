@@ -4,7 +4,6 @@ import { AnimatePresence } from 'framer-motion';
 
 import AppOutlet from '@/layouts/AppOutlet';
 import ResponsiveAppBar from '@/components/ui/Navbar';
-// import AppToasts from '@/components/ui/AppToasts';
 import { ToastContainer, cssTransition, Slide, Zoom } from 'react-toastify';
 import { AppToasts } from '@/utils/toastConfig';
 
@@ -15,6 +14,9 @@ import Signup from '@/pages/Signup';
 import Contact from '@/pages/Contact';
 import Forbidden from '@/pages/Forbidden';
 import NotFound from '@/pages/NotFound';
+import Faq from '@/pages/Faq';
+import About from '@/pages/About';
+import Privacy from '@/pages/Privacy';
 
 // auth flows (public)
 import ResetPassword from '@/pages/ResetPassword';
@@ -28,6 +30,9 @@ import Profile from '@/pages/Profile';
 import Almanac from '@/pages/Almanac';
 import HealthCheck from '@/pages/HealthCheck';
 import OpenMeteoLab from '@/pages/admin/OpenMeteoLab';
+import CalendarView from '@/pages/CalendarView';
+import DayView from '@/pages/DayView';
+import MonthView from '@/pages/MonthView';
 
 // admin section
 import AdminLayout from '@/layouts/AdminLayout'; // must render <Outlet/>
@@ -55,16 +60,9 @@ import EditCategory from '@/pages/crud/EditCategory';
 export default function App() {
   const location = useLocation();
 
-  // const GentleFade = cssTransition({
-  //   enter: 'toast-fade-in',
-  //   exit: 'toast-fade-out',
-  //   duration: [600, 400],
-  //   collapse: true,
-  // });
-
   return (
     <>
-      <ResponsiveAppBar sx={{ bgcolor: 'primary.light' }} />
+      {/* <ResponsiveAppBar sx={{ bgcolor: 'primary.light' }} /> */}
       <AppToasts /> {/* ✅ global toasts */}
       {/* one global container */}
       <AnimatePresence mode="wait">
@@ -77,6 +75,9 @@ export default function App() {
             <Route path="signup" element={<Signup />} />
             <Route path="contact" element={<Contact />} />
             <Route path="forbidden" element={<Forbidden />} />
+            <Route path="faq" element={<Faq />} />
+            <Route path="about" element={<About />} />
+            <Route path="privacy" element={<Privacy />} />
 
             {/* Token/Email flows (public) */}
             <Route path="reset-password/:token" element={<ResetPassword />} />
@@ -86,12 +87,14 @@ export default function App() {
             {/* Private */}
             <Route element={<PrivateRoutes />}>
               {/* General private */}
-              <Route path="health" element={<HealthCheck />} />
-              <Route path="dev/openmeteo" element={<OpenMeteoLab />} />
-              <Route path="almanac" element={<Almanac />} />
+              {/* <Route path="health" element={<HealthCheck />} /> */}
+              {/* <Route path="dev/openmeteo" element={<OpenMeteoLab />} /> */}
+              <Route path="almanac" element={<CalendarView />}>
+                <Route index element={<Almanac />} /> {/* Year grid = default */}
+                <Route path="month" element={<MonthView />} />
+                <Route path="day" element={<DayView />} />
+              </Route>
               <Route path="profile" element={<Profile />} />
-
-              {/* Domain */}
               <Route path="events" element={<Events />} />
               <Route path="event/:id" element={<ViewEvent />} />
               <Route path="event/add" element={<AddEvent />} />
@@ -104,7 +107,6 @@ export default function App() {
               <Route path="category/:id" element={<ViewCategory />} />
               <Route path="category/add" element={<AddCategory />} />
               <Route path="category/edit/:id" element={<EditCategory />} />
-
               {/* Admin (nested under private, extra gate) */}
               <Route element={<AdminRoute />}>
                 <Route path="admin" element={<AdminLayout />}>
@@ -123,6 +125,7 @@ export default function App() {
             <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>
+        {/* <AppToasts /> ✅ global toasts */}
       </AnimatePresence>
     </>
   );
