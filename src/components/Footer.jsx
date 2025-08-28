@@ -1,120 +1,222 @@
 // src/components/Footer.jsx
-import Container from '@mui/material/Container';
-import Grid from '@mui/material/Grid';
-import Box from '@mui/material/Box';
-import Link from '@mui/material/Link';
-import { Link as RouterLink } from 'react-router-dom';
-import { Typography } from '@mui/material';
-import { useWeather } from '@/utils/useWeather';
-// import { useAuthContext } from '@/contexts/AuthContext';
-import { useProfile } from '@/hooks/useProfile';
+import { Box, Container, Link, Typography } from '@mui/material';
+import dayjs from '@/utils/dayjsConfig';
+import { useAuthContext } from '@/contexts/AuthContext';
+import useAppLocation from '@/hooks/useAppLocation'; // saved coords -> IP fallback
+import useWeatherNow from '@/hooks/useWeatherNow'; // Open-Meteo fetcher
+import { iconForWmo } from '@/utils/weatherIcons';
 
-const FooterSection = () => {
-  const now = new Date();
-  const { profile, showLocation, lat, lon, hasGeo } = useProfile();
-  const { data: weather } = useWeather({ lat, lon, enabled: hasGeo });
+const BASE_LINKS = [
+  { label: 'Contact', href: '/contact' },
+  { label: 'FAQ', href: '/faq' },
+  { label: 'About', href: '/about' },
+  { label: 'Privacy', href: '/privacy' },
+  // last item is auth-dependent
+];
 
-  const timeLabel = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  const year = now.getFullYear();
-  let leftSegment;
-  if (showLocation && hasGeo && weather) {
-    leftSegment = (
-      <>
-        {weather.icon && (
-          <img
-            src={`https://openweathermap.org/img/wn/${weather.icon}.png`}
-            alt={weather.desc || 'weather'}
-            width={20}
-            height={20}
-            style={{ verticalAlign: 'middle' }}
-          />
-        )}
-        {Math.round(Number(weather.temp))}°C — {weather.city} <span>•</span>
-      </>
-    );
-  } else {
-    leftSegment = (
-      <>
-        Location off <span>•</span>
-      </>
-    );
-  }
+export default function Footer() {
+  const { user, signout } = useAuthContext();
+  const isAuth = !!user;
+
+  // location + weather (only enhance when signed-in; otherwise skip the call)
+  const { coords, ready } = useAppLocation();
+  const wx = useWeatherNow(isAuth && ready ? coords : null);
+
+  const timeStr = dayjs().format('h:mm a'); // e.g. "8:09 am"
+  const year = dayjs().year();
+
+  // choose right-side string
+  const icon = isAuth && wx?.code != null ? iconForWmo(wx.code) : null;
+  const tempPart =
+    isAuth && wx?.tempC != null ? `${icon ? `${icon} ` : ''}${Math.round(wx.tempC)}°C • ` : '';
+
+  // build links with auth-aware last item
+  const links = isAuth
+    ? [...BASE_LINKS, { label: 'Sign Out', action: 'signout' }]
+    : [...BASE_LINKS, { label: 'Sign In', href: '/signin' }];
 
   return (
     <Box
-      sx={{ bgcolor: 'grey.900', color: 'grey.500' }}
-      px={{ xs: 3, sm: 10 }}
-      py={{ xs: 4, sm: 4 }}
+      component="footer"
+      sx={{
+        bgcolor: 'grey.900',
+        color: 'grey.400',
+        py: 1.25,
+        mt: 4,
+      }}
     >
-      <Container>
-        <Grid container spacing={5}>
-          <Grid item xs={12} sm={4}>
-            <Box borderBottom={1}>Help</Box>
-            <Box>
-              <Link color="primary.dark" component={RouterLink} to="/contact">
-                Support
-              </Link>
+      <Container
+        maxWidth="xl"
+        sx={{
+          display: 'flex',
+          flexDirection: { xs: 'column', sm: 'row' },
+          alignItems: { xs: 'center', sm: 'center' },
+          justifyContent: 'space-between',
+          gap: 1,
+          textAlign: { xs: 'center', sm: 'left' },
+        }}
+      >
+        {/* LEFT: inline links with separators */}
+        <Box
+          sx={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            rowGap: 0.5,
+          }}
+        >
+          {links.map((l, i) => (
+            <Box key={l.label} sx={{ display: 'inline-flex', alignItems: 'center' }}>
+              {l.action === 'signout' ? (
+                <Link
+                  component="button"
+                  onClick={signout}
+                  underline="hover"
+                  color="inherit"
+                  variant="body2"
+                  sx={{ lineHeight: 1.8, cursor: 'pointer' }}
+                >
+                  {l.label}
+                </Link>
+              ) : (
+                <Link
+                  href={l.href}
+                  underline="hover"
+                  color="inherit"
+                  variant="body2"
+                  sx={{ lineHeight: 1.8 }}
+                >
+                  {l.label}
+                </Link>
+              )}
+              {i < links.length - 1 && (
+                <Box component="span" sx={{ mx: 1, opacity: 0.4 }}>
+                  |
+                </Box>
+              )}
             </Box>
-            <Box>
-              <Link color="primary.dark" component={RouterLink} to="/contact">
-                Contact
-              </Link>
-            </Box>
-          </Grid>
-          <Grid item xs={12} sm={4}>
-            <Box borderBottom={1}>Account</Box>
-            <Box>
-              <Link color="primary.dark" component={RouterLink} to="/signin">
-                Sign in
-              </Link>
-            </Box>
-            <Box>
-              <Link color="primary.dark" component={RouterLink} to="/signup">
-                Register
-              </Link>
-            </Box>
-          </Grid>
-          <Grid item xs={12} sm={4}>
-            <Box borderBottom={1}>Info</Box>
-            <Box>
-              <Link color="primary.dark" href="https://www.mindat.org/climate.php" target="_blank">
-                Climate Zones
-              </Link>
-            </Box>
-            <Box>
-              <Link color="primary.dark" href="https://www.almanac.com/" target="_blank">
-                Old Farmers Almanac
-              </Link>
-            </Box>
-          </Grid>
-        </Grid>
+          ))}
+        </Box>
 
-        {/* Status line */}
-        {/* <Box textAlign="center" pt={{ xs: 3, sm: 3 }}>
+        {/* RIGHT: weather/time/app — stacks under links on mobile */}
+        <Box sx={{ textAlign: { xs: 'center', sm: 'right' } }}>
           <Typography
-            variant="body2"
-            sx={{ display: 'inline-flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}
-          >
-            {leftSegment}
-            Local time {timeLabel} <span>•</span> Garden Almanac ® {year}
-          </Typography>
-        </Box> */}
-
-        <Box sx={{ textAlign: 'center', pt: { xs: 3, sm: 3 } }}>
-          <Typography
-            variant="body2"
+            variant="caption"
             sx={{
-              display: { xs: 'block', sm: 'inline-block' }, // block on xs, inline-block on sm+
-              textAlign: 'center',
-              whiteSpace: { xs: 'normal', sm: 'nowrap' }, // allow wrapping on xs, prevent on sm+
+              display: 'block',
+              fontSize: { xs: '0.75rem', sm: '0.8rem' },
+              whiteSpace: 'nowrap',
             }}
+            aria-label="footer meta"
           >
-            {leftSegment} Local time {timeLabel} • Garden Almanac ® {year}
+            {tempPart}
+            {timeStr} • Garden Almanac ® {year}
           </Typography>
         </Box>
       </Container>
     </Box>
   );
-};
+}
 
-export default FooterSection;
+// // src/components/Footer.jsx
+// import { Box, Container, Link, Typography } from '@mui/material';
+// import dayjs from '@/utils/dayjsConfig';
+// import { useAuthContext } from '@/contexts/AuthContext';
+// import useAppLocation from '@/hooks/useAppLocation'; // saved coords -> IP fallback
+// import useWeatherNow from '@/hooks/useWeatherNow'; // Open-Meteo fetcher
+// import { iconForWmo } from '@/utils/weatherIcons';
+
+// const LINKS = [
+//   { label: 'Contact', href: '/contact' },
+//   { label: 'FAQ', href: '/faq' },
+//   { label: 'About', href: '/about' },
+//   { label: 'Privacy', href: '/privacy' },
+//   { label: 'Sign In', href: '/signin' },
+// ];
+
+// export default function Footer() {
+//   const { user } = useAuthContext();
+//   const isAuth = !!user;
+
+//   // location + weather (only enhance when signed-in; otherwise skip the call)
+//   const { coords, ready } = useAppLocation();
+//   const wx = useWeatherNow(isAuth && ready ? coords : null);
+
+//   const timeStr = dayjs().format('h:mm a'); // e.g. "8:09 am"
+//   const year = dayjs().year();
+
+//   // choose right-side string
+//   const icon = isAuth && wx?.code != null ? iconForWmo(wx.code) : null;
+//   const tempPart =
+//     isAuth && wx?.tempC != null ? `${icon ? `${icon} ` : ''}${Math.round(wx.tempC)}°C • ` : '';
+
+//   // --------- Layout ---------
+//   return (
+//     <Box
+//       component="footer"
+//       sx={{
+//         bgcolor: 'grey.900',
+//         color: 'grey.400',
+//         py: 1.25,
+//         mt: 4,
+//       }}
+//     >
+//       <Container
+//         maxWidth="xl"
+//         sx={{
+//           display: 'flex',
+//           flexDirection: { xs: 'column', sm: 'row' },
+//           alignItems: { xs: 'flex-start', sm: 'center' },
+//           justifyContent: 'space-between',
+//           gap: 1,
+//         }}
+//       >
+//         {/* LEFT: inline links with separators */}
+//         <Box
+//           sx={{
+//             display: 'flex',
+//             flexWrap: 'wrap',
+//             alignItems: 'center',
+//             rowGap: 0.5,
+//           }}
+//         >
+//           {LINKS.map((l, i) => (
+//             <Box key={l.href} sx={{ display: 'inline-flex', alignItems: 'center' }}>
+//               <Link
+//                 href={l.href}
+//                 underline="hover"
+//                 color="inherit"
+//                 variant="body2"
+//                 sx={{ lineHeight: 1.8 }}
+//               >
+//                 {l.label}
+//               </Link>
+//               {i < LINKS.length - 1 && (
+//                 <Box component="span" sx={{ mx: 1, opacity: 0.4 }}>
+//                   |
+//                 </Box>
+//               )}
+//             </Box>
+//           ))}
+//         </Box>
+
+//         {/* RIGHT: weather/time/app — stacks under links on mobile */}
+//         <Box sx={{ textAlign: { xs: 'left', sm: 'right' } }}>
+//           <Typography
+//             variant="caption"
+//             sx={{
+//               display: 'block',
+//               // Slightly larger on desktop, tiny on phones
+//               fontSize: { xs: '0.75rem', sm: '0.8rem' },
+//               whiteSpace: 'nowrap',
+//             }}
+//             aria-label="footer meta"
+//           >
+//             {tempPart}
+//             {timeStr} • Garden Almanac ® {year}
+//           </Typography>
+//         </Box>
+//       </Container>
+//     </Box>
+//   );
+// }

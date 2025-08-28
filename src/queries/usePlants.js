@@ -15,7 +15,7 @@ export function usePlants(archived = false, options = {}) {
     queryFn: async () => {
       const { data } = await api.get('/plants', { params: { archived } });
       const list = data?.plants ?? data?.allPlants ?? [];
-      if (import.meta.env.DEV) console.log('[usePlants] raw:', data);
+      // if (import.meta.env.DEV) console.log('[usePlants] raw:', data);
       return list.map(normalizePlant);
     },
     staleTime: 60_000,

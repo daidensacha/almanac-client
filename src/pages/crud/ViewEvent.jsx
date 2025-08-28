@@ -1,6 +1,6 @@
 // src/pages/crud/ViewEvent.jsx
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useState } from 'react';
 import {
   Container,
   Grid,
@@ -19,71 +19,88 @@ import {
   Typography,
   Stack,
   ButtonGroup,
+  Modal,
+  CardActions,
 } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
 import CategoryIcon from '@mui/icons-material/Category';
 import PageviewIcon from '@mui/icons-material/Pageview';
 import ArrowBackIos from '@mui/icons-material/ArrowBackIos';
 import { FaLeaf } from 'react-icons/fa';
 import AnimatedPage from '@/components/AnimatedPage';
 import dayjs from 'dayjs';
-import Broccoli from '@/images/broccoli.jpg';
 import Raspberries from '@/images/raspberries.jpg';
+import Broccoli from '@/images/broccoli.jpg';
 import { useUnsplashImage } from '@/utils/unsplash';
 
 import { usePlants } from '@/queries/usePlants';
 import { useCategories } from '@/queries/useCategories';
 import { useEvent } from '@/queries/useEvents';
 import { useAuthContext } from '@/contexts/AuthContext';
-import { useQueryClient } from '@tanstack/react-query';
-import { serializeCategory } from '@/utils/normalizers';
-import { keys as categoryKeys } from '@/queries/useCategories';
-import { isInSeason, formatRangeThisYear, recurrenceText } from '@utils/dateHelpers';
+import { toast } from 'react-toastify';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import api from '@/utils/axiosClient';
+import { keys as eventKeys } from '@/queries/useEvents';
 
 export default function ViewEvent() {
-  const { state } = useLocation(); // optional event object passed by navigate
-  const { id } = useParams(); // /event/:id
+  const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  const viewState = location.state; // event if navigated with state
   const { user } = useAuthContext();
 
-  // Fallback fetch if no state provided
-  // const eventQ = useEvent(id, { enabled: !state?._id, retry: false });
+  // delete/confirm modal (like Events.jsx)
+  const [open, setOpen] = useState(false);
+  const [deleteCurrentEvent, setDeleteCurrentEvent] = useState(null);
+  const handleClose = () => setOpen(false);
 
-  // Only fetch when there's no event in state, AND we have an id
-  const shouldFetch = !state?._id && !!id;
-  // const eventQ = useEvent(id, { enabled: shouldFetch, retry: false });
-  // const eventQ = useEvent(id, {
-  //   enabled: !!id,
-  //   initialData: state?._id ? state : undefined,
-  //   refetchOnMount: 'always', // <- forces queryFn to run
-  //   staleTime: 0, // treat cache as stale
-  //   retry: false,
-  // });
-
-  // // Event source: either state or fetched
-  // const ev = state?._id ? state : eventQ.data?.event ?? eventQ.data;
+  const shouldFetch = !viewState?._id && !!id;
 
   const eventQ = useEvent(id, {
     enabled: !!id,
     retry: false,
-    initialData: state?._id ? state : undefined, // paint instantly
+    initialData: viewState?._id ? viewState : undefined,
     refetchOnMount: 'always',
     staleTime: 0,
   });
 
-  // ✅ Prefer fetched/normalized data; fallback to state only if needed
-  const ev = eventQ.data ?? state;
+  const ev = eventQ.data ?? viewState;
 
-  // ...inside ViewEvent component, after computing `ev`
-  useEffect(() => {
-    console.log('[ViewEvent] handoff →', {
-      from: eventQ.data ? 'query(data)' : state?._id ? 'state' : 'none',
-      plant: (eventQ.data ?? state)?.plant,
-    });
-  }, [eventQ.data, state]);
+  const qc = useQueryClient();
+  const archiveMutation = useMutation({
+    mutationFn: async (eventId) => {
+      const { data } = await api.patch(`/event/archive/${eventId}`, { archived: true });
+      return data;
+    },
+    onSuccess: () => {
+      toast.success('Event deleted');
+      qc.invalidateQueries({ queryKey: eventKeys.all, exact: false });
+      // go back to where user came from, or events
+      if (location.state?.from) {
+        navigate(location.state.from, { replace: true });
+      } else if (window.history.length > 1) {
+        navigate(-1);
+      } else {
+        navigate('/events', { replace: true });
+      }
+      handleClose();
+    },
+    onError: (err) => toast.error(err?.response?.data?.error || 'Failed to delete event'),
+  });
 
-  console.log('[ViewEvent] ev:', ev);
-  // Loading / error only when fetching
-  if (!state?._id && eventQ.isLoading) {
+  const deleteHandler = (_e, eid) => {
+    setDeleteCurrentEvent(eid);
+    setOpen(true);
+  };
+
+  const handleBack = () => {
+    if (location.state?.from) return navigate(location.state.from, { replace: true });
+    if (window.history.length > 1) return navigate(-1);
+    return navigate('/events');
+  };
+
+  if (shouldFetch && eventQ.isLoading) {
     return (
       <AnimatedPage>
         <Container component="main" maxWidth="md">
@@ -92,14 +109,14 @@ export default function ViewEvent() {
       </AnimatedPage>
     );
   }
-  if (!state?._id && eventQ.error) {
+  if (shouldFetch && eventQ.error) {
     return (
       <AnimatedPage>
         <Container component="main" maxWidth="md">
           <Box sx={{ mt: 10, textAlign: 'center', color: 'error.main' }}>
             Failed to load event.
             <Box sx={{ mt: 2 }}>
-              <Button variant="outlined" onClick={() => navigate('/events')}>
+              <Button variant="outlined" onClick={handleBack}>
                 Back to Events
               </Button>
             </Box>
@@ -115,7 +132,7 @@ export default function ViewEvent() {
           <Box sx={{ mt: 10, textAlign: 'center' }}>
             No event data available.
             <Box sx={{ mt: 2 }}>
-              <Button variant="outlined" onClick={() => navigate('/events')}>
+              <Button variant="outlined" onClick={handleBack}>
                 Back to Events
               </Button>
             </Box>
@@ -132,11 +149,9 @@ export default function ViewEvent() {
   const plants = plantsQ.data || [];
   const categories = catsQ.data || [];
 
-  // Normalized IDs
   const plantId = ev?.plant?._id ?? ev?.plant_id ?? null;
   const categoryId = ev?.category?._id ?? ev?.category_id ?? null;
 
-  // Try to find in options, fall back to embedded object
   const relatedPlant = plantId
     ? plants.find((p) => String(p._id) === String(plantId)) ?? ev.plant ?? null
     : null;
@@ -146,25 +161,13 @@ export default function ViewEvent() {
 
   const { url: imageUrl } = useUnsplashImage(ev.plant?.common_name, { fallbackUrl: Raspberries });
 
-  const plantsLoading = plantsQ.isLoading || plantsQ.error;
-  const catsLoading = catsQ.isLoading || catsQ.error;
-
-  const p = ev.plant || {};
-  const inSeason = isInSeason(ev.occurs_at, ev.occurs_to);
-  const occurs = formatRangeThisYear(ev.occurs_at, ev.occurs_to);
-  const recur = recurrenceText(ev);
-
-  console.log('inSeason:', inSeason);
-  console.log('occurs:', occurs);
-  console.log('recur:', recur);
-
   return (
     <AnimatedPage>
       <Container component="main" maxWidth="xl">
         <Grid
           sx={{
-            marginTop: 8,
-            marginBottom: 4,
+            mt: 8,
+            mb: 4,
             minHeight: 'calc(100vh - 375px)',
             display: 'flex',
             flexDirection: 'column',
@@ -210,7 +213,8 @@ export default function ViewEvent() {
               </Box>
 
               <Zoom in timeout={1500}>
-                <Card sx={{ width: 345, mx: 'auto', mt: 4 }}>
+                <Card sx={{ width: 345, mx: 'auto', mt: 4, position: 'relative' }}>
+                  {/* Top-right overlay */}
                   <CardMedia
                     component="img"
                     alt={ev?.plant?.common_name || 'Plant image'}
@@ -219,7 +223,7 @@ export default function ViewEvent() {
                   />
 
                   <CardContent>
-                    <Typography gutterBottom variant="h5" component="div">
+                    <Typography gutterBottom variant="h5">
                       Name: {ev.event_name}
                     </Typography>
 
@@ -288,35 +292,34 @@ export default function ViewEvent() {
                       {ev.notes || ' ______________ '}
                     </Typography>
                   </CardContent>
+
+                  {/* Bottom actions (optional; you already have top overlay) */}
+                  <CardActions sx={{ justifyContent: 'flex-end', pt: 0 }}>
+                    <IconButton
+                      size="small"
+                      color="secondary"
+                      onClick={() =>
+                        navigate(`/event/edit/${ev._id}`, {
+                          state: { ...ev, from: location.pathname },
+                        })
+                      }
+                    >
+                      <EditIcon fontSize="small" />
+                    </IconButton>
+                    <IconButton
+                      size="small"
+                      color="error"
+                      onClick={(e) => deleteHandler(e, ev._id)}
+                    >
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
+                  </CardActions>
                 </Card>
               </Zoom>
-              {/* <CardContent>
-                    <Typography gutterBottom variant="h5">
-                      Name: {ev.event_name}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      <b>Description:</b> {ev.description}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      <b>Occurs:</b> {ev.occurs_at ? dayjs(ev.occurs_at).format('D MMM') : ' __ '}
-                      {ev.occurs_to && (
-                        <>
-                          {' '}
-                          <b>to</b> {dayjs(ev.occurs_to).format('D MMM')}
-                        </>
-                      )}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      <b>Notes:</b> {ev.notes || ' __ '}
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </Zoom> */}
             </Grid>
 
             {/* Related plant & category */}
             <Grid item xs={12} sm={6} md={4} sx={{ mt: 5 }}>
-              {/* Plant */}
               <Box align="left" sx={{ width: '100%', mt: 4 }}>
                 <Box fontSize={36} color="secondary.dark" align="center">
                   <FaLeaf />
@@ -325,7 +328,7 @@ export default function ViewEvent() {
                   Related Plant
                 </Typography>
                 <List dense>
-                  {plantsLoading ? (
+                  {plantsQ.isLoading ? (
                     <ListItem>
                       <ListItemText primary="Loading…" />
                     </ListItem>
@@ -347,11 +350,7 @@ export default function ViewEvent() {
                   ) : (
                     <ListItem>
                       <ListItemIcon>
-                        <IconButton
-                          edge="end"
-                          disabled={!plantId}
-                          onClick={() => plantId && navigate(`/plant/${relatedPlant._id}`)}
-                        >
+                        <IconButton edge="end" disabled={!plantId}>
                           <PageviewIcon />
                         </IconButton>
                       </ListItemIcon>
@@ -361,7 +360,6 @@ export default function ViewEvent() {
                 </List>
               </Box>
 
-              {/* Category */}
               <Box align="left" sx={{ width: '100%', mt: 4 }}>
                 <Box fontSize={36} color="secondary.dark" align="center">
                   <CategoryIcon sx={{ color: 'secondary.main', fontSize: 40 }} />
@@ -370,21 +368,18 @@ export default function ViewEvent() {
                   Related Category
                 </Typography>
                 <List dense>
-                  {catsLoading ? (
+                  {catsQ.isLoading ? (
                     <ListItem>
                       <ListItemText primary="Loading…" />
                     </ListItem>
-                  ) : // {filteredCategories.map(category => should be a mapping function here
-                  relatedCategory ? (
+                  ) : relatedCategory ? (
                     <ListItem key={relatedCategory._id}>
                       <ListItemIcon>
                         <IconButton
                           edge="end"
                           aria-label="View"
                           onClick={() =>
-                            navigate(`/category/${relatedCategory._id}`, {
-                              state: relatedCategory.category_name,
-                            })
+                            navigate(`/category/${relatedCategory._id}`, { state: relatedCategory })
                           }
                         >
                           <PageviewIcon color="info" />
@@ -397,11 +392,7 @@ export default function ViewEvent() {
                   ) : (
                     <ListItem>
                       <ListItemIcon>
-                        <IconButton
-                          edge="end"
-                          disabled={!categoryId}
-                          onClick={() => categoryId && navigate(`/category/${String(categoryId)}`)}
-                        >
+                        <IconButton edge="end" disabled={!categoryId}>
                           <PageviewIcon />
                         </IconButton>
                       </ListItemIcon>
@@ -410,18 +401,54 @@ export default function ViewEvent() {
                   )}
                 </List>
               </Box>
-
-              {/* End category box */}
             </Grid>
           </Grid>
 
           <Grid item sx={{ my: 4 }}>
-            <Button color="secondary" variant="outlined" size="small" onClick={() => navigate(-1)}>
+            <Button color="secondary" variant="outlined" size="small" onClick={handleBack}>
               <ArrowBackIos fontSize="small" /> Back
             </Button>
           </Grid>
         </Grid>
       </Container>
+
+      {/* Delete Confirm Modal */}
+      <Modal open={open} onClose={handleClose}>
+        <Box
+          sx={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: 380,
+            bgcolor: 'background.paper',
+            boxShadow: 24,
+            p: 3,
+            borderRadius: 1.5,
+          }}
+        >
+          <Typography variant="h6" sx={{ mb: 2 }}>
+            Delete this event?
+          </Typography>
+          <Grid container spacing={2}>
+            <Grid item xs={6}>
+              <Button fullWidth variant="outlined" onClick={handleClose}>
+                Cancel
+              </Button>
+            </Grid>
+            <Grid item xs={6}>
+              <Button
+                fullWidth
+                variant="contained"
+                color="error"
+                onClick={() => archiveMutation.mutate(deleteCurrentEvent)}
+              >
+                Delete
+              </Button>
+            </Grid>
+          </Grid>
+        </Box>
+      </Modal>
     </AnimatedPage>
   );
 }
