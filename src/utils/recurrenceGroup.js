@@ -3,17 +3,27 @@ import dayjs from '@/utils/dayjsConfig';
 import { expandOccurrences } from '@/utils/recurrence';
 import { ymd } from '@/utils/calendar';
 
-export function occurrencesByDay(events = [], year) {
+/**
+ * Build a Map<YYYY-MM-DD, Array<{ date: Dayjs, ev }>>
+ * for all occurrences in a given year. Dates are normalized & time-sorted.
+ */
+export function occurrencesByDay(events = [], year = dayjs().year()) {
   const map = new Map();
+
   for (const ev of events) {
-    const occs = expandOccurrences(ev, { year });
+    const occs = expandOccurrences(ev, { year }) || [];
     for (const o of occs) {
-      const key = ymd(o.date);
+      const d = dayjs(o.date); // normalize
+      const key = ymd(d);
       if (!map.has(key)) map.set(key, []);
-      map.get(key).push({ date: o.date, ev });
+      map.get(key).push({ date: d, ev: o.ev || ev });
     }
   }
-  // sort each day’s events by time/date
-  for (const [k, arr] of map) arr.sort((a, b) => +a.date - +b.date);
+
+  // sort each day’s occurrences chronologically
+  for (const arr of map.values()) {
+    arr.sort((a, b) => +a.date - +b.date); // Dayjs valueOf -> ms epoch
+  }
+
   return map;
 }

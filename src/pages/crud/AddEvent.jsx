@@ -12,6 +12,8 @@ import {
   FormHelperText,
   FormControl,
   Select,
+  FormControlLabel,
+  Switch,
 } from '@mui/material';
 import ArrowBackIos from '@mui/icons-material/ArrowBackIos';
 import { toast } from 'react-toastify';
@@ -43,18 +45,23 @@ export default function AddEvent() {
   const [values, setValues] = useState({
     event_name: '',
     description: '',
-    category_id: '',
-    plant_id: '',
     occurs_at: null,
     occurs_to: null,
-    repeat_cycle: '',
     repeat_frequency: '',
+    repeat_cycle: '',
+    repeat_yearly: false, // NEW
     notes: '',
+    category_id: '',
+    plant_id: '',
   });
 
+  // const handleValues = (e) => {
+  //   const { name, value } = e.target;
+  //   setValues((v) => ({ ...v, [name]: value }));
+  // };
   const handleValues = (e) => {
-    const { name, value } = e.target;
-    setValues((v) => ({ ...v, [name]: value }));
+    const { name, value, type, checked } = e.target;
+    setValues((v) => ({ ...v, [name]: type === 'checkbox' ? checked : value }));
   };
 
   // It’s safe to early-return now because all hooks above have already run
@@ -257,9 +264,21 @@ export default function AddEvent() {
                       <MenuItem value="Day">Day</MenuItem>
                       <MenuItem value="Week">Week</MenuItem>
                       <MenuItem value="Month">Month</MenuItem>
-                      <MenuItem value="Year">Year</MenuItem>
                     </Select>
                   </FormControl>
+                </Grid>
+                <Grid item xs={12}>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        name="repeat_yearly"
+                        checked={!!values.repeat_yearly}
+                        onChange={handleValues}
+                        color="secondary"
+                      />
+                    }
+                    label="Repeat yearly"
+                  />
                 </Grid>
 
                 <Grid item xs={12}>

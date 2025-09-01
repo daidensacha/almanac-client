@@ -7,7 +7,7 @@ export default function AlmanacHeader({ title = 'Almanac' }) {
 
   return (
     <Container component="section" maxWidth="xl" sx={{ mt: 4, mb: 2 }}>
-      <Typography variant="h4" align="center" gutterBottom>
+      <Typography variant="h5" align="center" gutterBottom>
         {title}
       </Typography>
 

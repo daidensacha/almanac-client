@@ -190,10 +190,10 @@ export default function Profile() {
   const getClimateZone = async (latitude, longitude) => {
     setLocation((s) => ({ ...s, loading: true }));
     try {
-      const {
-        data: { climateZone },
-      } = await instance.get(`/climate-zone/${latitude}/${longitude}`);
-      const { koppen_geiger_zone, zone_description } = climateZone.return_values?.[0] || {};
+      const { data } = await instance.get(`/climate-zone/${latitude}/${longitude}`);
+      // Support both your old and new (graceful) shapes
+      const climateZone = data?.climateZone ?? data;
+      const { koppen_geiger_zone, zone_description } = climateZone?.return_values?.[0] || {};
       setLocation((prev) => ({
         ...prev,
         loading: false,
@@ -207,7 +207,7 @@ export default function Profile() {
         ...prev,
         loading: false,
         error: true,
-        message: 'Could not fetch climate zone. Please try again.',
+        message: 'Could not fetch climate zone now. Coords are still set; you can save.',
       }));
       toast.error('Could not fetch climate zone. Please try again.');
       console.log(err);
@@ -246,6 +246,8 @@ export default function Profile() {
           lastname,
           email,
           show_location,
+          locationPreference,
+          coordsSource,
           latitude,
           longitude,
           koppen_geiger_zone,
@@ -262,7 +264,23 @@ export default function Profile() {
           message: '',
           error: false,
         }));
-        setChecked(!!show_location);
+        // Interpret preference; fallback to legacy show_location
+        const wantsProfile =
+          (locationPreference ?? (show_location ? 'profile' : 'ip')) === 'profile';
+        setChecked(wantsProfile);
+
+        // Restore toggle group from coordsSource if in profile mode
+        const startMode = wantsProfile && coordsSource === 'manual' ? 'manual' : 'auto';
+        setLocMode(startMode);
+        // If opening in manual with saved coords, prefill the manual inputs
+        if (
+          startMode === 'manual' &&
+          Number.isFinite(Number(latitude)) &&
+          Number.isFinite(Number(longitude))
+        ) {
+          setManualLat(String(latitude));
+          setManualLon(String(longitude));
+        }
       } catch (err) {
         if (err.response?.status === 401) {
           try {
@@ -347,13 +365,19 @@ export default function Profile() {
       setLocation((s) => ({ ...s, loading: true, message: '' }));
       await getCurrentLocation();
     } else {
+      // Manual mode: clear zone fields so the info card resets immediately
       setLocation((s) => ({
         ...s,
-        message: hasCoords(location.latitude, location.longitude)
-          ? ''
-          : 'Enter coords and press Resolve zone',
+        koppen_geiger_zone: '',
+        zone_description: '',
+        message: 'Enter coords and press Resolve zone',
         error: false,
       }));
+      // Prefill manual inputs from current coords if available
+      setManualLat('');
+      setManualLon('');
+      // setManualLat(Number.isFinite(Number(location.latitude)) ? String(location.latitude) : '');
+      // setManualLon(Number.isFinite(Number(location.longitude)) ? String(location.longitude) : '');
     }
   };
 
@@ -388,7 +412,8 @@ export default function Profile() {
     const payload = {
       firstname,
       lastname,
-      show_location: checked,
+      locationPreference: checked ? 'profile' : 'ip',
+      coordsSource: checked ? (locMode === 'manual' ? 'manual' : 'auto') : null,
       latitude: checked
         ? locMode === 'manual'
           ? toNumOrEmpty(manualLat)

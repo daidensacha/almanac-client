@@ -86,6 +86,7 @@ export function normalizeEvent(raw = {}) {
     occurs_to: raw.occurs_to ? new Date(raw.occurs_to) : null,
     repeat_cycle: raw.repeat_cycle || '',
     repeat_frequency: raw.repeat_frequency ?? '',
+    repeat_yearly: !!raw.repeat_yearly,
     notes: raw.notes || '',
 
     // Keep populated objects if present for detail views; else null
@@ -113,6 +114,7 @@ export function serializeEvent(ev = {}) {
     occurs_to: iso(ev.occurs_to),
     repeat_cycle: ev.repeat_cycle || undefined,
     repeat_frequency: ev.repeat_frequency ?? undefined,
+    repeat_yearly: !!ev.repeat_yearly,
     notes: ev.notes?.trim() || undefined,
 
     // Send *_id to backend; backend maps to refs

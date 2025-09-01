@@ -1,6 +1,6 @@
 // src/pages/DayView.jsx
 import React from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme, Stack } from '@mui/material';
 import {
@@ -12,6 +12,9 @@ import {
   Box,
   MenuItem,
   TextField,
+  FormControlLabel,
+  Switch,
+  Button,
 } from '@mui/material';
 import PageviewIcon from '@mui/icons-material/Pageview';
 import dayjs from '@/utils/dayjsConfig';
@@ -38,18 +41,36 @@ export default function DayView() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const today = dayjs();
+  const [params] = useSearchParams();
+  const picked = params.get('d');
+  const today = picked ? dayjs(picked) : dayjs();
+  const isRealToday = dayjs().isSame(today, 'day');
+  const dayLabel = isRealToday ? 'Today' : today.format('dddd D MMM');
+  const fullDayLabel = today.format('ddd D MMM YYYY');
+
+  const goToToday = () => navigate('/almanac/day'); // clears ?d=
+
+  const [showRepeatingOnly, setShowRepeatingOnly] = React.useState(false);
+
+  const isRepeating = (ev) =>
+    !!ev?.repeat_yearly ||
+    (Number(ev?.repeat_frequency) > 0 && ['Day', 'Week', 'Month'].includes(ev?.repeat_cycle));
+
   const [range, setRange] = React.useState(14); // default: 2 weeks
 
+  const filteredEvents = React.useMemo(
+    () => (showRepeatingOnly ? events.filter(isRepeating) : events),
+    [events, showRepeatingOnly],
+  );
+
   // Today’s agenda
-  const todays = events
+  const todays = filteredEvents
     .flatMap((ev) => expandOccurrences(ev, { year: today.year() }))
     .filter((o) => dayjs(o.date).isSame(today, 'day'))
     .sort((a, b) => +a.date - +b.date);
 
-  // Upcoming
   const end = today.add(range, 'day').endOf('day');
-  const upcoming = events
+  const upcoming = filteredEvents
     .flatMap((ev) => expandOccurrences(ev, { year: today.year() }))
     .filter((o) => dayjs(o.date).isAfter(today, 'day') && dayjs(o.date).isBefore(end, 'day'))
     .sort((a, b) => +a.date - +b.date);
@@ -59,24 +80,67 @@ export default function DayView() {
 
   return (
     <AnimatedPage>
-      <AlmanacHeader title={`Almanac – ${today.format('dddd D MMMM YYYY')}`} />
+      <AlmanacHeader title={`Almanac – ${today.format('YYYY')}`} />
       <Container component="main" maxWidth="xl" sx={{ mt: 0, mb: 4 }}>
         <Grid container spacing={2} sx={{ mt: 4 }}>
-          <Grid item xs={12} md={3}>
+          <Grid item xs={12} lg={3}>
             <AlmanacSidebar
               events={events}
               plants={plants}
               categories={categories}
               onOpen={(ev) => navigate(`/event/${ev._id}`, { state: ev })}
+              showRepeatingOnly={showRepeatingOnly}
             />
           </Grid>
 
-          <Grid item xs={12} md={9}>
+          <Grid item xs={12} lg={9}>
+            <Paper
+              elevation={1}
+              sx={{ p: 2, mb: 2, display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}
+            >
+              <Typography variant="h6" sx={{ mr: 'auto' }}>
+                {dayLabel}{' '}
+                <Typography component="span" variant="body2" sx={{ opacity: 0.7, ml: 1 }}>
+                  {fullDayLabel}
+                </Typography>
+              </Typography>
+
+              <Button size="small" onClick={goToToday}>
+                Today
+              </Button>
+
+              <TextField
+                select
+                size="small"
+                label="Range"
+                value={range}
+                onChange={(e) => setRange(Number(e.target.value))}
+                sx={{ minWidth: 180 }}
+              >
+                {FILTERS.map((f) => (
+                  <MenuItem key={f.days} value={f.days}>
+                    {f.label}
+                  </MenuItem>
+                ))}
+              </TextField>
+
+              <FormControlLabel
+                control={
+                  <Switch
+                    size="small"
+                    checked={showRepeatingOnly}
+                    onChange={(e) => setShowRepeatingOnly(e.target.checked)}
+                    color="secondary"
+                  />
+                }
+                label="Repeating only"
+              />
+            </Paper>
             {/* Agenda for today */}
             <Paper elevation={1} sx={{ p: 2, mb: 2 }}>
-              <Typography variant="h6" sx={{ mb: 1 }}>
-                Today
-              </Typography>
+              {/* <Typography variant="h6" sx={{ mb: 1 }}>
+                {dayLabel}
+              </Typography> */}
               {todays.length === 0 && (
                 <Typography variant={isSm ? 'subtitle2' : 'body1'} color="text.secondary">
                   No events today.
@@ -96,7 +160,7 @@ export default function DayView() {
                   >
                     <PageviewIcon fontSize="small" />
                   </IconButton>
-                  {ev.event_name} – {dayjs(date).format('HH:mm') || 'All day'}
+                  {dayjs(date).format('ddd, D MMM') || 'All day'} – {ev.event_name}
                 </Typography>
               ))}
             </Paper>
@@ -113,7 +177,7 @@ export default function DayView() {
                   Upcoming
                 </Typography>
 
-                <TextField
+                {/* <TextField
                   select
                   size="small"
                   label="Range"
@@ -127,6 +191,17 @@ export default function DayView() {
                     </MenuItem>
                   ))}
                 </TextField>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      size="small"
+                      checked={showRepeatingOnly}
+                      onChange={(e) => setShowRepeatingOnly(e.target.checked)}
+                      color="secondary"
+                    />
+                  }
+                  label="Repeating only"
+                /> */}
               </Stack>
 
               {upcoming.length === 0 && (
