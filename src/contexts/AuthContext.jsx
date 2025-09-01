@@ -2,6 +2,7 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import api from '@/utils/axiosClient';
 import { signout as helperSignout } from '@/utils/helpers';
+import { useQueryClient } from '@tanstack/react-query';
 
 const AuthContext = createContext(null);
 AuthContext.displayName = 'AuthContext';
@@ -13,6 +14,7 @@ export function useAuthContext() {
 }
 
 export default function AuthProvider({ children }) {
+  const queryClient = useQueryClient();
   // hydrate from localStorage so reloads stay logged in
   const [token, setToken] = useState(() => {
     try {
@@ -87,9 +89,28 @@ export default function AuthProvider({ children }) {
     try {
       helperSignout();
     } catch {}
+    // belt & suspenders: also clear localStorage here
+    try {
+      localStorage.removeItem('user');
+      localStorage.removeItem('token');
+    } catch {}
     setUser(null);
     setToken(null);
     delete api.defaults.headers.common.Authorization;
+    // clear any cached data that depends on the user (weather, sunrise, profile, etc.)
+    try {
+      queryClient.removeQueries({
+        predicate: (q) => {
+          const k = q.queryKey?.[0];
+          return ['weather', 'sun', 'sunrise', 'sunset', 'me', 'profile'].includes(k);
+        },
+      });
+    } catch {}
+
+    // notify any listeners (Navbar, ticker, etc.) that rely on this event
+    try {
+      window.dispatchEvent(new CustomEvent('auth:signedout'));
+    } catch {}
   }
 
   const value = useMemo(() => ({ user, token, signin, signout }), [user, token]);

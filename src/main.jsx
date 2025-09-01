@@ -17,16 +17,16 @@ const queryClient = new QueryClient();
 const rootEl = document.getElementById('root');
 
 createRoot(rootEl).render(
-  <AuthContextProvider>
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <QueryClientProvider client={queryClient}>
+  <QueryClientProvider client={queryClient}>
+    <AuthContextProvider>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
         <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           {/* <AppLayout> */}
           <App />
           {/* </AppLayout> */}
         </BrowserRouter>
-      </QueryClientProvider>
-    </ThemeProvider>
-  </AuthContextProvider>,
+      </ThemeProvider>
+    </AuthContextProvider>
+  </QueryClientProvider>,
 );

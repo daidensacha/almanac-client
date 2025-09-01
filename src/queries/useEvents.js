@@ -10,20 +10,22 @@ export const keys = {
 };
 
 // src/queries/useEvents.js
+
 export function useEvents(archived = false, options = {}) {
   return useQuery({
     queryKey: keys.list(archived),
     queryFn: async () => {
       const { data } = await api.get('/events', { params: { archived } });
-      // handle nested "data" wrapper
-      const arr = Array.isArray(data?.events)
-        ? data.events
-        : Array.isArray(data?.data?.events) // <--- fix
-        ? data.data.events
-        : [];
 
-      // console.log('[useEvents] parsed events length:', arr.length);
-      return arr.map(normalizeEvent);
+      // ✅ normalize possible API shapes once
+      let events = [];
+      if (Array.isArray(data?.events)) {
+        events = data.events;
+      } else if (Array.isArray(data?.data?.events)) {
+        events = data.data.events;
+      }
+
+      return events.map(normalizeEvent);
     },
     staleTime: 30_000,
     ...options,

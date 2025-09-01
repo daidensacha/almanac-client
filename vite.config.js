@@ -19,14 +19,36 @@ export default defineConfig({
   },
   server: {
     port: 5173,
-    host: 'localhost',
-    // Uncomment this block ONLY if you want to call the server via /api in dev,
-    // instead of using VITE_API in axios.
-    // proxy: {
-    //   '/api': {
-    //     target: 'http://localhost:8000', // your Express dev server
-    //     changeOrigin: true,
-    //   },
+    host: true, // 👈 listen on all interfaces (LAN)
+    proxy: {
+      '/api': {
+        target: 'http://192.168.188.20:8000', // your backend on the Mac
+        changeOrigin: true,
+      },
+    },
+    // If HMR doesn't connect on iPhone, add this block:
+    // hmr: {
+    //  host: '192.168.188.20', // your Mac’s IP
+    //   protocol: 'ws',
+    //   clientPort: 5173
     // },
   },
 });
+
+// // vite.config.js
+// import { defineConfig } from 'vite'
+// import react from '@vitejs/plugin-react'
+
+// export default defineConfig({
+//   plugins: [react()],
+//   server: {
+//     port: 5173,
+//     host: true,              // 👈 listen on all interfaces (LAN)
+//     // If HMR doesn't connect on iPhone, add this block:
+//     // hmr: {
+//     //   host: '192.168.188.20', // your Mac’s IP
+//     //   protocol: 'ws',
+//     //   clientPort: 5173
+//     // },
+//   },
+// })

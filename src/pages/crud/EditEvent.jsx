@@ -12,6 +12,8 @@ import {
   Select,
   MenuItem,
   FormHelperText,
+  FormControlLabel,
+  Switch,
 } from '@mui/material';
 import ArrowBackIos from '@mui/icons-material/ArrowBackIos';
 import AnimatedPage from '@/components/AnimatedPage';
@@ -53,8 +55,8 @@ export default function EditEvent() {
     occurs_to: toDateOrNull(state?.occurs_to),
     repeat_cycle: state?.repeat_cycle || '',
     repeat_frequency: state?.repeat_frequency ?? '',
+    repeat_yearly: !!state?.repeat_yearly, // NEW
     notes: state?.notes || '',
-    // always strings for Selects
     category_id: normalizeId(state?.category_id ?? state?.category),
     plant_id: normalizeId(state?.plant_id ?? state?.plant),
   }));
@@ -70,6 +72,7 @@ export default function EditEvent() {
       occurs_to: toDateOrNull(state?.occurs_to),
       repeat_cycle: state?.repeat_cycle || '',
       repeat_frequency: state?.repeat_frequency ?? '',
+      repeat_yearly: !!state?.repeat_yearly, // NEW
       notes: state?.notes || '',
       category_id: normalizeId(state?.category_id ?? state?.category),
       plant_id: normalizeId(state?.plant_id ?? state?.plant),
@@ -102,9 +105,13 @@ export default function EditEvent() {
     );
   }
 
+  // const onChange = (e) => {
+  //   const { name, value } = e.target;
+  //   setValues((v) => ({ ...v, [name]: value }));
+  // };
   const onChange = (e) => {
-    const { name, value } = e.target;
-    setValues((v) => ({ ...v, [name]: value }));
+    const { name, value, type, checked } = e.target;
+    setValues((v) => ({ ...v, [name]: type === 'checkbox' ? checked : value }));
   };
 
   const smartBack = () => {
@@ -291,9 +298,21 @@ export default function EditEvent() {
                       <MenuItem value="Day">Day</MenuItem>
                       <MenuItem value="Week">Week</MenuItem>
                       <MenuItem value="Month">Month</MenuItem>
-                      <MenuItem value="Year">Year</MenuItem>
                     </Select>
                   </FormControl>
+                </Grid>
+                <Grid item xs={12}>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        name="repeat_yearly"
+                        checked={!!values.repeat_yearly}
+                        onChange={onChange}
+                        color="secondary"
+                      />
+                    }
+                    label="Repeat yearly"
+                  />
                 </Grid>
 
                 <Grid item xs={12}>

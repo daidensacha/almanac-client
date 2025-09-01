@@ -87,6 +87,8 @@ export default function ResponsiveAppBar() {
     navigate('/', { replace: true });
   };
 
+  const coordsKey = user?.location ? `${user.location.lat},${user.location.lon}` : 'anon'; // falls back to default inside the ticker
+
   /** Primary pages (top-level nav) */
   const pages = user
     ? [
@@ -175,7 +177,7 @@ export default function ResponsiveAppBar() {
                   alignItems: 'center',
                   fontFamily: 'monospace',
                   fontWeight: 700,
-                  letterSpacing: '.1rem',
+                  letterSpacing: '.05rem',
                   color: 'inherit',
                   textDecoration: 'none',
                   mr: 1,
@@ -200,14 +202,15 @@ export default function ResponsiveAppBar() {
                   display: { xs: 'flex', md: 'none' },
                   fontFamily: 'monospace',
                   fontWeight: 700,
-                  letterSpacing: '.1rem',
+                  letterSpacing: '.05rem',
+                  fontSize: { xs: '0.95rem', sm: '1.1rem', md: '1.25rem' },
                   color: 'inherit',
                   textDecoration: 'none',
                 }}
               >
                 ALMANAC
               </Typography>
-              <WeatherNavbarTicker compact={isXs} />
+              <WeatherNavbarTicker key={coordsKey} compact={isXs} />
             </Box>
 
             {/* MIDDLE – ticker (center, ellipsizes) */}
@@ -237,12 +240,33 @@ export default function ResponsiveAppBar() {
               }}
             >
               {/* Desktop menu */}
-              <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
+              {/* <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
                 {pages
                   .filter((p) => !['Sign in', 'Sign up', 'Sign out'].includes(p.menuTitle)) // keep auth in user menu / drawer
                   .map((p) => (
                     <PageButton key={p.menuTitle} {...p} onClick={() => {}} />
                   ))}
+              </Box> */}
+
+              <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
+                {pages
+                  // keep everything except Sign up on desktop
+                  .filter((p) => p.menuTitle !== 'Sign up')
+                  .map((p) => {
+                    if (p.menuTitle === 'Sign out') {
+                      return (
+                        <Button
+                          key="Sign out"
+                          onClick={handleSignout}
+                          endIcon={<LogoutIcon />}
+                          sx={{ my: 0, color: 'inherit', display: 'inline-flex' }}
+                        >
+                          Sign out
+                        </Button>
+                      );
+                    }
+                    return <PageButton key={p.menuTitle} {...p} onClick={() => {}} />;
+                  })}
               </Box>
 
               {/* Account icon (desktop only) */}

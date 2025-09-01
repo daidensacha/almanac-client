@@ -15,6 +15,9 @@ import weekday from 'dayjs/plugin/weekday';
 import isBetween from 'dayjs/plugin/isBetween';
 import weekOfYear from 'dayjs/plugin/weekOfYear';
 import localeData from 'dayjs/plugin/localeData';
+import minMax from 'dayjs/plugin/minMax';
+import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
+import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import 'dayjs/locale/de'; // or your locale
 
 dayjs.extend(utc);
@@ -26,6 +29,9 @@ dayjs.extend(isBetween);
 dayjs.extend(weekday);
 dayjs.extend(weekOfYear);
 dayjs.extend(localeData);
+dayjs.extend(isSameOrAfter);
+dayjs.extend(isSameOrBefore);
+dayjs.extend(minMax);
 dayjs.locale('en'); // or 'en'
 
 export default dayjs;
