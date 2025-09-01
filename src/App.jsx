@@ -33,6 +33,7 @@ import OpenMeteoLab from '@/pages/admin/OpenMeteoLab';
 import CalendarView from '@/pages/CalendarView';
 import DayView from '@/pages/DayView';
 import MonthView from '@/pages/MonthView';
+import Dashboard from '@/pages/dashboard/Dashboard'; // v2-NEW
 
 // admin section
 import AdminLayout from '@/layouts/AdminLayout'; // must render <Outlet/>
@@ -86,6 +87,10 @@ export default function App() {
 
             {/* Private */}
             <Route element={<PrivateRoutes />}>
+              {/* OPTIONAL: make dashboard the default */}
+              <Route path="dashboard" element={<Dashboard />} />
+              {/* If you want dashboard as the default for logged-in users: */}
+              <Route index element={<Navigate to="/dashboard" replace />} />
               {/* General private */}
               {/* <Route path="health" element={<HealthCheck />} /> */}
               {/* <Route path="dev/openmeteo" element={<OpenMeteoLab />} /> */}
