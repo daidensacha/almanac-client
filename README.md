@@ -60,12 +60,18 @@ Access these in code via `import.meta.env.VITE_API`.
 
 ## Scripts
 
+### Use for dotenv model
 ```bash
 npm run dev        # dev server on http://localhost:5173
 npm run build      # production build
 npm run preview    # preview production build locally
 ```
-
+### Use for Phase injection of environment variables
+```bash
+phase run "npm run dev"        # dev server on http://localhost:5173
+phase run "npm run build"      # production build
+phase run "npm run preview"    # preview production build locally
+```
 ---
 
 ## Project Structure

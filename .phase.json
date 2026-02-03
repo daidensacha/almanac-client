@@ -1,0 +1,8 @@
+{
+  "version": "2",
+  "phaseApp": "almanac-client",
+  "appId": "b64a9007-ded8-45e9-aa45-214a9ba42cef",
+  "defaultEnv": "Development",
+  "envId": "801bb7de-7e3d-4c52-8e61-cc29f0277766",
+  "monorepoSupport": false
+}
