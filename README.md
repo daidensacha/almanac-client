@@ -4,27 +4,32 @@
 
 ## Overview
 
-**Garden Almanac (Client)** — a React + MUI app for planning and tracking seasonal garden work: plants, events, and notes across years. Includes:
+A web application for planning and tracking seasonal garden work — including plants, events, and notes across years.
 
-- Email/password auth + protected routes
-- Plants / Categories / Events CRUD
-- Image cards via Unsplash (proxied through server)
-- Optional geolocation → climate zone lookup
-- (Planned) Year/Month/Day views, RRULE recurrence, reminders, weather integrations
+This project is part of a broader “Garden Almanac” concept, designed to support long-term observation and structured data over time.
 
 ---
 
-## Stack
+## What this project does
+
+- Manage plants, categories, and events
+- Track seasonal changes across years
+- Store notes and observations
+- Support structured planning workflows
+
+---
+
+## Tech stack
 
 - React 18 (Vite)
 - React Router 6
-- MUI 6 (with date-fns for pickers)
+- MUI 6 (date-fns)
 - Framer Motion
-- Axios (with auth helpers)
-- Toastify
-- (Planned) React Query for cached data fetching
+- Axios
 
----
+## Status
+
+Part of a broader 'Garden Almanac' concept focused on long-term observation and structured data.
 
 ## Quick Start
 
